@@ -1310,6 +1310,29 @@
       display: contents
     }
 
+    /* When model tests exist: group theory+revision into a real left half */
+    .tdd-cols-wrap.has-model .tdd-left-group {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      border-right: 1px solid var(--border)
+    }
+
+    .tdd-cols-wrap.has-model .tdd-left-group .tdd-col {
+      min-height: 0
+    }
+
+    .tdd-cols-wrap.has-model .tdd-left-group .tdd-col + .tdd-col {
+      border-top: 1px solid var(--border);
+      border-left: none
+    }
+
+    .tdd-cols-wrap.has-model .tdd-model-col {
+      flex: 1
+    }
+
     /* Podium */
     .podium {
       display: flex;
@@ -3233,7 +3256,7 @@
       }
 
       /* Mobile: left half = theory+revision stacked, right half = model */
-      .tdd-left-group {
+      .tdd-cols-wrap.has-model .tdd-left-group {
         display: flex !important;
         flex-direction: column;
         flex: 1;
@@ -3242,18 +3265,18 @@
         border-right: 1px solid var(--border)
       }
 
-      .tdd-left-group .tdd-col {
+      .tdd-cols-wrap.has-model .tdd-left-group .tdd-col {
         flex: 1;
         min-height: 0;
         border-left: none !important
       }
 
-      .tdd-left-group .tdd-col + .tdd-col {
+      .tdd-cols-wrap.has-model .tdd-left-group .tdd-col + .tdd-col {
         border-top: 1px solid var(--border);
         border-left: none !important
       }
 
-      .tdd-model-col {
+      .tdd-cols-wrap.has-model .tdd-model-col {
         flex: 1;
         border-left: none !important
       }
@@ -5057,7 +5080,7 @@
           ${modCount ? `<button class="tdd-preset ${presetActive('model')}" onclick="event.stopPropagation();applyPreset('${cid}','model')" style="color:#818cf8;border-color:${presetActive('model')?'#818cf8':'rgba(129,140,248,.35)'}">Model</button>` : ''}
           <button class="tdd-preset-multi ${multi ? 'active' : ''}" onclick="event.stopPropagation();setMultiMode('${cid}',${!multi})">Multi</button>
         </div>
-        <div class="tdd-cols-wrap">
+        <div class="tdd-cols-wrap${modCount ? ' has-model' : ''}">
           <div class="tdd-left-group">
           ${thyCount ? `<div class="tdd-col">
             <div class="tdd-col-head" style="color:var(--teal)">
@@ -5148,7 +5171,7 @@
         const rev = EXAMS.filter(e => e.type === 'revision').length;
         const thy = EXAMS.filter(e => e.type === 'theory').length;
         const mod = EXAMS.filter(e => isModelType(e.type)).length;
-        const colCount = (thy > 0 ? 1 : 0) + (rev > 0 ? 1 : 0) + (mod > 0 ? 1 : 0) || 1;
+        const colCount = mod > 0 ? 2 : ((thy > 0 ? 1 : 0) + (rev > 0 ? 1 : 0)) || 1;
         const isMobile = window.innerWidth <= 768;
         const rowH = 38, headH = 32, presetsH = 44, footerH = 38;
         // On mobile: left side (theory+revision stacked) vs right side (model) — height is the taller side
@@ -6403,14 +6426,16 @@
            ${(() => {
              const thyBooks = apps.filter(a => a.exam_type === 'theory' && a.rank <= 50).length;
              const revBooks = apps.filter(a => a.exam_type === 'revision' && a.rank <= 30).length;
-             const total = thyBooks + revBooks;
+             const modBooks = apps.filter(a => (a.exam_type === 'model_theory' || a.exam_type === 'model_revision') && a.rank <= 30).length;
+             const total = thyBooks + revBooks + modBooks;
              if (!total) return '';
              const thyChip = thyBooks ? '<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(45,212,191,.1);border:1px solid rgba(45,212,191,.25);border-radius:3px;padding:1px 5px"><span style=\"font-family:\'DM Mono\',monospace;font-size:8px;color:var(--teal);opacity:.7;letter-spacing:.5px\">THE</span><span style=\"font-family:\'DM Mono\',monospace;font-size:9px;color:var(--teal);font-weight:500\">' + thyBooks + '</span></span>' : '';
              const revChip = revBooks ? '<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(232,160,32,.1);border:1px solid rgba(232,160,32,.25);border-radius:3px;padding:1px 5px"><span style=\"font-family:\'DM Mono\',monospace;font-size:8px;color:var(--amber);opacity:.7;letter-spacing:.5px\">REV</span><span style=\"font-family:\'DM Mono\',monospace;font-size:9px;color:var(--amber);font-weight:500\">' + revBooks + '</span></span>' : '';
+             const modChip = modBooks ? '<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(129,140,248,.1);border:1px solid rgba(129,140,248,.25);border-radius:3px;padding:1px 5px"><span style=\"font-family:\'DM Mono\',monospace;font-size:8px;color:#818cf8;opacity:.7;letter-spacing:.5px\">MOD</span><span style=\"font-family:\'DM Mono\',monospace;font-size:9px;color:#818cf8;font-weight:500\">' + modBooks + '</span></span>' : '';
              return '<div class="insight-card" style="border-color:rgba(232,160,32,.55);background:linear-gradient(135deg,rgba(232,160,32,.09),rgba(245,192,96,.04));animation-delay:.35s">'
                + '<div class="insight-label" style="color:var(--amber2);letter-spacing:1.5px">BOOKS EARNED</div>'
                + '<div style=\"font-family:\'Bebas Neue\',sans-serif;font-size:28px;color:var(--amber);line-height:1;margin-bottom:6px\">' + total + '</div>'
-               + '<div style="display:flex;gap:5px;flex-wrap:wrap">' + thyChip + revChip + '</div>'
+               + '<div style="display:flex;gap:5px;flex-wrap:wrap">' + thyChip + revChip + modChip + '</div>'
                + '</div>';
            })()}
          </div>
