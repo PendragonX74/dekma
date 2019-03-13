@@ -990,8 +990,8 @@
     }
 
     .tdd-cols-wrap {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+      display: flex;
+      flex-direction: row;
       flex: 1;
       min-height: 0;
       overflow: hidden
@@ -1001,11 +1001,13 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      min-height: 0
+      min-height: 0;
+      flex: 1;
+      min-width: 0
     }
 
-    .tdd-col:first-child {
-      border-right: 1px solid var(--border)
+    .tdd-col + .tdd-col {
+      border-left: 1px solid var(--border)
     }
 
     .tdd-col-head {
@@ -1187,6 +1189,22 @@
       background: rgba(232, 160, 32, .1)
     }
 
+    /* When preset has inline type color, active state enhances it */
+    .tdd-preset[style*="color:var(--teal)"].active,
+    .tdd-preset[style*="color: var(--teal)"].active {
+      background: rgba(45, 212, 191, .12) !important;
+      border-color: var(--teal) !important
+    }
+    .tdd-preset[style*="color:var(--amber)"].active,
+    .tdd-preset[style*="color: var(--amber)"].active {
+      background: rgba(232, 160, 32, .12) !important;
+      border-color: var(--amber) !important
+    }
+    .tdd-preset[style*="color:#818cf8"].active {
+      background: rgba(129, 140, 248, .12) !important;
+      border-color: #818cf8 !important
+    }
+
     .tdd-col-head {
       display: flex;
       align-items: center;
@@ -1285,6 +1303,11 @@
       font-family: 'DM Mono', monospace;
       font-size: 10px;
       color: var(--text3)
+    }
+
+    /* Desktop: left-group is transparent so theory+revision are equal-width siblings */
+    .tdd-left-group {
+      display: contents
     }
 
     /* Podium */
@@ -3209,6 +3232,32 @@
         padding: 6px 10px
       }
 
+      /* Mobile: left half = theory+revision stacked, right half = model */
+      .tdd-left-group {
+        display: flex !important;
+        flex-direction: column;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        border-right: 1px solid var(--border)
+      }
+
+      .tdd-left-group .tdd-col {
+        flex: 1;
+        min-height: 0;
+        border-left: none !important
+      }
+
+      .tdd-left-group .tdd-col + .tdd-col {
+        border-top: 1px solid var(--border);
+        border-left: none !important
+      }
+
+      .tdd-model-col {
+        flex: 1;
+        border-left: none !important
+      }
+
       thead th {
         padding: 8px 8px;
         font-size: 8px;
@@ -3659,9 +3708,9 @@
         <!-- ALL TESTS -->
         <div class="page" id="page-tests">
           <div class="filter-bar">
-            <div class="filter-btn active" onclick="filterTests('all',this)">All</div>
-            <div class="filter-btn" onclick="filterTests('theory',this)">Theory</div>
-            <div class="filter-btn" onclick="filterTests('revision',this)">Revision</div>
+            <div class="filter-btn active" id="ft-all" onclick="filterTests('all',this)">All</div>
+            <div class="filter-btn" id="ft-theory" onclick="filterTests('theory',this)" style="color:var(--teal);border-color:rgba(45,212,191,.3)">Theory</div>
+            <div class="filter-btn" id="ft-revision" onclick="filterTests('revision',this)" style="color:var(--amber);border-color:rgba(232,160,32,.3)">Revision</div>
             <div class="filter-btn" id="ft-model" onclick="filterTests('model',this)" style="display:none;color:#818cf8;border-color:rgba(129,140,248,.35)">Model</div>
           </div>
           <div class="tests-grid" id="tests-grid"></div>
@@ -4768,6 +4817,13 @@
       if (isModelType(t)) return '#818cf8';
       return 'var(--text2)';
     }
+    // Canvas-safe colors — Chart.js can't resolve CSS variables
+    function typeColorCanvas(t) {
+      if (t==='theory')   return '#2dd4bf';
+      if (t==='revision') return '#e8a020';
+      if (isModelType(t)) return '#818cf8';
+      return '#9090b0';
+    }
     function typeColorRgba(t,a) {
       const c={theory:'45,212,191',revision:'232,160,32'};
       return `rgba(${c[t]||(isModelType(t)?'129,140,248':'144,144,176')},${a})`;
@@ -4986,7 +5042,7 @@
       const colToggle = (type, exams) => {
         if (!multi) return '';
         const allOn = exams.every(e => checked.has(e.id));
-        return allOn ? '' : `<span class="tdd-col-toggle" onclick="event.stopPropagation();toggleTypeInSel('${cid}','${type}',event)">Select all</span>`;
+        return `<span class="tdd-col-toggle" onclick="event.stopPropagation();toggleTypeInSel('${cid}','${type}',event)">${allOn ? 'Deselect all' : 'Select all'}</span>`;
       };
 
       const footerText = multi
@@ -4996,27 +5052,29 @@
       panel.innerHTML = `
         <div class="tdd-presets">
           <button class="tdd-preset ${allActive}" onclick="event.stopPropagation();applyPreset('${cid}','all')">All</button>
-          <button class="tdd-preset ${presetActive('theory')}" onclick="event.stopPropagation();applyPreset('${cid}','theory')">Theory</button>
-          <button class="tdd-preset ${presetActive('revision')}" onclick="event.stopPropagation();applyPreset('${cid}','revision')">Revision</button>
-          ${modCount ? `<button class="tdd-preset ${presetActive('model')}" onclick="event.stopPropagation();applyPreset('${cid}','model')" style="color:#818cf8;border-color:rgba(129,140,248,.35)">Model</button>` : ''}
+          ${thyCount?`<button class="tdd-preset ${presetActive('theory')}" onclick="event.stopPropagation();applyPreset('${cid}','theory')" style="color:var(--teal);border-color:${presetActive('theory')?'var(--teal)':'rgba(45,212,191,.3)'}">Theory</button>`:''}
+          ${revCount?`<button class="tdd-preset ${presetActive('revision')}" onclick="event.stopPropagation();applyPreset('${cid}','revision')" style="color:var(--amber);border-color:${presetActive('revision')?'var(--amber)':'rgba(232,160,32,.3)'}">Revision</button>`:''}
+          ${modCount ? `<button class="tdd-preset ${presetActive('model')}" onclick="event.stopPropagation();applyPreset('${cid}','model')" style="color:#818cf8;border-color:${presetActive('model')?'#818cf8':'rgba(129,140,248,.35)'}">Model</button>` : ''}
           <button class="tdd-preset-multi ${multi ? 'active' : ''}" onclick="event.stopPropagation();setMultiMode('${cid}',${!multi})">Multi</button>
         </div>
         <div class="tdd-cols-wrap">
-          <div class="tdd-col">
+          <div class="tdd-left-group">
+          ${thyCount ? `<div class="tdd-col">
             <div class="tdd-col-head" style="color:var(--teal)">
               <span>Theory (${thyCount})</span>
               ${colToggle('theory', thy)}
             </div>
-            <div class="tdd-col-scroll">${thy.length ? thy.map(e => opt(e, 'var(--teal)')).join('') : '<div class="tdd-empty">None loaded</div>'}</div>
-          </div>
-          <div class="tdd-col">
+            <div class="tdd-col-scroll">${thy.map(e => opt(e, '#2dd4bf')).join('')}</div>
+          </div>` : ''}
+          ${revCount ? `<div class="tdd-col">
             <div class="tdd-col-head" style="color:var(--amber)">
               <span>Revision (${revCount})</span>
               ${colToggle('revision', rev)}
             </div>
-            <div class="tdd-col-scroll">${rev.length ? rev.map(e => opt(e, 'var(--amber)')).join('') : '<div class="tdd-empty">None loaded</div>'}</div>
+            <div class="tdd-col-scroll">${rev.map(e => opt(e, '#e8a020')).join('')}</div>
+          </div>` : ''}
           </div>
-          ${modCount ? `<div class="tdd-col"><div class="tdd-col-head" style="color:#818cf8"><span>Model (${modCount})</span>${colToggle('model', mod)}</div><div class="tdd-col-scroll">${mod.map(e=>opt(e,'#818cf8')).join('')}</div></div>` : ''}
+          ${modCount ? `<div class="tdd-col tdd-model-col"><div class="tdd-col-head" style="color:#818cf8"><span>Model (${modCount})</span>${colToggle('model', mod)}</div><div class="tdd-col-scroll">${mod.map(e=>opt(e,'#818cf8')).join('')}</div></div>` : ''}
         </div>
         <div class="tdd-footer">
           <span class="tdd-footer-count">${footerText}</span>
@@ -5089,12 +5147,26 @@
         const rect = btn.getBoundingClientRect();
         const rev = EXAMS.filter(e => e.type === 'revision').length;
         const thy = EXAMS.filter(e => e.type === 'theory').length;
+        const mod = EXAMS.filter(e => isModelType(e.type)).length;
+        const colCount = (thy > 0 ? 1 : 0) + (rev > 0 ? 1 : 0) + (mod > 0 ? 1 : 0) || 1;
+        const isMobile = window.innerWidth <= 768;
         const rowH = 38, headH = 32, presetsH = 44, footerH = 38;
-        const colH = Math.min(Math.max(rev, thy, 1) * rowH + headH, 280);
+        // On mobile: left side (theory+revision stacked) vs right side (model) — height is the taller side
+        let colH;
+        if (isMobile) {
+          const leftH = (thy > 0 ? Math.min(thy * rowH, 120) + headH : 0) + (rev > 0 ? Math.min(rev * rowH, 120) + headH : 0);
+          const rightH = mod > 0 ? Math.min(mod * rowH, 280) + headH : 0;
+          colH = Math.min(Math.max(leftH, rightH, 80), window.innerHeight * 0.52);
+        } else {
+          colH = Math.min(Math.max(rev, thy, mod, 1) * rowH + headH, 300);
+        }
         const totalH = presetsH + colH + footerH;
-        const W = Math.min(460, window.innerWidth - 16);
+        // On desktop: give each column ~180px, be generous; on mobile: full width, stacked
+        const colW = isMobile ? window.innerWidth - 16 : Math.min(Math.max(colCount * 190, 320), window.innerWidth - 32);
+        const W = colW;
         const spaceB = window.innerHeight - rect.bottom - 8;
         const top = spaceB >= totalH ? rect.bottom + 4 : Math.max(8, rect.top - totalH - 4);
+        // Prefer aligning to button left, but keep within viewport
         const left = Math.max(8, Math.min(rect.left, window.innerWidth - W - 8));
         panel.style.cssText = `top:${top}px;left:${left}px;width:${W}px;height:${totalH}px`;
         panel.classList.add('open');
@@ -5515,8 +5587,22 @@
     let testsFilter = 'all';
     function filterTests(type, btn) {
       testsFilter = type;
-      document.querySelectorAll('#page-tests .filter-btn').forEach(b => b.classList.remove('active'));
+      const typeColors = { theory:'var(--teal)', revision:'var(--amber)', model:'#818cf8' };
+      const typeBorders = { theory:'rgba(45,212,191,.3)', revision:'rgba(232,160,32,.3)', model:'rgba(129,140,248,.35)' };
+      document.querySelectorAll('#page-tests .filter-btn').forEach(b => {
+        b.classList.remove('active');
+        // restore per-type base color when de-activating
+        const bid = b.id?.replace('ft-','');
+        if (typeColors[bid]) { b.style.color = typeColors[bid]; b.style.borderColor = typeBorders[bid]; b.style.background = ''; }
+        else { b.style.color = ''; b.style.borderColor = ''; b.style.background = ''; }
+      });
       btn.classList.add('active');
+      // active state: use type-specific color with bg tint, override default amber
+      if (typeColors[type]) {
+        btn.style.color = typeColors[type];
+        btn.style.borderColor = typeColors[type];
+        btn.style.background = (type==='theory'?'rgba(45,212,191,.12)':type==='revision'?'rgba(232,160,32,.1)':'rgba(129,140,248,.12)');
+      }
       renderTestsGrid();
     }
 
@@ -6332,7 +6418,12 @@
           <div class="card-header">
             <div class="card-title"><i class="ph ph-trend-up" style="color:var(--teal)"></i> Performance Timeline</div>
             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-              ${['all','theory','revision'].concat(modApps.length?['model']:[]).map(t=>`<button id="stu-tl-${t}" onclick="setStuTimelineFilter('${stuData.name}','${stuData.school}','${t}')" style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;padding:2px 9px;border-radius:3px;cursor:pointer;border:1px solid ${t==='all'?'var(--border2)':typeColor(t)+'55'};background:${t==='all'?'var(--bg3)':'transparent'};color:${t==='all'?'var(--text)':typeColor(t)}">${t==='all'?'All':typeLabel(t)}</button>`).join('')}
+              ${['all','theory','revision','model'].map(t=>{
+                const hasTests=t==='all'||t==='theory'?thyApps.length>0||t==='all':t==='revision'?revApps.length>0:modApps.length>0;
+                const disabled=t!=='all'&&(t==='theory'?thyApps.length===0:t==='revision'?revApps.length===0:modApps.length===0);
+                const lbl=t==='all'?'All':t==='theory'?'Theory':t==='revision'?'Revision':'Model';
+                return `<button id="stu-tl-${t}" onclick="${disabled?'':'setStuTimelineFilter(\''+stuData.name+'\',\''+stuData.school+'\',\''+t+'\')'}" style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;padding:2px 9px;border-radius:3px;cursor:${disabled?'not-allowed':'pointer'};border:1px solid ${t==='all'?'var(--border2)':typeColor(t)+'55'};background:${t==='all'?'var(--bg3)':'transparent'};color:${t==='all'?'var(--text)':typeColor(t)};opacity:${disabled?'0.3':'1'}">${lbl}</button>`;
+              }).join('')}
             </div>
           </div>
           <div class="card-body"><div style="height:240px;position:relative"><canvas id="stu-chart"></canvas></div></div>
@@ -6343,7 +6434,11 @@
             <div class="card-header">
               <div class="card-title"><i class="ph ph-clipboard-text" style="color:var(--text2)"></i> Test History</div>
               <div style="display:flex;align-items:center;gap:6px">
-                ${['all','theory','revision'].concat(modApps.length?['model']:[]).map(t=>`<button id="stu-th-${t}" onclick="setStuHistoryFilter('${stuData.name}','${stuData.school}','${t}')" style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;padding:2px 9px;border-radius:3px;cursor:pointer;border:1px solid ${t==='all'?'var(--border2)':typeColor(t)+'55'};background:${t==='all'?'var(--bg3)':'transparent'};color:${t==='all'?'var(--text)':typeColor(t)}">${t==='all'?'All':typeLabel(t)}</button>`).join('')}
+                ${['all','theory','revision','model'].map(t=>{
+                  const disabled=t!=='all'&&(t==='theory'?thyApps.length===0:t==='revision'?revApps.length===0:modApps.length===0);
+                  const lbl=t==='all'?'All':t==='theory'?'Theory':t==='revision'?'Revision':'Model';
+                  return `<button id="stu-th-${t}" onclick="${disabled?'':'setStuHistoryFilter(\''+stuData.name+'\',\''+stuData.school+'\',\''+t+'\')'}" style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;padding:2px 9px;border-radius:3px;cursor:${disabled?'not-allowed':'pointer'};border:1px solid ${t==='all'?'var(--border2)':typeColor(t)+'55'};background:${t==='all'?'var(--bg3)':'transparent'};color:${t==='all'?'var(--text)':typeColor(t)};opacity:${disabled?'0.3':'1'}">${lbl}</button>`;
+                }).join('')}
                 <button class="info-btn" onclick="showInfoPopover(this,'test-history')" title="How this works" style="margin-left:2px"><i class="ph ph-info" style="font-size:13px;line-height:1"></i></button>
               </div>
             </div>
@@ -6902,28 +6997,40 @@
       // Shared exams chart
       const sharedExams = EXAMS.filter(e => students.every(s => s.apps.some(a => a.exam_id === e.id)));
       if (sharedExams.length) {
+        // Limit chart to most recent 12 for readability; show all in per-test bars
+        const chartExams = sharedExams.length > 12 ? sharedExams.slice(-12) : sharedExams;
+        const hasMore = sharedExams.length > chartExams.length;
         html += `<div style="margin-top:24px">
-          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:12px">HEAD TO HEAD — Shared Tests (${sharedExams.length})</div>
-          <div style="height:240px;position:relative"><canvas id="compare-chart"></canvas></div>
-        </div>
-        <div style="margin-top:20px">
-          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:10px">PER-TEST SCORES</div>
-          ${sharedExams.map(e => {
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px">HEAD TO HEAD — ${sharedExams.length} Shared Test${sharedExams.length>1?'s':''}</div>
+            ${hasMore?`<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)">Chart shows most recent ${chartExams.length}</div>`:''}
+          </div>
+          <div style="height:220px;position:relative"><canvas id="compare-chart"></canvas></div>
+        </div>`;
+
+        // Per-test scores — compact pill rows, max 16 shown with disclosure
+        const showAll = sharedExams.length <= 8;
+        const visibleExams = showAll ? sharedExams : sharedExams.slice(-8);
+        html += `<div style="margin-top:20px">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:10px">PER-TEST BREAKDOWN${!showAll?` (${sharedExams.length-8} earlier tests hidden)`:''}</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+          ${visibleExams.map(e => {
             const maxMark = Math.max(...students.map(s => s.apps.find(a => a.exam_id === e.id)?.marks ?? 0));
-            return `<div style="margin-bottom:10px">
-              <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:4px">${e.label}</div>
+            return `<div style="background:var(--bg3);border-radius:6px;padding:8px 12px">
+              <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:6px;letter-spacing:.5px">${e.label}</div>
               ${students.map((s, ci) => {
                 const mark = s.apps.find(a => a.exam_id === e.id)?.marks ?? null;
                 if (mark === null) return '';
                 const pct = maxMark > 0 ? mark / maxMark * 100 : 0;
                 return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
-                  <div style="width:80px;font-size:12px;color:${colorVars[ci]};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name.split(' ')[0]}</div>
-                  <div style="flex:1;height:5px;background:var(--bg3);border-radius:3px"><div style="width:${pct}%;height:100%;background:${colors[ci]};border-radius:3px"></div></div>
-                  <div style="width:32px;font-family:'DM Mono',monospace;font-size:11px;color:${colorVars[ci]};text-align:right">${mark}</div>
+                  <div style="width:72px;font-size:12px;color:${colorVars[ci]};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name.split(' ')[0]}</div>
+                  <div style="flex:1;height:4px;background:var(--bg2);border-radius:2px"><div style="width:${pct}%;height:100%;background:${colors[ci]};border-radius:2px"></div></div>
+                  <div style="width:28px;font-family:'DM Mono',monospace;font-size:11px;color:${colorVars[ci]};text-align:right">${mark}</div>
                 </div>`;
               }).join('')}
             </div>`;
           }).join('')}
+          </div>
         </div>`;
       }
 
@@ -6931,16 +7038,17 @@
       document.getElementById('compare-overlay').classList.add('open');
 
       if (sharedExams.length) {
+        const chartExams = sharedExams.length > 12 ? sharedExams.slice(-12) : sharedExams;
         setTimeout(() => {
           const ctx = document.getElementById('compare-chart')?.getContext('2d');
           if (!ctx) return;
           new Chart(ctx, {
             type: 'line',
             data: {
-              labels: sharedExams.map(e => e.label),
+              labels: chartExams.map(e => e.label),
               datasets: students.map((s, ci) => ({
                 label: s.name.split(' ')[0],
-                data: sharedExams.map(e => s.apps.find(a => a.exam_id === e.id)?.marks ?? null),
+                data: chartExams.map(e => s.apps.find(a => a.exam_id === e.id)?.marks ?? null),
                 borderColor: colors[ci], backgroundColor: colors[ci] + '18',
                 borderWidth: 2, pointRadius: 5, fill: false, tension: .3
               }))
@@ -6949,7 +7057,7 @@
               responsive: true, maintainAspectRatio: false,
               plugins: { legend: { labels: { color: '#9090b0', font: { family: 'DM Mono', size: 11 } } } },
               scales: {
-                x: { ticks: { color: '#5a5a78', font: { family: 'DM Mono', size: 9 } }, grid: { color: 'rgba(255,255,255,.04)' } },
+                x: { ticks: { color: '#5a5a78', font: { family: 'DM Mono', size: 9 }, maxRotation: 30 }, grid: { color: 'rgba(255,255,255,.04)' } },
                 y: { ticks: { color: '#5a5a78', font: { family: 'DM Mono', size: 9 } }, grid: { color: 'rgba(255,255,255,.04)' } }
               }
             }
@@ -7340,15 +7448,15 @@
       if(!ctx)return;
       if(CHARTS.stuChart)CHARTS.stuChart.destroy();
       const sortedMarks=sortedApps.map(a=>a.marks);
-      const ptColors=sortedApps.map(a=>typeColor(a.exam_type));
+      const ptColors=sortedApps.map(a=>typeColorCanvas(a.exam_type));
       const thyCount=sortedApps.filter(a=>a.exam_type==='theory').length;
       const allReg=sortedApps.every(a=>a.exam_type==='theory'||a.exam_type==='revision');
       const dynRadius=ctx=>{const w=ctx.chart.width||300;const base=w<320?2:w<500?3:5;return sortedApps[ctx.dataIndex]?.marks===best?base+3:base;};
       const dynHover=ctx=>{const w=ctx.chart.width||300;return w<500?6:9;};
       const datasets=[{
-        label:'Score',data:sortedMarks,borderColor:'#60a5fa',
-        backgroundColor:ctx2=>{const c=ctx2.chart.ctx,area=ctx2.chart.chartArea;if(!area)return 'rgba(96,165,250,.08)';const g=c.createLinearGradient(0,area.top,0,area.bottom);g.addColorStop(0,'rgba(96,165,250,.15)');g.addColorStop(1,'rgba(96,165,250,.02)');return g;},
-        borderWidth:2.5,fill:true,tension:.35,
+        label:'Score',data:sortedMarks,borderColor:'rgba(96,165,250,.45)',
+        backgroundColor:ctx2=>{const c=ctx2.chart.ctx,area=ctx2.chart.chartArea;if(!area)return 'rgba(96,165,250,.06)';const g=c.createLinearGradient(0,area.top,0,area.bottom);g.addColorStop(0,'rgba(96,165,250,.12)');g.addColorStop(1,'rgba(96,165,250,.01)');return g;},
+        borderWidth:2,fill:true,tension:.35,
         pointBackgroundColor:ptColors,pointBorderColor:ptColors,pointBorderWidth:2,pointRadius:dynRadius,pointHoverRadius:dynHover,
       }];
       const classAvgs=sortedApps.map(a=>{const e=EXAMS.find(x=>x.id===a.exam_id);return e?+(e.students.reduce((s,st)=>s+st.marks,0)/e.students.length).toFixed(1):null;});
