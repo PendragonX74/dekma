@@ -1,0 +1,4346 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Applied Mathematics · Galle Results Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap"
+    rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="data/results.js"></script>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --bg2: #111118;
+      --bg3: #18181f;
+      --border: #2a2a38;
+      --border2: #3a3a50;
+      --amber: #e8a020;
+      --amber2: #f5c060;
+      --teal: #2dd4bf;
+      --teal2: #99f6e4;
+      --pink: #f472b6;
+      --blue: #60a5fa;
+      --text: #e8e8f0;
+      --text2: #9090b0;
+      --text3: #5a5a78;
+      --male: #60a5fa;
+      --female: #f472b6;
+      --radius: 8px;
+      --radius2: 14px;
+      --sidebar-w: 220px
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      font-family: 'Crimson Pro', serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: .6
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg2)
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border2);
+      border-radius: 3px
+    }
+
+    .shell {
+      display: flex;
+      min-height: 100vh
+    }
+
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 100;
+      transition: transform .3s
+    }
+
+    .logo {
+      padding: 28px 20px 20px;
+      border-bottom: 1px solid var(--border)
+    }
+
+    .logo-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 2px;
+      color: var(--amber);
+      line-height: 1
+    }
+
+    .logo-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+      margin-top: 4px;
+      letter-spacing: 1px;
+      text-transform: uppercase
+    }
+
+    nav {
+      flex: 1;
+      padding: 12px 0;
+      overflow-y: auto
+    }
+
+    .nav-section {
+      padding: 8px 20px 4px;
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: var(--text3);
+      letter-spacing: 2px;
+      text-transform: uppercase
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      font-size: 14px;
+      color: var(--text2);
+      cursor: pointer;
+      transition: all .15s;
+      border-left: 2px solid transparent
+    }
+
+    .nav-item:hover {
+      color: var(--text);
+      background: var(--bg3)
+    }
+
+    .nav-item.active {
+      color: var(--amber);
+      border-left-color: var(--amber);
+      background: rgba(232, 160, 32, .07)
+    }
+
+    .nav-icon {
+      font-size: 16px;
+      width: 20px;
+      text-align: center;
+      flex-shrink: 0
+    }
+
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text3)
+    }
+
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(10, 10, 15, .85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px
+    }
+
+    .page-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      letter-spacing: 3px;
+      color: var(--text)
+    }
+
+    .search-wrap {
+      position: relative;
+      display: inline-block
+    }
+
+    .search-wrap::before {
+      content: '⌕';
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text3);
+      font-size: 14px;
+      pointer-events: none;
+      z-index: 1;
+      line-height: 1
+    }
+
+    .search-input {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 8px 12px 8px 32px;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--text);
+      width: 260px;
+      outline: none;
+      transition: border-color .2s;
+      display: block
+    }
+
+    .search-input:focus {
+      border-color: var(--amber)
+    }
+
+    .search-input::placeholder {
+      color: var(--text3)
+    }
+
+    .search-results {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      overflow: hidden;
+      z-index: 200;
+      max-height: 360px;
+      overflow-y: auto;
+      display: none
+    }
+
+    .search-results.visible {
+      display: block
+    }
+
+    .search-item {
+      padding: 10px 14px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+      transition: background .15s
+    }
+
+    .search-item:last-child {
+      border-bottom: none
+    }
+
+    .search-item:hover {
+      background: var(--bg2)
+    }
+
+    .search-name {
+      font-size: 14px;
+      color: var(--text)
+    }
+
+    .search-meta {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+      margin-top: 2px
+    }
+
+    .badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 3px;
+      display: inline-block
+    }
+
+    .badge-b {
+      background: rgba(96, 165, 250, .15);
+      color: var(--male)
+    }
+
+    .badge-g {
+      background: rgba(244, 114, 182, .15);
+      color: var(--female)
+    }
+
+    .content {
+      padding: 32px;
+      flex: 1
+    }
+
+    .page {
+      display: none
+    }
+
+    .page.active {
+      display: block;
+      animation: fadeIn .3s ease-out
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(16px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    /* Staggered card entrance */
+    @keyframes cardIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px) scale(.98)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1)
+      }
+    }
+
+    @keyframes slideInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-20px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0)
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(20px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0)
+      }
+    }
+
+    @keyframes popIn {
+      from {
+        opacity: 0;
+        transform: scale(.85)
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1)
+      }
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0
+      }
+
+      100% {
+        background-position: 200% 0
+      }
+    }
+
+    @keyframes pulse-glow {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(232, 160, 32, 0)
+      }
+
+      50% {
+        box-shadow: 0 0 16px 4px rgba(232, 160, 32, .18)
+      }
+    }
+
+    @keyframes rankBadgePop {
+      0% {
+        transform: scale(0) rotate(-15deg);
+        opacity: 0
+      }
+
+      70% {
+        transform: scale(1.15) rotate(3deg);
+        opacity: 1
+      }
+
+      100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1
+      }
+    }
+
+    @keyframes barSlide {
+      from {
+        width: 0 !important
+      }
+
+      to {}
+    }
+
+    @keyframes rowFadeIn {
+      from {
+        opacity: 0;
+        transform: translateX(-10px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0)
+      }
+    }
+
+    .stat-card {
+      animation: cardIn .5s ease-out both
+    }
+
+    .stat-card:nth-child(1) {
+      animation-delay: .05s
+    }
+
+    .stat-card:nth-child(2) {
+      animation-delay: .1s
+    }
+
+    .stat-card:nth-child(3) {
+      animation-delay: .15s
+    }
+
+    .stat-card:nth-child(4) {
+      animation-delay: .2s
+    }
+
+    .stat-card:nth-child(5) {
+      animation-delay: .25s
+    }
+
+    .stat-card:nth-child(6) {
+      animation-delay: .3s
+    }
+
+    .card {
+      animation: cardIn .5s ease-out both
+    }
+
+    .two-col>.card:nth-child(1) {
+      animation-delay: .15s
+    }
+
+    .two-col>.card:nth-child(2) {
+      animation-delay: .25s
+    }
+
+    .three-col>.card:nth-child(1) {
+      animation-delay: .1s
+    }
+
+    .three-col>.card:nth-child(2) {
+      animation-delay: .2s
+    }
+
+    .three-col>.card:nth-child(3) {
+      animation-delay: .3s
+    }
+
+    .score-bar-fill {
+      animation: barSlide .8s cubic-bezier(.34, 1.56, .64, 1) both
+    }
+
+    tbody tr {
+      animation: rowFadeIn .3s ease-out both
+    }
+
+    tbody tr:nth-child(1) {
+      animation-delay: .05s
+    }
+
+    tbody tr:nth-child(2) {
+      animation-delay: .08s
+    }
+
+    tbody tr:nth-child(3) {
+      animation-delay: .11s
+    }
+
+    tbody tr:nth-child(4) {
+      animation-delay: .14s
+    }
+
+    tbody tr:nth-child(5) {
+      animation-delay: .17s
+    }
+
+    tbody tr:nth-child(6) {
+      animation-delay: .2s
+    }
+
+    tbody tr:nth-child(7) {
+      animation-delay: .23s
+    }
+
+    tbody tr:nth-child(8) {
+      animation-delay: .26s
+    }
+
+    tbody tr:nth-child(9) {
+      animation-delay: .29s
+    }
+
+    tbody tr:nth-child(10) {
+      animation-delay: .32s
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px
+    }
+
+    .stat-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius2);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color .2s, transform .2s
+    }
+
+    .stat-card:hover {
+      border-color: var(--border2);
+      transform: translateY(-3px)
+    }
+
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      inset: -40px;
+      background: radial-gradient(circle at 70% 30%, rgba(232, 160, 32, .06), transparent 60%);
+      pointer-events: none
+    }
+
+    .stat-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 10px
+    }
+
+    .stat-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 42px;
+      line-height: 1;
+      color: var(--text);
+      letter-spacing: 1px
+    }
+
+    .stat-value.amber {
+      color: var(--amber)
+    }
+
+    .stat-value.teal {
+      color: var(--teal)
+    }
+
+    .stat-value.pink {
+      color: var(--pink)
+    }
+
+    .stat-value.blue {
+      color: var(--blue)
+    }
+
+    .stat-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text3);
+      margin-top: 6px
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 18px
+    }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+      letter-spacing: 2px;
+      color: var(--text)
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 32px
+    }
+
+    .three-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 32px
+    }
+
+    @media(max-width:1100px) {
+
+      .two-col,
+      .three-col {
+        grid-template-columns: 1fr
+      }
+    }
+
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius2);
+      overflow: hidden;
+      transition: border-color .2s
+    }
+
+    .card:hover {
+      border-color: var(--border2)
+    }
+
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap
+    }
+
+    .card-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text2);
+      letter-spacing: 1px;
+      text-transform: uppercase
+    }
+
+    .card-body {
+      padding: 20px
+    }
+
+    /* Test Dropdown Selector */
+    .tdd-wrap {
+      position: relative;
+      display: inline-block
+    }
+
+    .tdd-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 7px 12px;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text2);
+      white-space: nowrap;
+      min-width: 180px;
+      user-select: none
+    }
+
+    .tdd-btn:hover {
+      border-color: var(--border2);
+      color: var(--text)
+    }
+
+    .tdd-btn.open {
+      border-color: var(--amber);
+      background: var(--bg2);
+      color: var(--text)
+    }
+
+    .tdd-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0
+    }
+
+    .tdd-label {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .tdd-arrow {
+      color: var(--text3);
+      font-size: 9px;
+      transition: transform .18s;
+      flex-shrink: 0
+    }
+
+    .tdd-btn.open .tdd-arrow {
+      transform: rotate(180deg)
+    }
+
+    .tdd-panel {
+      position: fixed;
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius2);
+      z-index: 9000;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, .75);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .15s, transform .15s;
+      transform: translateY(-4px);
+      display: none;
+      flex-direction: column;
+      overflow: hidden
+    }
+
+    .tdd-panel.open {
+      display: flex;
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: all
+    }
+
+    .tdd-all-row {
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0
+    }
+
+    .tdd-cols-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden
+    }
+
+    .tdd-col {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 0
+    }
+
+    .tdd-col:first-child {
+      border-right: 1px solid var(--border)
+    }
+
+    .tdd-col-head {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 7px 12px 5px;
+      color: var(--text3);
+      background: var(--bg3);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0
+    }
+
+    .tdd-col-scroll {
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
+      flex: 1
+    }
+
+    .tdd-col-scroll::-webkit-scrollbar {
+      width: 3px
+    }
+
+    .tdd-col-scroll::-webkit-scrollbar-thumb {
+      background: var(--border2);
+      border-radius: 2px
+    }
+
+    .tdd-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      cursor: pointer;
+      transition: background .1s;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text2);
+      border-bottom: 1px solid rgba(42, 42, 56, .5)
+    }
+
+    .tdd-option:last-child {
+      border-bottom: none
+    }
+
+    .tdd-option:hover {
+      background: var(--bg3);
+      color: var(--text)
+    }
+
+    .tdd-option.selected {
+      color: var(--text);
+      background: rgba(232, 160, 32, .07)
+    }
+
+    .tdd-option.selected .tdd-check {
+      opacity: 1
+    }
+
+    .tdd-option-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0
+    }
+
+    .tdd-option-text {
+      flex: 1;
+      min-width: 0
+    }
+
+    .tdd-option-name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 11px
+    }
+
+    .tdd-option-sub {
+      font-size: 9px;
+      color: var(--text3);
+      margin-top: 1px
+    }
+
+    .tdd-check {
+      font-size: 10px;
+      color: var(--amber);
+      opacity: 0;
+      flex-shrink: 0;
+      margin-left: 2px
+    }
+
+    /* Podium */
+    .podium {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 12px;
+      padding: 24px 16px 12px
+    }
+
+    .podium-slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      transition: transform .2s;
+      cursor: pointer
+    }
+
+    .podium-slot:hover {
+      transform: translateY(-4px)
+    }
+
+    .podium-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      flex-shrink: 0;
+      animation: popIn .5s ease-out both
+    }
+
+    .podium-slot:nth-child(1) .podium-avatar {
+      background: rgba(96, 165, 250, .2);
+      color: var(--blue);
+      border: 2px solid var(--blue);
+      animation-delay: .3s
+    }
+
+    .podium-slot:nth-child(2) .podium-avatar {
+      background: rgba(232, 160, 32, .2);
+      color: var(--amber);
+      border: 2px solid var(--amber);
+      width: 60px;
+      height: 60px;
+      font-size: 26px;
+      animation-delay: .1s
+    }
+
+    .podium-slot:nth-child(3) .podium-avatar {
+      background: rgba(45, 212, 191, .15);
+      color: var(--teal);
+      border: 2px solid var(--teal);
+      animation-delay: .5s
+    }
+
+    .podium-name {
+      font-size: 13px;
+      color: var(--text);
+      text-align: center;
+      max-width: 120px;
+      line-height: 1.3
+    }
+
+    .podium-school {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+      text-align: center
+    }
+
+    .podium-marks {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      line-height: 1
+    }
+
+    .podium-slot:nth-child(1) .podium-marks {
+      color: var(--blue)
+    }
+
+    .podium-slot:nth-child(2) .podium-marks {
+      font-size: 36px;
+      color: var(--amber)
+    }
+
+    .podium-slot:nth-child(3) .podium-marks {
+      color: var(--teal)
+    }
+
+    .podium-rating-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: .5px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid var(--border2);
+      color: var(--text3);
+      margin-top: -3px
+    }
+
+    .podium-rank {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: var(--text3);
+      letter-spacing: 1px
+    }
+
+    .podium-bar {
+      border-radius: 4px 4px 0 0;
+      width: 80px
+    }
+
+    .podium-slot:nth-child(1) .podium-bar {
+      background: rgba(96, 165, 250, .15);
+      height: 60px
+    }
+
+    .podium-slot:nth-child(2) .podium-bar {
+      background: rgba(232, 160, 32, .15);
+      height: 90px;
+      width: 96px
+    }
+
+    .podium-slot:nth-child(3) .podium-bar {
+      background: rgba(45, 212, 191, .1);
+      height: 40px
+    }
+
+    /* Table */
+    .table-wrap {
+      overflow-x: auto
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse
+    }
+
+    thead tr {
+      background: var(--bg3)
+    }
+
+    thead th {
+      padding: 10px 14px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-align: left;
+      white-space: nowrap;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+      transition: color .15s
+    }
+
+    thead th:hover {
+      color: var(--text2)
+    }
+
+    thead th.sorted {
+      color: var(--amber)
+    }
+
+    thead th.sorted-rank {
+      color: var(--amber)
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background .1s
+    }
+
+    tbody tr:last-child {
+      border-bottom: none
+    }
+
+    tbody tr:hover {
+      background: var(--bg3)
+    }
+
+    tbody td {
+      padding: 10px 14px;
+      font-size: 14px;
+      color: var(--text)
+    }
+
+    .td-rank {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--text3);
+      width: 60px
+    }
+
+    .td-marks {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+      color: var(--amber);
+      letter-spacing: 1px
+    }
+
+    .td-avg {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+      color: var(--teal);
+      letter-spacing: 1px
+    }
+
+    .td-name {
+      font-weight: 600;
+      cursor: pointer;
+      transition: color .15s
+    }
+
+    .td-name:hover {
+      color: var(--amber)
+    }
+
+    .td-school {
+      font-size: 13px;
+      color: var(--text2)
+    }
+
+    /* Score bars */
+    .score-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border)
+    }
+
+    .score-bar:last-child {
+      border-bottom: none
+    }
+
+    .score-bar-label {
+      width: 170px;
+      flex-shrink: 0;
+      font-size: 13px;
+      color: var(--text2);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .score-bar-track {
+      flex: 1;
+      height: 6px;
+      background: var(--bg3);
+      border-radius: 3px;
+      overflow: hidden
+    }
+
+    .score-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width .6s cubic-bezier(.34, 1.56, .64, 1)
+    }
+
+    .score-bar-val {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text3);
+      width: 50px;
+      text-align: right;
+      flex-shrink: 0
+    }
+
+    /* Tests grid */
+    .tests-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px
+    }
+
+    .test-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius2);
+      padding: 20px;
+      cursor: pointer;
+      transition: all .2s;
+      position: relative;
+      overflow: hidden;
+      animation: cardIn .4s ease-out both
+    }
+
+    .test-card:nth-child(1) {
+      animation-delay: .05s
+    }
+
+    .test-card:nth-child(2) {
+      animation-delay: .1s
+    }
+
+    .test-card:nth-child(3) {
+      animation-delay: .15s
+    }
+
+    .test-card:nth-child(4) {
+      animation-delay: .2s
+    }
+
+    .test-card:nth-child(5) {
+      animation-delay: .25s
+    }
+
+    .test-card:nth-child(6) {
+      animation-delay: .3s
+    }
+
+    .test-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      transition: opacity .2s
+    }
+
+    .test-card.revision::before {
+      background: linear-gradient(90deg, var(--amber), var(--amber2))
+    }
+
+    .test-card.theory::before {
+      background: linear-gradient(90deg, var(--teal), var(--teal2))
+    }
+
+    .test-card:hover {
+      border-color: var(--border2);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, .3)
+    }
+
+    .test-card-type {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 8px
+    }
+
+    .test-card.revision .test-card-type {
+      color: var(--amber)
+    }
+
+    .test-card.theory .test-card-type {
+      color: var(--teal)
+    }
+
+    .test-card-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 24px;
+      letter-spacing: 1px;
+      margin-bottom: 12px
+    }
+
+    .test-card-stats {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap
+    }
+
+    .test-stat {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text3)
+    }
+
+    .test-stat strong {
+      color: var(--text2);
+      display: block;
+      font-size: 14px
+    }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap
+    }
+
+    .filter-select {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 8px 12px;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+      transition: border-color .2s
+    }
+
+    .filter-select:focus {
+      border-color: var(--amber)
+    }
+
+    .filter-btn {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 8px 14px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text2);
+      cursor: pointer;
+      transition: all .15s;
+      letter-spacing: .5px
+    }
+
+    .filter-btn:hover {
+      border-color: var(--border2);
+      color: var(--text)
+    }
+
+    .filter-btn.active {
+      background: rgba(232, 160, 32, .1);
+      border-color: var(--amber);
+      color: var(--amber)
+    }
+
+    /* Student profile */
+    .student-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 24px;
+      margin-bottom: 20px;
+      padding: 24px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius2);
+      animation: cardIn .4s ease-out both
+    }
+
+    .student-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 32px;
+      background: var(--bg3);
+      border: 2px solid var(--border2)
+    }
+
+    .student-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 32px;
+      letter-spacing: 2px;
+      line-height: 1
+    }
+
+    .student-school {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 6px
+    }
+
+    .student-pills {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap
+    }
+
+    .pill {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border2);
+      color: var(--text3)
+    }
+
+    .pill.gold {
+      background: rgba(232, 160, 32, .1);
+      border-color: var(--amber);
+      color: var(--amber)
+    }
+
+    .pill.teal {
+      background: rgba(45, 212, 191, .1);
+      border-color: var(--teal);
+      color: var(--teal)
+    }
+
+    .verdict-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 18px 22px;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius2);
+      margin-bottom: 20px;
+      animation: cardIn .5s ease-out .1s both
+    }
+
+    .verdict-icon {
+      font-size: 32px;
+      flex-shrink: 0;
+      line-height: 1;
+      margin-top: 2px
+    }
+
+    .verdict-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 2px;
+      color: var(--amber);
+      margin-bottom: 4px
+    }
+
+    .verdict-text {
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.6
+    }
+
+    .insight-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px
+    }
+
+    .insight-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      position: relative;
+      overflow: hidden;
+      transition: transform .2s;
+      animation: cardIn .4s ease-out both
+    }
+
+    .insight-card:hover {
+      transform: translateY(-2px)
+    }
+
+    .insight-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px
+    }
+
+    .insight-card.amber::before {
+      background: var(--amber)
+    }
+
+    .insight-card.teal::before {
+      background: var(--teal)
+    }
+
+    .insight-card.blue::before {
+      background: var(--blue)
+    }
+
+    .insight-card.pink::before {
+      background: var(--pink)
+    }
+
+    .insight-card.green::before {
+      background: #4ade80
+    }
+
+    .insight-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: var(--text3);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 6px
+    }
+
+    .insight-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      line-height: 1;
+      margin-bottom: 2px
+    }
+
+    .insight-value.amber {
+      color: var(--amber)
+    }
+
+    .insight-value.teal {
+      color: var(--teal)
+    }
+
+    .insight-value.blue {
+      color: var(--blue)
+    }
+
+    .insight-value.pink {
+      color: var(--pink)
+    }
+
+    .insight-value.green {
+      color: #4ade80
+    }
+
+    .insight-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: var(--text3);
+      line-height: 1.4
+    }
+
+    .agg-note {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+      padding: 6px 14px;
+      background: rgba(45, 212, 191, .05);
+      border-bottom: 1px solid var(--border)
+    }
+
+    /* Global Rank Badge */
+    .global-rank-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 18px;
+      border-radius: var(--radius2);
+      margin-bottom: 16px;
+      animation: rankBadgePop .6s cubic-bezier(.34, 1.56, .64, 1) .2s both;
+      cursor: default;
+      transition: transform .2s
+    }
+
+    .global-rank-badge:hover {
+      transform: scale(1.03)
+    }
+
+    .global-rank-badge .rank-icon {
+      font-size: 28px;
+      line-height: 1;
+      flex-shrink: 0
+    }
+
+    .global-rank-badge .rank-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 36px;
+      line-height: 1
+    }
+
+    .global-rank-badge .rank-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .7;
+      margin-top: 2px
+    }
+
+    .global-rank-badge .rank-tier {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      margin-top: 1px;
+      letter-spacing: .5px
+    }
+
+    /* Rank tiers */
+    .rank-tier-1 {
+      background: linear-gradient(135deg, rgba(255, 215, 0, .15), rgba(255, 165, 0, .08));
+      border: 1px solid rgba(255, 215, 0, .4);
+      color: #ffd700
+    }
+
+    .rank-tier-2 {
+      background: linear-gradient(135deg, rgba(232, 160, 32, .15), rgba(245, 192, 96, .08));
+      border: 1px solid rgba(232, 160, 32, .4);
+      color: var(--amber)
+    }
+
+    .rank-tier-3 {
+      background: linear-gradient(135deg, rgba(45, 212, 191, .12), rgba(153, 246, 228, .06));
+      border: 1px solid rgba(45, 212, 191, .3);
+      color: var(--teal)
+    }
+
+    .rank-tier-4 {
+      background: linear-gradient(135deg, rgba(96, 165, 250, .12), rgba(96, 165, 250, .06));
+      border: 1px solid rgba(96, 165, 250, .3);
+      color: var(--blue)
+    }
+
+    .rank-tier-5 {
+      background: linear-gradient(135deg, rgba(167, 139, 250, .1), rgba(167, 139, 250, .05));
+      border: 1px solid rgba(167, 139, 250, .25);
+      color: #a78bfa
+    }
+
+    .rank-tier-6 {
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      color: var(--text3)
+    }
+
+    /* Charts */
+    .chart-wrap {
+      position: relative;
+      height: 260px
+    }
+
+    .chart-wrap.tall {
+      height: 320px
+    }
+
+    .chart-wrap.short {
+      height: 180px
+    }
+
+    /* Histogram — tighter */
+
+    .histogram {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 140px;
+      padding-top: 10px
+    }
+
+    .hist-bar {
+      flex: 1;
+      border-radius: 3px 3px 0 0;
+      position: relative;
+      cursor: pointer;
+      transition: opacity .15s, transform .15s;
+      min-height: 4px;
+      animation: cardIn .5s ease-out both
+    }
+
+    .hist-bar:hover {
+      opacity: .75;
+      transform: scaleY(1.05);
+      transform-origin: bottom
+    }
+
+    .hist-tooltip {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .15s;
+      margin-bottom: 4px;
+      z-index: 10
+    }
+
+    .hist-bar:hover .hist-tooltip {
+      opacity: 1
+    }
+
+    .row-gold td {
+      background: rgba(232, 160, 32, .05) !important
+    }
+
+    .row-gold .td-rank {
+      color: var(--amber)
+    }
+
+    /* Misc */
+    .empty {
+      padding: 48px;
+      text-align: center;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--text3)
+    }
+
+    .empty-icon {
+      font-size: 32px;
+      margin-bottom: 12px
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text2)
+    }
+
+    /* Loading */
+    #loading {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      flex-direction: column;
+      gap: 16px
+    }
+
+    .loader {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--amber);
+      border-radius: 50%;
+      animation: spin .7s linear infinite
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    .loader-text {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text3);
+      letter-spacing: 2px
+    }
+
+    .no-data-banner {
+      background: rgba(232, 160, 32, .08);
+      border: 1px solid rgba(232, 160, 32, .3);
+      border-radius: var(--radius2);
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--amber2);
+      line-height: 1.7
+    }
+
+    .no-data-banner strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 6px
+    }
+
+    /* Counter animation */
+    @keyframes countUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    .stat-value.animate {
+      animation: countUp .5s ease-out forwards
+    }
+
+    /* Mobile hamburger */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 4px;
+      background: none;
+      border: none;
+      z-index: 200
+    }
+
+    .hamburger span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--text2);
+      border-radius: 2px;
+      transition: all .3s
+    }
+
+    .hamburger.open span:nth-child(1) {
+      transform: translateY(7px) rotate(45deg)
+    }
+
+    .hamburger.open span:nth-child(2) {
+      opacity: 0
+    }
+
+    .hamburger.open span:nth-child(3) {
+      transform: translateY(-7px) rotate(-45deg)
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .6);
+      z-index: 99;
+      backdrop-filter: blur(3px)
+    }
+
+    .sidebar-overlay.open {
+      display: block
+    }
+
+    /* Top Schools collapse btn */
+    /* Expand btn: desktop hides it, shows all bars */
+    .expand-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      padding: 10px;
+      background: none;
+      border: none;
+      border-top: 1px solid var(--border);
+      cursor: pointer;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+      transition: all .15s;
+      letter-spacing: 1px
+    }
+
+    .expand-btn:hover {
+      color: var(--amber);
+      background: rgba(232, 160, 32, .04)
+    }
+
+    .expand-btn-icon {
+      transition: transform .3s
+    }
+
+    .expand-btn.expanded .expand-btn-icon {
+      transform: rotate(180deg)
+    }
+
+    /* On desktop all school bars are always visible */
+    .schools-bar-hidden {
+      display: flex !important
+    }
+
+    /* Distribution card: stretch to fill sibling height */
+    .card-dist {
+      display: flex;
+      flex-direction: column
+    }
+
+    .card-dist .card-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column
+    }
+
+    .card-dist .dist-histogram-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px
+    }
+
+    .card-dist .histogram {
+      flex: 1;
+      min-height: 80px;
+      padding-top: 10px
+    }
+
+    /* Top 10 sort btn */
+    .t10-sort-btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 1px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: var(--bg3);
+      color: var(--text3);
+      cursor: pointer;
+      transition: all .15s
+    }
+
+    .t10-sort-btn:hover {
+      border-color: var(--border2);
+      color: var(--text2)
+    }
+
+    .t10-sort-btn.active {
+      border-color: var(--amber);
+      color: var(--amber);
+      background: rgba(232, 160, 32, .08)
+    }
+
+    /* Keyboard shortcut hint */
+    .kbd-hint {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: var(--text3);
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 1px 5px;
+      letter-spacing: .5px
+    }
+
+    /* School rows */
+    .school-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background .1s, transform .15s
+    }
+
+    .school-row:last-child {
+      border-bottom: none
+    }
+
+    .school-row:hover {
+      background: var(--bg3);
+      transform: translateX(3px)
+    }
+
+    .school-rank-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 24px;
+      color: var(--text3);
+      width: 36px;
+      text-align: right;
+      flex-shrink: 0
+    }
+
+    .school-name {
+      font-size: 15px;
+      color: var(--text);
+      flex: 1
+    }
+
+    .school-bar-wrap {
+      width: 180px;
+      flex-shrink: 0
+    }
+
+    .school-count {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text3);
+      width: 60px;
+      text-align: right;
+      flex-shrink: 0
+    }
+
+    .school-avg {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+      color: var(--amber);
+      width: 50px;
+      text-align: right;
+      flex-shrink: 0
+    }
+
+    /* Histogram */
+    .hist-bar:nth-child(1) {
+      animation-delay: .05s
+    }
+
+    .hist-bar:nth-child(2) {
+      animation-delay: .08s
+    }
+
+    .hist-bar:nth-child(3) {
+      animation-delay: .11s
+    }
+
+    .hist-bar:nth-child(4) {
+      animation-delay: .14s
+    }
+
+    .hist-bar:nth-child(5) {
+      animation-delay: .17s
+    }
+
+    .hist-bar:nth-child(6) {
+      animation-delay: .2s
+    }
+
+    .hist-bar:nth-child(7) {
+      animation-delay: .23s
+    }
+
+    .hist-bar:nth-child(8) {
+      animation-delay: .26s
+    }
+
+    .hist-bar:nth-child(9) {
+      animation-delay: .29s
+    }
+
+    .hist-bar:nth-child(10) {
+      animation-delay: .32s
+    }
+
+    .hist-bar:nth-child(11) {
+      animation-delay: .35s
+    }
+
+    .hist-bar:nth-child(12) {
+      animation-delay: .38s
+    }
+
+    /* ── MOBILE RESPONSIVE ── */
+    @media(max-width:768px) {
+      .sidebar {
+        transform: translateX(-100%)
+      }
+
+      .sidebar.open {
+        transform: translateX(0)
+      }
+
+      .main {
+        margin-left: 0
+      }
+
+      .content {
+        padding: 14px
+      }
+
+      .topbar {
+        padding: 12px 16px
+      }
+
+      .page-title {
+        font-size: 20px;
+        letter-spacing: 2px
+      }
+
+      .search-input {
+        width: 160px
+      }
+
+      .hamburger {
+        display: flex
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px
+      }
+
+      .stat-value {
+        font-size: 32px
+      }
+
+      .two-col {
+        grid-template-columns: 1fr
+      }
+
+      .three-col {
+        grid-template-columns: 1fr
+      }
+
+      .podium {
+        gap: 6px;
+        padding: 16px 8px 8px
+      }
+
+      .podium-slot:nth-child(2) .podium-avatar {
+        width: 52px;
+        height: 52px;
+        font-size: 22px
+      }
+
+      .podium-slot:nth-child(2) .podium-marks {
+        font-size: 28px
+      }
+
+      .student-header {
+        flex-direction: column;
+        gap: 14px
+      }
+
+      .student-avatar {
+        width: 54px;
+        height: 54px;
+        font-size: 24px
+      }
+
+      .student-name {
+        font-size: 24px
+      }
+
+      .insight-grid {
+        grid-template-columns: repeat(2, 1fr)
+      }
+
+      .filter-bar {
+        gap: 8px
+      }
+
+      .filter-select,
+      .filter-btn {
+        font-size: 11px;
+        padding: 7px 10px
+      }
+
+      .school-bar-wrap {
+        display: none
+      }
+
+      .tdd-btn {
+        min-width: 140px
+      }
+
+      thead th {
+        padding: 8px 10px;
+        font-size: 9px
+      }
+
+      tbody td {
+        padding: 8px 10px;
+        font-size: 13px
+      }
+
+      .td-marks,
+      .td-avg {
+        font-size: 16px
+      }
+
+      .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px
+      }
+
+      /* Show expand button on mobile; hidden bars collapse */
+      .expand-btn {
+        display: flex
+      }
+
+      .schools-bar-hidden {
+        display: none !important
+      }
+
+      .schools-bar-hidden.visible-mobile {
+        display: flex !important
+      }
+    }
+
+    @media(max-width:480px) {
+      .stats-grid {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .stat-value {
+        font-size: 28px
+      }
+
+      .search-input {
+        width: 130px;
+        font-size: 11px
+      }
+
+      .podium-name {
+        font-size: 11px
+      }
+
+      .two-col,
+      .three-col {
+        gap: 12px
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="loading">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;color:var(--amber)">RESULTS</div>
+    <div class="loader"></div>
+    <div class="loader-text">LOADING…</div>
+  </div>
+
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <div class="shell" id="app" style="display:none">
+    <aside class="sidebar" id="sidebar">
+      <div class="logo">
+        <div class="logo-title">Results<br>Dashboard</div>
+        <div class="logo-sub">Applied Mathematics · Galle</div>
+      </div>
+      <nav>
+        <div class="nav-section">Overview</div>
+        <div class="nav-item active" onclick="navigate('dashboard');closeSidebar()"><span class="nav-icon">◈</span>
+          Dashboard</div>
+        <div class="nav-section">Data</div>
+        <div class="nav-item" onclick="navigate('tests');closeSidebar()"><span class="nav-icon">▦</span> All Tests</div>
+        <div class="nav-item" onclick="navigate('leaderboard');closeSidebar()"><span class="nav-icon">◉</span>
+          Leaderboard</div>
+        <div class="nav-section">Analysis</div>
+        <div class="nav-item" onclick="navigate('students');closeSidebar()"><span class="nav-icon">◎</span> Students
+        </div>
+        <div class="nav-item" onclick="navigate('schools');closeSidebar()"><span class="nav-icon">▤</span> Schools</div>
+        <div class="nav-item" onclick="navigate('analytics');closeSidebar()"><span class="nav-icon">▲</span> Analytics
+        </div>
+      </nav>
+      <div class="sidebar-footer" id="sidebar-footer">—</div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+            <span></span><span></span><span></span>
+          </button>
+          <div class="page-title" id="page-title">DASHBOARD</div>
+        </div>
+        <div class="search-wrap">
+          <input class="search-input" id="global-search" placeholder="Search… (/ to focus)" autocomplete="off">
+          <div class="search-results" id="search-results"></div>
+        </div>
+      </header>
+
+      <div class="content">
+
+        <!-- DASHBOARD -->
+        <div class="page active" id="page-dashboard">
+          <div id="no-data-msg" style="display:none" class="no-data-banner">
+            <strong>⚠ No data loaded</strong>
+            Run <code>python3 parse_pdfs.py</code> in your project folder to generate <code>data/results.js</code>,
+            then refresh this page. Serve via a local server: <code>python3 -m http.server 8080</code>
+          </div>
+          <div class="stats-grid" id="overview-stats"></div>
+          <div class="two-col">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">🏆 Top Performers</div>
+                <div id="podium-sel" class="tdd-wrap"></div>
+              </div>
+              <div id="podium-wrap"></div>
+            </div>
+            <div class="card card-dist">
+              <div class="card-header">
+                <div class="card-title">📊 Score Distribution</div>
+                <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)" id="dist-label"></div>
+              </div>
+              <div class="card-body">
+                <div class="dist-histogram-wrap">
+                  <div id="dist-histogram" class="histogram"></div>
+                  <div
+                    style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);display:flex;justify-content:space-between;flex-shrink:0">
+                    <span id="dist-min">40</span><span>score range</span><span id="dist-max">100</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="two-col">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">🏫 Top Schools (by entries)</div>
+                <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">All Tests</div>
+              </div>
+              <div id="top-schools-bar-wrap">
+                <div class="card-body" id="top-schools-bar" style="padding-bottom:0"></div>
+                <button class="expand-btn" id="schools-expand-btn" onclick="toggleSchoolsExpand()">
+                  <span id="schools-expand-label">Show more</span>
+                  <span class="expand-btn-icon">▾</span>
+                </button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">📈 Tests Overview</div>
+              </div>
+              <div class="card-body">
+                <div class="chart-wrap"><canvas id="tests-chart"></canvas></div>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:24px">
+            <div class="card-header">
+              <div class="card-title">⭐ Top 10</div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div id="top10-sel" class="tdd-wrap"></div>
+                <button class="t10-sort-btn active" id="t10-rank-btn" onclick="setTop10Sort('rank',this)">By
+                  Rank</button>
+                <button class="t10-sort-btn" id="t10-avg-btn" onclick="setTop10Sort('avg',this)">By Avg</button>
+              </div>
+            </div>
+            <div class="table-wrap" id="top10-table"></div>
+          </div>
+        </div>
+
+        <!-- ALL TESTS -->
+        <div class="page" id="page-tests">
+          <div class="filter-bar">
+            <div class="filter-btn active" onclick="filterTests('all',this)">All</div>
+            <div class="filter-btn" onclick="filterTests('theory',this)">Theory Tests</div>
+            <div class="filter-btn" onclick="filterTests('revision',this)">Revision Tests</div>
+          </div>
+          <div class="tests-grid" id="tests-grid"></div>
+        </div>
+
+        <!-- LEADERBOARD -->
+        <div class="page" id="page-leaderboard">
+          <div class="filter-bar" style="flex-wrap:wrap;gap:8px">
+            <div id="lb-sel" class="tdd-wrap"></div>
+          </div>
+          <div class="filter-bar">
+            <select class="filter-select" id="lb-school" onchange="lbPage=1;renderLeaderboard()">
+              <option value="">All Schools</option>
+            </select>
+            <div class="filter-btn active" id="lb-g-all" onclick="setLbGender('',this)">All Genders</div>
+            <div class="filter-btn" id="lb-g-b" onclick="setLbGender('B',this)">Boys</div>
+            <div class="filter-btn" id="lb-g-g" onclick="setLbGender('G',this)">Girls</div>
+            <input class="search-input" id="lb-name" placeholder="Filter by name…"
+              oninput="lbPage=1;renderLeaderboard()" style="width:200px">
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title" id="lb-title">Leaderboard</div>
+              <div class="chip" id="lb-count">—</div>
+            </div>
+            <div id="lb-agg-note" class="agg-note" style="display:none">
+              <strong>Rating</strong> is a difficulty-adjusted skill score (0–100). Each result is z-score normalised
+              per exam, then a Bayesian confidence penalty pulls low-test-count students toward average. <strong>Rank
+                (#)</strong> always reflects global standing — it doesn't change when you filter.
+            </div>
+            <div class="table-wrap" id="lb-table"></div>
+            <div style="padding:0 20px 16px" id="lb-pager"></div>
+          </div>
+        </div>
+
+        <!-- STUDENTS -->
+        <div class="page" id="page-students">
+          <div class="filter-bar">
+            <input class="search-input" id="stu-search" placeholder="Type a student name…" oninput="searchStudents()"
+              style="width:320px">
+            <select class="filter-select" id="stu-school" onchange="searchStudents()">
+              <option value="">All Schools</option>
+            </select>
+            <div class="filter-btn active" id="stu-g-all" onclick="setStuGender('',this)">All</div>
+            <div class="filter-btn" id="stu-g-b" onclick="setStuGender('B',this)">Boys</div>
+            <div class="filter-btn" id="stu-g-g" onclick="setStuGender('G',this)">Girls</div>
+          </div>
+          <div id="stu-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px">
+          </div>
+          <div id="stu-profile" style="display:none"></div>
+        </div>
+
+        <!-- SCHOOLS -->
+        <div class="page" id="page-schools">
+          <div class="filter-bar">
+            <select class="filter-select" id="school-test" onchange="renderSchools()">
+              <option value="all">All Tests</option>
+            </select>
+            <div class="filter-btn" id="ss-count" onclick="setSchoolSort('count',this)">By Students</div>
+            <div class="filter-btn active" id="ss-avg" onclick="setSchoolSort('avg',this)">By Avg Score</div>
+            <div class="filter-btn" id="ss-top" onclick="setSchoolSort('elite',this)">By Elite Score</div>
+          </div>
+          <div class="two-col">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">School Rankings</div>
+                <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)">Avg is Bayesian-adjusted
+                </div>
+              </div>
+              <div class="card-body" style="max-height:560px;overflow-y:auto" id="school-list"></div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title" id="school-detail-title">School Detail</div>
+              </div>
+              <div class="card-body" id="school-detail">
+                <div class="empty">
+                  <div class="empty-icon">🏫</div>Click a school to explore
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ANALYTICS -->
+        <div class="page" id="page-analytics">
+          <div class="three-col">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Gender Split</div>
+              </div>
+              <div class="card-body">
+                <div class="chart-wrap short"><canvas id="gender-chart"></canvas></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Score Bands</div>
+              </div>
+              <div class="card-body">
+                <div class="chart-wrap short"><canvas id="bands-chart"></canvas></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Test Summaries</div>
+              </div>
+              <div class="card-body" id="test-summary-list" style="max-height:180px;overflow-y:auto"></div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:24px">
+            <div class="card-header">
+              <div class="card-title">Average Score Per Test</div>
+              <div style="display:flex;gap:8px">
+                <div class="filter-btn active" id="at-all" onclick="setAvgType('all',this)">All</div>
+                <div class="filter-btn" id="at-thy" onclick="setAvgType('theory',this)">Theory</div>
+                <div class="filter-btn" id="at-rev" onclick="setAvgType('revision',this)">Revision</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="chart-wrap tall"><canvas id="avg-chart"></canvas></div>
+            </div>
+          </div>
+          <div class="two-col">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Top 10 Schools — Average Score</div>
+              </div>
+              <div class="card-body">
+                <div class="chart-wrap"><canvas id="school-avg-chart"></canvas></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Participants Per Test</div>
+              </div>
+              <div class="card-body">
+                <div class="chart-wrap"><canvas id="participant-chart"></canvas></div>
+              </div>
+            </div>
+          </div>
+          <div class="two-col">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Boys vs Girls — Avg Score Per Test</div>
+              </div>
+              <div class="card-body">
+                <div class="chart-wrap"><canvas id="gender-trend-chart"></canvas></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Score Spread (Min / Avg / Max)</div>
+              </div>
+              <div class="card-body">
+                <div class="chart-wrap"><canvas id="spread-chart"></canvas></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-title"></div>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <style>
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .7);
+      backdrop-filter: blur(4px);
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all
+    }
+
+    .modal {
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius2);
+      width: min(860px, 94vw);
+      max-height: 88vh;
+      overflow-y: auto;
+      transform: translateY(20px);
+      transition: transform .2s
+    }
+
+    .modal-overlay.open .modal {
+      transform: translateY(0)
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      background: var(--bg2);
+      z-index: 1
+    }
+
+    .modal-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 26px;
+      letter-spacing: 2px
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text3);
+      font-size: 22px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 2px 6px;
+      transition: color .15s
+    }
+
+    .modal-close:hover {
+      color: var(--text)
+    }
+
+    .modal-body {
+      padding: 24px
+    }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0 0;
+      border-top: 1px solid var(--border)
+    }
+
+    .page-info {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text3)
+    }
+
+    .page-btns {
+      display: flex;
+      gap: 6px
+    }
+
+    .page-btn {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 6px 12px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text2);
+      cursor: pointer;
+      transition: all .15s
+    }
+
+    .page-btn:hover {
+      border-color: var(--border2);
+      color: var(--text)
+    }
+
+    .page-btn.active {
+      background: rgba(232, 160, 32, .1);
+      border-color: var(--amber);
+      color: var(--amber)
+    }
+
+    .page-btn:disabled {
+      opacity: .35;
+      pointer-events: none
+    }
+  </style>
+
+  <script>
+    // ═══════════════════════════════════════════════════
+    //  CONSTANTS
+    // ═══════════════════════════════════════════════════
+    const GEN_MALE = 'B';
+    const GEN_FEMALE = 'G';
+
+    // ═══════════════════════════════════════════════════
+    //  STATE
+    // ═══════════════════════════════════════════════════
+    let EXAMS = [];
+    let ALL = [];
+    let SCHOOLS = [];
+    let CHARTS = {};
+    let _globalMean = 70; // will be computed
+
+    // Leaderboard
+    let lbPage = 1;
+    let lbGender = '';
+    let lbTestId = 'all';
+    let lbSortField = 'rating';
+    let lbSortAsc = false;
+
+    // Dashboard
+    let podiumTestId = 'all';
+    let top10TestId = 'all';
+    let top10SortField = 'rank';
+    let top10SortAsc = true;
+    let _schoolsExpanded = false;
+
+    // Students
+    let stuGender = '';
+
+    // Schools
+    let schoolSort = 'avg';
+    let schoolData = {};
+
+    // Analytics
+    let avgType = 'all';
+
+    // Global rank cache
+    let _globalRankMap = {};
+
+    // ═══════════════════════════════════════════════════
+    //  DATA LOADING
+    // ═══════════════════════════════════════════════════
+    function loadData() {
+      if (window.resultsData && window.resultsData.exams && window.resultsData.exams.length) {
+        EXAMS = window.resultsData.exams;
+      } else {
+        EXAMS = [];
+      }
+
+      // Sort: Theory first (by number), then Revision (by number)
+      EXAMS.sort((a, b) => {
+        if (a.type === b.type) return (a.number || 0) - (b.number || 0);
+        return a.type === 'theory' ? -1 : 1;
+      });
+
+      ALL = [];
+      for (const exam of EXAMS) {
+        for (const s of (exam.students || [])) {
+          let g = (s.gender || 'U').toUpperCase();
+          if (g === 'M') g = 'B';
+          if (g === 'F') g = 'G';
+          ALL.push({ ...s, gender: g, exam_id: exam.id, exam_label: exam.label, exam_type: exam.type });
+        }
+      }
+
+      SCHOOLS = [...new Set(ALL.map(r => r.school).filter(Boolean))].sort();
+
+      // Compute global mean for Bayesian smoothing
+      if (ALL.length) {
+        _globalMean = ALL.reduce((s, r) => s + r.marks, 0) / ALL.length;
+      }
+
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('app').style.display = 'flex';
+
+      if (!EXAMS.length) {
+        document.getElementById('no-data-msg').style.display = 'block';
+      }
+
+      initUI();
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  MOBILE SIDEBAR
+    // ═══════════════════════════════════════════════════
+    function toggleSidebar() {
+      const sb = document.getElementById('sidebar');
+      const hb = document.getElementById('hamburger');
+      const ov = document.getElementById('sidebar-overlay');
+      const open = sb.classList.toggle('open');
+      hb.classList.toggle('open', open);
+      ov.classList.toggle('open', open);
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('hamburger').classList.remove('open');
+      document.getElementById('sidebar-overlay').classList.remove('open');
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  NAVIGATION
+    // ═══════════════════════════════════════════════════
+    const PAGE_TITLES = {
+      dashboard: 'DASHBOARD', tests: 'ALL TESTS', leaderboard: 'LEADERBOARD',
+      students: 'STUDENT LOOKUP', schools: 'SCHOOL ANALYSIS', analytics: 'ANALYTICS'
+    };
+
+    function navigate(page) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('page-' + page).classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(n => {
+        if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + page + "'")) {
+          n.classList.add('active');
+        }
+      });
+      document.getElementById('page-title').textContent = PAGE_TITLES[page] || page.toUpperCase();
+      if (page === 'analytics') setTimeout(renderAnalytics, 50);
+      if (page === 'schools') renderSchools();
+      if (page === 'leaderboard') renderLeaderboard();
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  INIT
+    // ═══════════════════════════════════════════════════
+    function initUI() {
+      populateSelects();
+      buildExamStats();
+      buildStuRegistry();
+      buildTestDropdowns();
+      buildGlobalRankMap();
+      renderOverviewStats();
+      renderPodium();
+      renderTop10();
+      renderDistribution();
+      renderTopSchoolsBars();
+      renderTestsChart();
+      renderTestsGrid();
+      renderLeaderboard();
+      populateStudentFilters();
+      searchStudents();
+      document.getElementById('sidebar-footer').innerHTML =
+        `<div>${EXAMS.length} test${EXAMS.length !== 1 ? 's' : ''} loaded</div>` +
+        `<div>${ALL.length.toLocaleString()} entries</div>`;
+    }
+
+    function populateSelects() {
+      ['lb-school', 'stu-school', 'school-test'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const firstOpt = el.options[0] ? el.options[0].outerHTML : '';
+        el.innerHTML = firstOpt;
+        if (id === 'school-test') {
+          EXAMS.forEach(e => { el.innerHTML += `<option value="${esc(e.id)}">${e.label}</option>`; });
+        } else {
+          SCHOOLS.forEach(s => { el.innerHTML += `<option value="${esc(s)}">${s}</option>`; });
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  GLOBAL RANK MAP
+    // ═══════════════════════════════════════════════════
+    function buildGlobalRankMap() {
+      if (!ALL.length) return;
+      const all = aggregateByStudent(ALL);
+      all.sort((a, b) => b.rating - a.rating);
+      _globalRankMap = {};
+      all.forEach((s, i) => {
+        _globalRankMap[s.name + '\x00' + s.school] = i + 1;
+      });
+    }
+
+    function globalRank(name, school) {
+      return _globalRankMap[name + '\x00' + school] || '—';
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  TEST DROPDOWN SELECTOR
+    // ═══════════════════════════════════════════════════
+    const TDD_CONFIGS = {
+      'podium-sel': { get: () => podiumTestId, set: (id) => { podiumTestId = id; renderPodium(); renderDistribution(); } },
+      'top10-sel': { get: () => top10TestId, set: (id) => { top10TestId = id; top10SortField = 'rank'; top10SortAsc = true; renderTop10(); syncTop10Btns(); } },
+      'lb-sel': { get: () => lbTestId, set: (id) => { lbTestId = id; lbPage = 1; renderLeaderboard(); } },
+    };
+
+    function buildTestDropdowns() {
+      Object.keys(TDD_CONFIGS).forEach(id => buildOneDropdown(id));
+      document.addEventListener('click', ev => {
+        if (!ev.target.closest('.tdd-wrap') && !ev.target.closest('.tdd-panel')) closeAllDropdowns();
+      });
+      window.addEventListener('scroll', closeAllDropdowns, true);
+      window.addEventListener('resize', closeAllDropdowns);
+    }
+
+    function buildOneDropdown(cid) {
+      const el = document.getElementById(cid);
+      if (!el) return;
+      const sid = TDD_CONFIGS[cid].get();
+      const exam = EXAMS.find(x => x.id === sid);
+      const dot = sid === 'all' ? 'var(--blue)' : exam?.type === 'revision' ? 'var(--amber)' : 'var(--teal)';
+      const label = sid === 'all' ? 'All Tests' : (exam?.label || sid);
+      el.innerHTML = `<div class="tdd-btn" id="${cid}-btn" onclick="toggleDropdown('${cid}',event)">
+    <div class="tdd-dot" style="background:${dot}"></div>
+    <span class="tdd-label">${label}</span>
+    <span class="tdd-arrow">▾</span>
+  </div>`;
+      let panel = document.getElementById(cid + '-panel');
+      if (!panel) { panel = document.createElement('div'); panel.id = cid + '-panel'; panel.className = 'tdd-panel'; document.body.appendChild(panel); }
+      panel.innerHTML = buildPanelHTML(cid, sid);
+    }
+
+    function buildPanelHTML(cid, sid) {
+      // Theory first, then revision
+      const thy = EXAMS.filter(e => e.type === 'theory');
+      const rev = EXAMS.filter(e => e.type === 'revision');
+      const sub = e => { const m = e.students.map(s => s.marks); return `${e.students.length} students · avg ${m.length ? (m.reduce((a, b) => a + b) / m.length).toFixed(1) : '—'}`; };
+      const opt = (e, col) => `<div class="tdd-option ${sid === e.id ? 'selected' : ''}" onclick="selectTest('${cid}','${esc(e.id)}')">
+    <div class="tdd-option-dot" style="background:${col}"></div>
+    <div class="tdd-option-text"><div class="tdd-option-name">${e.label}</div><div class="tdd-option-sub">${sub(e)}</div></div>
+    <span class="tdd-check">✓</span></div>`;
+      return `
+  <div class="tdd-all-row"><div class="tdd-option ${sid === 'all' ? 'selected' : ''}" onclick="selectTest('${cid}','all')">
+    <div class="tdd-option-dot" style="background:var(--blue)"></div>
+    <div class="tdd-option-text"><div class="tdd-option-name">All Tests</div><div class="tdd-option-sub">${EXAMS.length} tests · aggregated averages</div></div>
+    <span class="tdd-check">✓</span></div></div>
+  <div class="tdd-cols-wrap">
+    <div class="tdd-col"><div class="tdd-col-head" style="color:var(--teal)">Theory (${thy.length})</div>
+      <div class="tdd-col-scroll">${thy.length ? thy.map(e => opt(e, 'var(--teal)')).join('') : '<div style="padding:10px 12px;font-family:DM Mono,monospace;font-size:10px;color:var(--text3)">None loaded</div>'}</div></div>
+    <div class="tdd-col"><div class="tdd-col-head" style="color:var(--amber)">Revision (${rev.length})</div>
+      <div class="tdd-col-scroll">${rev.length ? rev.map(e => opt(e, 'var(--amber)')).join('') : '<div style="padding:10px 12px;font-family:DM Mono,monospace;font-size:10px;color:var(--text3)">None loaded</div>'}</div></div>
+  </div>`;
+    }
+
+    function selectTest(cid, examId) {
+      TDD_CONFIGS[cid].set(examId);
+      closeAllDropdowns();
+      buildOneDropdown(cid);
+    }
+
+    function toggleDropdown(cid, ev) {
+      if (ev) ev.stopPropagation();
+      const btn = document.getElementById(cid + '-btn');
+      const panel = document.getElementById(cid + '-panel');
+      if (!btn || !panel) return;
+      const wasOpen = panel.classList.contains('open');
+      closeAllDropdowns();
+      if (!wasOpen) {
+        const rect = btn.getBoundingClientRect();
+        const rev = EXAMS.filter(e => e.type === 'revision').length;
+        const thy = EXAMS.filter(e => e.type === 'theory').length;
+        const rowH = 40, allRowH = 44, headH = 28;
+        const colH = Math.min(Math.max(rev, thy, 1) * rowH + headH, 260);
+        const totalH = allRowH + colH;
+        const W = 420;
+        const spaceB = window.innerHeight - rect.bottom - 8;
+        const top = spaceB >= totalH ? rect.bottom + 4 : rect.top - totalH - 4;
+        const left = Math.max(8, Math.min(rect.left, window.innerWidth - W - 8));
+        panel.style.cssText = `top:${top}px;left:${left}px;width:${W}px;height:${totalH}px`;
+        panel.classList.add('open');
+        btn.classList.add('open');
+      }
+    }
+
+    function closeAllDropdowns() {
+      document.querySelectorAll('.tdd-panel.open').forEach(p => p.classList.remove('open'));
+      document.querySelectorAll('.tdd-btn.open').forEach(b => b.classList.remove('open'));
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  FAIR RANKING ENGINE
+    // ═══════════════════════════════════════════════════
+    const BAYES_C = 4;
+    let _examStats = {};
+
+    function buildExamStats() {
+      _examStats = {};
+      EXAMS.forEach(e => {
+        const m = e.students.map(s => s.marks);
+        if (!m.length) return;
+        const mean = m.reduce((a, b) => a + b, 0) / m.length;
+        const stdev = Math.sqrt(m.reduce((s, v) => s + (v - mean) ** 2, 0) / m.length) || 1;
+        _examStats[e.id] = { mean, stdev };
+      });
+    }
+
+    function examZ(examId, mark) {
+      const st = _examStats[examId];
+      if (!st) return 0;
+      return (mark - st.mean) / st.stdev;
+    }
+
+    function zToRating(z) { return Math.round(Math.min(100, Math.max(0, 50 + z * 15)) * 10) / 10; }
+
+    function _ns(s) { return String(s).replace(/\\/g, '\\\\').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/\n/g, '\\n'); }
+
+    function aggregateByStudent(data) {
+      const map = {};
+      data.forEach(r => {
+        const key = r.name + '||' + r.school;
+        if (!map[key]) map[key] = { name: r.name, school: r.school, gender: r.gender, rows: [] };
+        map[key].rows.push(r);
+      });
+      return Object.values(map).map(s => {
+        const mList = s.rows.map(r => r.marks);
+        const rawAvg = mList.reduce((a, b) => a + b, 0) / mList.length;
+        const zSum = s.rows.reduce((acc, r) => acc + examZ(r.exam_id, r.marks), 0);
+        const N = s.rows.length;
+        const skillZ = zSum / (BAYES_C + N);
+        return {
+          name: s.name,
+          school: s.school,
+          gender: s.gender,
+          marks: parseFloat(rawAvg.toFixed(1)),
+          rating: zToRating(skillZ),
+          skillZ,
+          best: Math.max(...mList),
+          rank: Math.min(...s.rows.map(r => r.rank)),
+          tests: N,
+          examList: s.rows.map(r => ({ label: r.exam_label, marks: r.marks, rank: r.rank, z: examZ(r.exam_id, r.marks) }))
+        };
+      });
+    }
+
+    function getTopByAverage(data, n = 3) {
+      return aggregateByStudent(data)
+        .sort((a, b) => b.skillZ - a.skillZ)
+        .slice(0, n);
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  RANK TIER HELPER
+    // ═══════════════════════════════════════════════════
+    function getRankTier(rank, totalStudents) {
+      if (rank === 1) return { tier: 1, icon: '🥇', label: 'Rank #1 — Champion', tierClass: 'rank-tier-1' };
+      if (rank <= 3) return { tier: 1, icon: '🏆', label: `Top 3`, tierClass: 'rank-tier-1' };
+      if (rank <= 10) return { tier: 2, icon: '⭐', label: `Top 10`, tierClass: 'rank-tier-2' };
+      if (rank <= 25) return { tier: 2, icon: '🔥', label: `Top 25`, tierClass: 'rank-tier-2' };
+      const pct = totalStudents > 0 ? (rank / totalStudents) * 100 : 100;
+      if (pct <= 10) return { tier: 3, icon: '💎', label: `Top 10%`, tierClass: 'rank-tier-3' };
+      if (pct <= 25) return { tier: 4, icon: '🌟', label: `Top 25%`, tierClass: 'rank-tier-4' };
+      if (pct <= 50) return { tier: 5, icon: '📈', label: `Top Half`, tierClass: 'rank-tier-5' };
+      return { tier: 6, icon: '📊', label: `Ranked`, tierClass: 'rank-tier-6' };
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  TOP SCHOOLS — EXPAND/COLLAPSE
+    // ═══════════════════════════════════════════════════
+    function toggleSchoolsExpand() {
+      _schoolsExpanded = !_schoolsExpanded;
+      const btn = document.getElementById('schools-expand-btn');
+      const label = document.getElementById('schools-expand-label');
+      btn.classList.toggle('expanded', _schoolsExpanded);
+      label.textContent = _schoolsExpanded ? 'Show less' : 'Show more';
+      document.querySelectorAll('.schools-bar-hidden').forEach(el => {
+        el.classList.toggle('visible-mobile', _schoolsExpanded);
+      });
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  DASHBOARD
+    // ═══════════════════════════════════════════════════
+    function renderOverviewStats() {
+      if (!EXAMS.length) { document.getElementById('overview-stats').innerHTML = ''; return; }
+      const total = ALL.length;
+      const unique = new Set(ALL.map(r => r.name + '||' + r.school)).size;
+      const avg = total ? (ALL.reduce((s, r) => s + r.marks, 0) / total).toFixed(1) : 0;
+      const top = total ? Math.max(...ALL.map(r => r.marks)) : 0;
+      const revs = EXAMS.filter(x => x.type === 'revision').length;
+      const thys = EXAMS.filter(x => x.type === 'theory').length;
+      const cards = [
+        { label: 'Tests Loaded', value: EXAMS.length, color: 'amber', sub: `${thys} theory · ${revs} revision` },
+        { label: 'Total Entries', value: total, color: 'blue', sub: 'across all tests', fmt: true },
+        { label: 'Unique Students', value: unique, color: 'teal', sub: 'name + school', fmt: true },
+        { label: 'Schools', value: SCHOOLS.length, color: 'pink', sub: 'participating' },
+        { label: 'Average Score', value: avg, color: 'amber', sub: 'all tests combined' },
+        { label: 'Top Score', value: top, color: 'blue', sub: 'highest recorded' },
+      ];
+      document.getElementById('overview-stats').innerHTML = cards.map((c, i) => `
+    <div class="stat-card">
+      <div class="stat-label">${c.label}</div>
+      <div class="stat-value ${c.color}" data-target="${c.value}" style="animation-delay:${i * 60}ms">${c.fmt ? c.value.toLocaleString() : c.value}</div>
+      <div class="stat-sub">${c.sub}</div>
+    </div>`).join('');
+      animateCounters();
+    }
+
+    function animateCounters() {
+      document.querySelectorAll('.stat-value[data-target]').forEach(el => {
+        const target = parseFloat(el.dataset.target);
+        if (isNaN(target) || target < 10) return;
+        const isFloat = String(target).includes('.');
+        const dur = 900, start = performance.now();
+        const from = target * 0.3;
+        function step(now) {
+          const p = Math.min((now - start) / dur, 1);
+          const ease = 1 - Math.pow(1 - p, 3);
+          const v = from + (target - from) * ease;
+          el.textContent = isFloat ? v.toFixed(1) : Math.round(v).toLocaleString();
+          if (p < 1) requestAnimationFrame(step);
+          else el.textContent = isFloat ? target.toFixed(1) : target.toLocaleString();
+        }
+        requestAnimationFrame(step);
+      });
+    }
+
+    function renderPodium() {
+      const wrap = document.getElementById('podium-wrap');
+      if (!EXAMS.length) { wrap.innerHTML = '<div class="empty"><div class="empty-icon">🏆</div>No data</div>'; return; }
+
+      let top3;
+      let isAvg = podiumTestId === 'all';
+
+      if (isAvg) {
+        top3 = getTopByAverage(ALL, 3);
+      } else {
+        const exam = EXAMS.find(x => x.id === podiumTestId);
+        if (!exam) { wrap.innerHTML = '<div class="empty"><div class="empty-icon">🏆</div>No data</div>'; return; }
+        top3 = [...exam.students].sort((a, b) => b.marks - a.marks).slice(0, 3);
+      }
+      if (!top3.length) { wrap.innerHTML = '<div class="empty"><div class="empty-icon">🏆</div>No data</div>'; return; }
+
+      const order = top3.length === 3 ? [top3[1], top3[0], top3[2]] : top3;
+      const medals = ['🥈', '🥇', '🥉'];
+      const ini = n => (n || '').split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
+
+      wrap.innerHTML = `
+    ${isAvg ? '<div style="text-align:center;font-family:DM Mono,monospace;font-size:10px;color:var(--teal);padding:8px 0 0;letter-spacing:1px">RANKED BY SKILL RATING · SPOTLIGHT ON AVERAGE SCORE</div>' : ''}
+    <div class="podium">
+      ${order.map((s, i) => `
+        <div class="podium-slot" onclick="navToStudent('${_ns(s.name)}','${_ns(s.school)}')">
+          <div class="podium-avatar">${ini(s.name)}</div>
+          <div class="podium-name">${s.name}</div>
+          <div class="podium-school">${s.school}</div>
+          <div class="podium-marks">${isAvg ? s.marks.toFixed(1) : s.marks}</div>
+          ${isAvg ? `<div class="podium-rating-badge">⬡ ${s.rating} rating</div>` : ''}
+          <div class="podium-rank">${medals[i]} ${isAvg ? 'AVG · ' + (s.tests || '') + ' tests' : 'SCORE'}</div>
+          <div class="podium-bar"></div>
+        </div>`).join('')}
+    </div>`;
+    }
+
+    function renderDistribution() {
+      let data;
+      if (podiumTestId === 'all') {
+        data = ALL;
+        document.getElementById('dist-label').textContent = 'All Tests';
+      } else {
+        const exam = EXAMS.find(x => x.id === podiumTestId);
+        data = exam ? exam.students : ALL;
+        document.getElementById('dist-label').textContent = exam ? exam.label : '';
+      }
+      const STEP = 5;
+      const bins = {};
+      for (let i = 40; i <= 100; i += STEP) bins[i] = 0;
+      data.forEach(r => { const b = Math.floor(r.marks / STEP) * STEP; if (b in bins) bins[b]++; });
+      const maxV = Math.max(...Object.values(bins));
+      const colors = ['#60a5fa', '#818cf8', '#a78bfa', '#c084fc', '#e879f9', '#f472b6', '#fb7185', '#f97316', '#fb923c', '#fbbf24', '#f59e0b', '#d97706'];
+      let ci = 0;
+      document.getElementById('dist-histogram').innerHTML = Object.entries(bins).map(([s, count]) => {
+        const pct = maxV > 0 ? count / maxV * 100 : 0;
+        const col = colors[ci++ % colors.length];
+        return `<div class="hist-bar" style="height:${Math.max(pct, 2)}%;background:${col}20;border:1px solid ${col}40">
+      <div class="hist-tooltip">${s}–${+s + STEP - 1}: ${count}</div></div>`;
+      }).join('');
+      const marks = data.map(r => r.marks);
+      if (marks.length) {
+        document.getElementById('dist-min').textContent = Math.min(...marks);
+        document.getElementById('dist-max').textContent = Math.max(...marks);
+      }
+    }
+
+    function renderTopSchoolsBars() {
+      const counts = {};
+      ALL.forEach(r => { counts[r.school] = (counts[r.school] || 0) + 1; });
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 12);
+      const max = sorted[0]?.[1] || 1;
+      const cols = ['#f59e0b', '#60a5fa', '#2dd4bf', '#f472b6', '#818cf8', '#34d399', '#fb923c', '#a78bfa', '#fb7185', '#38bdf8', '#4ade80', '#e879f9'];
+      const ALWAYS_SHOW = 5;
+      document.getElementById('top-schools-bar').innerHTML = sorted.map(([sch, n], i) => `
+    <div class="score-bar${i >= ALWAYS_SHOW ? ' schools-bar-hidden' : ''}">
+      <div class="score-bar-label" title="${sch}">${sch}</div>
+      <div class="score-bar-track"><div class="score-bar-fill" style="width:${n / max * 100}%;background:${cols[i % cols.length]}"></div></div>
+      <div class="score-bar-val">${n}</div>
+    </div>`).join('');
+      // Show expand button only if more than ALWAYS_SHOW
+      const btn = document.getElementById('schools-expand-btn');
+      if (btn) btn.style.display = sorted.length > ALWAYS_SHOW ? 'flex' : 'none';
+    }
+
+    function renderTestsChart() {
+      const ctx = document.getElementById('tests-chart')?.getContext('2d');
+      if (!ctx || !EXAMS.length) return;
+      if (CHARTS.tests) CHARTS.tests.destroy();
+      const labels = EXAMS.map(e => e.label);
+      const avgs = EXAMS.map(e => { const m = e.students.map(s => s.marks); return m.length ? (m.reduce((a, b) => a + b) / m.length).toFixed(1) : 0; });
+      const counts = EXAMS.map(e => e.students.length);
+      CHARTS.tests = new Chart(ctx, {
+        type: 'bar', data: {
+          labels, datasets: [
+            {
+              label: 'Avg Score', data: avgs,
+              backgroundColor: EXAMS.map(e => e.type === 'theory' ? 'rgba(45,212,191,.4)' : 'rgba(232,160,32,.4)'),
+              borderColor: EXAMS.map(e => e.type === 'theory' ? '#2dd4bf' : '#e8a020'),
+              borderWidth: 1, borderRadius: 3, yAxisID: 'y'
+            },
+            {
+              label: 'Students', data: counts, borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,.1)',
+              type: 'line', pointRadius: 3, fill: true, tension: .3, yAxisID: 'y1'
+            }
+          ]
+        }, options: cOpts({ dual: true })
+      });
+    }
+
+    // ─── TOP 10 ───────────────────────────
+    function setTop10Sort(field, btn) {
+      if (top10SortField === field) {
+        top10SortAsc = !top10SortAsc;
+      } else {
+        top10SortField = field;
+        top10SortAsc = field === 'rank' ? true : false;
+      }
+      syncTop10Btns();
+      renderTop10();
+    }
+
+    function syncTop10Btns() {
+      document.getElementById('t10-rank-btn')?.classList.toggle('active', top10SortField === 'rank');
+      document.getElementById('t10-avg-btn')?.classList.toggle('active', top10SortField === 'avg');
+    }
+
+    function renderTop10() {
+      let rows;
+      const isAll = top10TestId === 'all';
+      if (isAll) {
+        rows = getTopByAverage(ALL, 50);
+      } else {
+        const exam = EXAMS.find(x => x.id === top10TestId);
+        if (!exam) { document.getElementById('top10-table').innerHTML = '<div class="empty"><div class="empty-icon">📋</div>No data</div>'; return; }
+        rows = [...exam.students].sort((a, b) => b.marks - a.marks).slice(0, 20);
+      }
+
+      if (top10SortField === 'avg') {
+        rows.sort((a, b) => top10SortAsc ? a.marks - b.marks : b.marks - a.marks);
+      } else {
+        if (!isAll) rows.sort((a, b) => top10SortAsc ? a.marks - b.marks : b.marks - a.marks);
+      }
+
+      rows = rows.slice(0, 10);
+      document.getElementById('top10-table').innerHTML = buildTop10Table(rows, isAll);
+    }
+
+    function buildTop10Table(data, isAll) {
+      if (!data.length) return '<div class="empty"><div class="empty-icon">📭</div>No results</div>';
+      const avgArrow = top10SortField === 'avg' ? (top10SortAsc ? ' ↑' : ' ↓') : ' ↕';
+      const rkClass = top10SortField === 'rank' ? 'sorted-rank' : '';
+
+      let h = `<table><thead><tr>
+    <th class="${rkClass}"># Rank</th>
+    <th>Name</th>
+    <th onclick="setTop10Sort('avg',this)" style="cursor:pointer" class="${top10SortField === 'avg' ? 'sorted' : ''}">
+      ${isAll ? 'Avg' : 'Score'}<span style="opacity:.4">${avgArrow}</span></th>
+    <th>School</th>
+  </tr></thead><tbody>`;
+
+      data.forEach((r, i) => {
+        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+        const gold = i < 3 ? 'class="row-gold"' : '';
+        const pos = i + 1;
+        h += `<tr ${gold}>
+      <td class="td-rank" style="color:${i < 3 ? 'var(--amber)' : 'var(--text3)'}">${medal || pos}</td>
+      <td class="td-name" onclick="navToStudent('${_ns(r.name)}','${_ns(r.school)}')">${r.name}</td>
+      <td class="${isAll ? 'td-avg' : 'td-marks'}">${r.marks}</td>
+      <td class="td-school">${r.school}</td>
+    </tr>`;
+      });
+      return h + '</tbody></table>';
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  TESTS PAGE
+    // ═══════════════════════════════════════════════════
+    let testsFilter = 'all';
+    function filterTests(type, btn) {
+      testsFilter = type;
+      document.querySelectorAll('#page-tests .filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderTestsGrid();
+    }
+
+    function renderTestsGrid() {
+      const grid = document.getElementById('tests-grid');
+      if (!EXAMS.length) { grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📂</div>Run parse_pdfs.py first</div>'; return; }
+      const list = testsFilter === 'all' ? EXAMS : EXAMS.filter(e => e.type === testsFilter);
+      grid.innerHTML = list.map(exam => {
+        const m = exam.students.map(s => s.marks);
+        const avg = m.length ? (m.reduce((a, b) => a + b) / m.length).toFixed(1) : 0;
+        const top = m.length ? Math.max(...m) : 0;
+        const schools = new Set(exam.students.map(s => s.school)).size;
+        return `<div class="test-card ${exam.type}" onclick="openTestModal('${esc(exam.id)}')">
+      <div class="test-card-type">${exam.type} test</div>
+      <div class="test-card-title">${exam.label}</div>
+      <div class="test-card-stats">
+        <div class="test-stat"><strong>${exam.students.length}</strong>Students</div>
+        <div class="test-stat"><strong>${avg}</strong>Avg</div>
+        <div class="test-stat"><strong>${top}</strong>Top</div>
+        <div class="test-stat"><strong>${schools}</strong>Schools</div>
+      </div></div>`;
+      }).join('');
+    }
+
+    function openTestModal(id) {
+      const exam = EXAMS.find(x => x.id === id);
+      if (!exam) return;
+      const m = exam.students.map(s => s.marks);
+      const avg = (m.reduce((a, b) => a + b, 0) / m.length).toFixed(1);
+      const top3 = [...exam.students].sort((a, b) => b.marks - a.marks).slice(0, 3);
+      const schools = {};
+      exam.students.forEach(s => { schools[s.school] = (schools[s.school] || 0) + 1; });
+      const topSch = Object.entries(schools).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      const boys = exam.students.filter(s => s.gender === GEN_MALE).length;
+      const girls = exam.students.filter(s => s.gender === GEN_FEMALE).length;
+      document.getElementById('modal-title').textContent = exam.label;
+      document.getElementById('modal-body').innerHTML = `
+    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
+      <div class="stat-card"><div class="stat-label">Students</div><div class="stat-value amber">${exam.students.length}</div></div>
+      <div class="stat-card"><div class="stat-label">Average</div><div class="stat-value teal">${avg}</div></div>
+      <div class="stat-card"><div class="stat-label">Top Score</div><div class="stat-value blue">${Math.max(...m)}</div></div>
+      <div class="stat-card"><div class="stat-label">Schools</div><div class="stat-value pink">${Object.keys(schools).length}</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+      <div>
+        <div class="card-title" style="margin-bottom:12px">Top 3</div>
+        ${top3.map((s, i) => `<div class="score-bar">
+          <div class="score-bar-label">${['🥇', '🥈', '🥉'][i]} ${s.name}</div>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:${s.marks}%;background:${['#e8a020', '#60a5fa', '#2dd4bf'][i]}"></div></div>
+          <div class="score-bar-val">${s.marks}</div></div>`).join('')}
+      </div>
+      <div>
+        <div class="card-title" style="margin-bottom:12px">Top Schools</div>
+        ${topSch.map(([s, c]) => `<div class="score-bar">
+          <div class="score-bar-label">${s}</div>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:${c / topSch[0][1] * 100}%;background:var(--amber)"></div></div>
+          <div class="score-bar-val">${c}</div></div>`).join('')}
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:20px">
+      <div class="chip" style="color:var(--male)">Boys: <strong style="margin-left:4px">${boys}</strong></div>
+      <div class="chip" style="color:var(--female)">Girls: <strong style="margin-left:4px">${girls}</strong></div>
+    </div>
+    <div class="card-title" style="margin-bottom:12px">All Results</div>
+    ${buildTable([...exam.students].sort((a, b) => b.marks - a.marks), { rowHighlight: 3 })}`;
+      openModal();
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  LEADERBOARD  — medals use GLOBAL rank, not filtered position
+    // ═══════════════════════════════════════════════════
+    const PER_PAGE = 40;
+
+    function setLbGender(g, btn) {
+      lbGender = g;
+      document.querySelectorAll('#lb-g-all,#lb-g-b,#lb-g-g').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      lbPage = 1;
+      renderLeaderboard();
+    }
+
+    function setSort(field) {
+      if (lbSortField === field) lbSortAsc = !lbSortAsc;
+      else { lbSortField = field; lbSortAsc = (field === 'name' || field === 'school' || field === 'rank'); }
+      lbPage = 1;
+      renderLeaderboard();
+    }
+
+    function renderLeaderboard() {
+      const schF = document.getElementById('lb-school')?.value || '';
+      const nameF = (document.getElementById('lb-name')?.value || '').toLowerCase();
+      const isAll = lbTestId === 'all';
+
+      let singleExamGlobalRanks = {};
+      if (!isAll) {
+        const exam = EXAMS.find(x => x.id === lbTestId);
+        if (exam) {
+          const sorted = [...exam.students].sort((a, b) => a.rank - b.rank);
+          sorted.forEach(s => { singleExamGlobalRanks[s.name + '\x00' + s.school] = s.rank; });
+        }
+      }
+
+      let raw = isAll ? [...ALL] : ALL.filter(r => r.exam_id === lbTestId);
+      if (schF) raw = raw.filter(r => r.school === schF);
+      if (lbGender) raw = raw.filter(r => r.gender === lbGender);
+      if (nameF) raw = raw.filter(r => r.name.toLowerCase().includes(nameF));
+
+      document.getElementById('lb-agg-note').style.display = isAll ? 'block' : 'none';
+
+      let data = isAll ? aggregateByStudent(raw) : raw;
+
+      const sf = isAll && (lbSortField === 'rank' || lbSortField === 'marks' || lbSortField === 'avg' || lbSortField === 'rating' || lbSortField === 'best')
+        ? lbSortField : (isAll ? 'rating' : lbSortField);
+      data = [...data].sort((a, b) => {
+        let v;
+        if (sf === 'rating') v = (b.rating || 0) - (a.rating || 0);
+        else if (sf === 'marks' || sf === 'avg') v = b.marks - a.marks;
+        else if (sf === 'rank') v = (a.rank || 9999) - (b.rank || 9999);
+        else if (sf === 'best') v = ((b.best || b.marks) - (a.best || a.marks));
+        else v = (a[sf] || '').toString().localeCompare((b[sf] || '').toString());
+        return lbSortAsc ? -v : v;
+      });
+
+      const total = data.length, pages = Math.ceil(total / PER_PAGE) || 1;
+      lbPage = Math.min(lbPage, pages);
+      const slice = data.slice((lbPage - 1) * PER_PAGE, lbPage * PER_PAGE);
+
+      const examLabel = isAll ? 'All Tests (Aggregated)' : (EXAMS.find(x => x.id === lbTestId)?.label || lbTestId);
+      document.getElementById('lb-count').textContent = `${total.toLocaleString()} ${isAll ? 'students' : 'entries'}`;
+      document.getElementById('lb-title').textContent = examLabel;
+      document.getElementById('lb-table').innerHTML = buildTable(slice, {
+        showExam: false, isAgg: isAll, rowHighlight: 3,
+        globalRanks: isAll ? _globalRankMap : singleExamGlobalRanks,
+        useGlobalRank: true
+      });
+
+      const pag = document.getElementById('lb-pager');
+      if (pages <= 1) { pag.innerHTML = ''; return; }
+      let h = `<div class="pagination"><div class="page-info">Page ${lbPage}/${pages} · ${total.toLocaleString()} ${isAll ? 'students' : 'entries'}</div><div class="page-btns">`;
+      h += `<button class="page-btn" onclick="lbPage=1;renderLeaderboard()" ${lbPage === 1 ? 'disabled' : ''}>«</button>`;
+      h += `<button class="page-btn" onclick="lbPage--;renderLeaderboard()" ${lbPage <= 1 ? 'disabled' : ''}>‹</button>`;
+      [lbPage - 1, lbPage, lbPage + 1].filter(p => p >= 1 && p <= pages).forEach(p =>
+        h += `<button class="page-btn ${p === lbPage ? 'active' : ''}" onclick="lbPage=${p};renderLeaderboard()">${p}</button>`
+      );
+      h += `<button class="page-btn" onclick="lbPage++;renderLeaderboard()" ${lbPage >= pages ? 'disabled' : ''}>›</button>`;
+      h += `<button class="page-btn" onclick="lbPage=${pages};renderLeaderboard()" ${lbPage === pages ? 'disabled' : ''}>»</button>`;
+      pag.innerHTML = h + '</div></div>';
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  TABLE BUILDER — medals reflect global rank
+    // ═══════════════════════════════════════════════════
+    function buildTable(data, opts = {}) {
+      if (!data.length) return '<div class="empty"><div class="empty-icon">📭</div>No results</div>';
+      const { rowHighlight = 0, showExam = false, isAgg = false, isAvg = false, globalRanks = {}, useGlobalRank = false } = opts;
+
+      const sh = (f, lbl) => {
+        const active = lbSortField === f;
+        const arrow = active ? (lbSortAsc ? ' ↑' : ' ↓') : ' ↕';
+        return `<th onclick="setSort('${f}')" class="${active ? 'sorted' : ''}">${lbl}<span style="opacity:.4">${arrow}</span></th>`;
+      };
+
+      let h = `<table><thead><tr>
+    <th class="sorted-rank"># Rank</th>
+    ${!isAgg ? sh('rank', 'Exam Rank') : ''}
+    ${sh('name', 'Name')}
+    ${isAgg ? sh('rating', 'Rating ⬡') : (isAvg ? sh('marks', 'Avg') : sh('marks', 'Marks'))}
+    ${isAgg ? sh('marks', 'Raw Avg') + sh('best', 'Best') + '<th>Tests</th>' : ''}
+    ${sh('school', 'School')}
+    <th>Gender</th>
+    ${showExam ? '<th>Test</th>' : ''}
+  </tr></thead><tbody>`;
+
+      data.forEach((r, i) => {
+        const gRankKey = r.name + '\x00' + r.school;
+        const gRankVal = useGlobalRank
+          ? (globalRanks[gRankKey] || (isAgg ? globalRank(r.name, r.school) : (r.rank || '—')))
+          : (i + 1);
+
+        // Medals are based on GLOBAL rank, not filtered position
+        const numRank = typeof gRankVal === 'number' ? gRankVal : parseInt(gRankVal);
+        const medal = numRank === 1 ? '🥇' : numRank === 2 ? '🥈' : numRank === 3 ? '🥉' : '';
+        const isTop3 = numRank >= 1 && numRank <= 3;
+        const gold = rowHighlight > 0 && isTop3 ? 'class="row-gold"' : '';
+
+        const gBadge = r.gender === GEN_MALE
+          ? `<span class="badge badge-b">Boy</span>`
+          : r.gender === GEN_FEMALE
+            ? `<span class="badge badge-g">Girl</span>`
+            : '';
+        const ratingCol = (r.rating || 0) >= 60 ? '#4ade80' : (r.rating || 0) >= 45 ? 'var(--amber)' : 'var(--pink)';
+
+        h += `<tr ${gold}>
+      <td class="td-rank" style="color:${isTop3 ? 'var(--amber)' : 'var(--text3)'};font-weight:${isTop3 ? 'bold' : 'normal'}">${medal || '#' + gRankVal}</td>
+      ${!isAgg ? `<td class="td-rank">${r.rank || ''}</td>` : ''}
+      <td class="td-name" onclick="navToStudent('${_ns(r.name)}','${_ns(r.school)}')">${r.name}</td>
+      ${isAgg
+            ? `<td><span style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:${ratingCol}">${r.rating}</span><span style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text3);margin-left:3px">pts</span></td>
+           <td class="td-avg">${r.marks}</td>
+           <td class="td-marks">${r.best}</td>
+           <td class="td-school">${r.tests}</td>`
+            : `<td class="${isAvg ? 'td-avg' : 'td-marks'}">${r.marks}</td>`}
+      <td class="td-school">${r.school}</td>
+      <td>${gBadge}</td>
+      ${showExam ? `<td class="td-school">${r.exam_label || ''}</td>` : ''}
+    </tr>`;
+      });
+      return h + '</tbody></table>';
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  STUDENTS — REGISTRY
+    // ═══════════════════════════════════════════════════
+    function populateStudentFilters() {
+      const el = document.getElementById('stu-school');
+      SCHOOLS.forEach(s => el.innerHTML += `<option value="${esc(s)}">${s}</option>`);
+    }
+
+    function setStuGender(g, btn) {
+      stuGender = g;
+      document.querySelectorAll('#stu-g-all,#stu-g-b,#stu-g-g').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      searchStudents();
+    }
+
+    let STU_REGISTRY = [];
+
+    function buildStuRegistry() {
+      const map = {};
+      ALL.forEach(r => {
+        const key = r.name + '\x00' + r.school;
+        if (!map[key]) map[key] = { name: r.name, school: r.school, gender: r.gender, apps: [] };
+        map[key].apps.push({ exam_id: r.exam_id, exam_label: r.exam_label, exam_type: r.exam_type, marks: r.marks, rank: r.rank });
+      });
+      STU_REGISTRY = Object.values(map);
+    }
+
+    function searchStudents() {
+      const q = (document.getElementById('stu-search')?.value || '').toLowerCase().trim();
+      const sch = document.getElementById('stu-school')?.value || '';
+      document.getElementById('stu-grid').style.display = 'grid';
+      document.getElementById('stu-profile').style.display = 'none';
+      if (!q && !sch && !stuGender) {
+        document.getElementById('stu-grid').innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔍</div>Type a name or pick a school</div>';
+        return;
+      }
+      let students = STU_REGISTRY.map((s, i) => ({ ...s, idx: i }));
+      if (q) students = students.filter(s => s.name.toLowerCase().includes(q));
+      if (sch) students = students.filter(s => s.school === sch);
+      if (stuGender) students = students.filter(s => s.gender === stuGender);
+      students.sort((a, b) => a.name.localeCompare(b.name));
+      const grid = document.getElementById('stu-grid');
+      if (!students.length) { grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">😞</div>No students found</div>'; return; }
+      grid.innerHTML = students.slice(0, 60).map((s, cardIdx) => {
+        const best = Math.max(...s.apps.map(a => a.marks));
+        const avg = (s.apps.reduce((x, a) => x + a.marks, 0) / s.apps.length).toFixed(1);
+        const ini = s.name.split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
+        const gc = s.gender === GEN_MALE ? 'var(--male)' : s.gender === GEN_FEMALE ? 'var(--female)' : 'var(--text3)';
+        const gRank = globalRank(s.name, s.school);
+        const rankStr = typeof gRank === 'number' ? `#${gRank}` : '—';
+        return `<div class="card" style="cursor:pointer;animation:cardIn .4s ease-out ${cardIdx * 30}ms both"
+        onclick="openStudentProfile(${s.idx})"
+        onmouseenter="this.style.borderColor='var(--border2)';this.style.transform='translateY(-3px)'"
+        onmouseleave="this.style.borderColor='var(--border)';this.style.transform=''">
+      <div class="card-body">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+          <div style="width:42px;height:42px;border-radius:50%;background:${gc}22;border:1.5px solid ${gc};display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:18px;color:${gc}">${ini}</div>
+          <div>
+            <div style="font-weight:600;font-size:15px">${s.name}</div>
+            <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">${s.school}</div>
+          </div>
+          ${typeof gRank === 'number' ? `<div style="margin-left:auto;font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--amber)">${rankStr}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:14px">
+          <div class="test-stat"><strong style="color:var(--amber)">${best}</strong>Best</div>
+          <div class="test-stat"><strong style="color:var(--teal)">${avg}</strong>Avg</div>
+          <div class="test-stat"><strong>${s.apps.length}</strong>Tests</div>
+          ${s.gender !== 'U' ? `<div class="test-stat"><strong>${s.gender === GEN_MALE ? '♂' : '♀'}</strong></div>` : ''}
+        </div>
+      </div></div>`;
+      }).join('');
+      if (students.length > 60) grid.innerHTML += `<div class="empty" style="grid-column:1/-1;padding:16px">Showing 60 of ${students.length} — refine your search</div>`;
+    }
+
+    function navToStudent(name, school) {
+      document.getElementById('search-results').classList.remove('visible');
+      document.getElementById('global-search').value = '';
+      const idx = STU_REGISTRY.findIndex(s => s.name === name && s.school === school);
+      navigate('students');
+      setTimeout(() => { if (idx >= 0) openStudentProfile(idx); }, 80);
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  STUDENT PROFILE
+    // ═══════════════════════════════════════════════════
+    function openStudentProfile(idxOrName, _legacySchool) {
+      let stuData, apps;
+      if (typeof idxOrName === 'number') {
+        stuData = STU_REGISTRY[idxOrName];
+        if (!stuData) return;
+        apps = [...stuData.apps];
+      } else {
+        const idx = STU_REGISTRY.findIndex(s => s.name === idxOrName && s.school === _legacySchool);
+        if (idx < 0) return;
+        stuData = STU_REGISTRY[idx];
+        apps = [...stuData.apps];
+      }
+
+      // Sort apps: theory first, then revision (each by exam_id)
+      apps.sort((a, b) => {
+        if (a.exam_type === b.exam_type) return a.exam_id.localeCompare(b.exam_id);
+        return a.exam_type === 'theory' ? -1 : 1;
+      });
+
+      const marks = apps.map(a => a.marks);
+      const best = Math.max(...marks);
+      const worst = Math.min(...marks);
+      const avg = marks.reduce((a, b) => a + b, 0) / marks.length;
+      const avgStr = avg.toFixed(1);
+      const bestRank = Math.min(...apps.map(a => a.rank));
+      const revApps = apps.filter(a => a.exam_type === 'revision');
+      const thyApps = apps.filter(a => a.exam_type === 'theory');
+      const revAvg = revApps.length ? revApps.reduce((s, a) => s + a.marks, 0) / revApps.length : null;
+      const thyAvg = thyApps.length ? thyApps.reduce((s, a) => s + a.marks, 0) / thyApps.length : null;
+
+      // Skill rating
+      const zSum = apps.reduce((acc, a) => acc + examZ(a.exam_id, a.marks), 0);
+      const skillZ = zSum / (BAYES_C + apps.length);
+      const rating = zToRating(skillZ);
+
+      // Global rank
+      const gRank = globalRank(stuData.name, stuData.school);
+      const totalStudents = Object.keys(_globalRankMap).length;
+      const rankTierInfo = typeof gRank === 'number' ? getRankTier(gRank, totalStudents) : null;
+
+      // Consistency
+      const stdDev = marks.length > 1 ? Math.sqrt(marks.reduce((s, m) => s + (m - avg) ** 2, 0) / marks.length) : 0;
+      const consistency = marks.length > 1 ? Math.max(0, Math.round(100 - (stdDev / avg) * 100)) : 100;
+
+      // Trend
+      let trend = 0, trendLabel = 'Stable', trendColor = 'var(--text3)';
+      if (marks.length >= 2) {
+        const n = marks.length, xMean = (n - 1) / 2;
+        const num = marks.reduce((s, m, i) => s + (i - xMean) * m, 0);
+        const den = marks.reduce((s, _, i) => s + (i - xMean) ** 2, 0);
+        trend = den ? num / den : 0;
+        if (trend > 1.5) { trendLabel = '↗ Rising'; trendColor = '#4ade80'; }
+        else if (trend > 0.3) { trendLabel = '↗ Improving'; trendColor = 'var(--teal)'; }
+        else if (trend < -1.5) { trendLabel = '↘ Declining'; trendColor = 'var(--pink)'; }
+        else if (trend < -0.3) { trendLabel = '↘ Slipping'; trendColor = '#fb923c'; }
+        else { trendLabel = '→ Steady'; trendColor = 'var(--blue)'; }
+      }
+
+      // Predicted next score
+      let predicted = null;
+      if (marks.length >= 3) {
+        const n = marks.length, xMean = (n - 1) / 2;
+        const num = marks.reduce((s, m, i) => s + (i - xMean) * m, 0);
+        const den = marks.reduce((s, _, i) => s + (i - xMean) ** 2, 0);
+        const slope = den ? num / den : 0;
+        const intercept = avg - slope * xMean;
+        predicted = Math.round(Math.min(100, Math.max(0, intercept + slope * n)));
+      }
+
+      // Above class avg
+      const aboveAvgCount = apps.filter(a => {
+        const exam = EXAMS.find(e => e.id === a.exam_id);
+        if (!exam) return false;
+        const cAvg = exam.students.reduce((s, st) => s + st.marks, 0) / exam.students.length;
+        return a.marks > cAvg;
+      }).length;
+      const aboveAvgPct = apps.length ? Math.round(aboveAvgCount / apps.length * 100) : 0;
+
+      // Best percentile
+      const bestExamEntry = apps.find(a => a.marks === best);
+      const bestExam = EXAMS.find(e => e.id === bestExamEntry?.exam_id);
+      let classPercentile = null;
+      if (bestExam) {
+        const lower = bestExam.students.filter(s => s.marks < best).length;
+        classPercentile = Math.round(lower / bestExam.students.length * 100);
+      }
+
+      // Rival
+      const schoolMates = aggregateByStudent(ALL.filter(r => r.school === stuData.school && r.name !== stuData.name));
+      const rival = schoolMates.map(s => ({ ...s, diff: Math.abs(s.marks - avg) })).sort((a, b) => a.diff - b.diff)[0];
+
+      // Archetype
+      const revTheoryGap = revAvg && thyAvg ? revAvg - thyAvg : null;
+      const gapDesc = revTheoryGap !== null
+        ? (Math.abs(revTheoryGap) > 8
+          ? (revTheoryGap > 0 ? ' Revision tests are your strength; theory results drag you down — fix the fundamentals.' : ' Theory marks are solid but revision tests are letting you down — you\'re not converting knowledge into exam performance.')
+          : '')
+        : '';
+
+      let archetype, archetypeDesc, archetypeIcon, archetypeColor;
+      if (avg >= 93 && consistency >= 80) {
+        archetype = 'Exceptional'; archetypeIcon = '🌠'; archetypeColor = '#e8a020';
+        archetypeDesc = ``;
+        // archetypeDesc=`Genuinely rare. Only a handful of students sit at this level. Your consistency at the very top is what separates you — don't mistake this as "done".${gapDesc}`;
+      } else if (avg >= 90) {
+        archetype = 'Elite Performer'; archetypeIcon = '🏆'; archetypeColor = '#e8a020';
+        archetypeDesc = ``;
+        // archetypeDesc=`Top of the class, and you know it. The question is whether you can sustain this as the exams get harder.${predicted!==null&&predicted<avg?' Your projected trajectory is slightly downward — address this now.':''}${gapDesc}`;
+      } else if (avg >= 85 && consistency < 65) {
+        archetype = 'Volatile Talent'; archetypeIcon = '⚡'; archetypeColor = '#f59e0b';
+        archetypeDesc = ``;
+        // archetypeDesc=`You have clearly capable of excellence — that ${best} proves it. But you also have a ${worst}. The gap between your best and worst is too wide. Until you floor your bad days, you'll never be trusted at the top.${gapDesc}`;
+      } else if (avg >= 80 && trend > 1.2) {
+        archetype = 'Rising Force'; archetypeIcon = '🚀'; archetypeColor = '#4ade80';
+        archetypeDesc = ``;
+        // archetypeDesc=`Solid average and a clear upward trend. This is the trajectory that produces top performers. Keep the pressure on — consistency is what takes you from good to great.${gapDesc}`;
+      } else if (avg >= 80 && trend < -1.0) {
+        archetype = 'Fading Grip'; archetypeIcon = '📉'; archetypeColor = '#f472b6';
+        archetypeDesc = ``;
+        // archetypeDesc=`You started strong — the early scores showed real promise. But recent tests are slipping. This is a warning sign, not a verdict. Something has changed — workload, preparation quality, or focus.${gapDesc} Diagnose it before it becomes a pattern.`;
+      } else if (avg >= 80) {
+        archetype = 'Solid Performer'; archetypeIcon = '🎯'; archetypeColor = '#60a5fa';
+        archetypeDesc = ``;
+        // archetypeDesc=`A reliable 80+ average is respectable, but it doesn't put you in the top tier. There are students around you averaging 90+. The ceiling is visible — you need to decide whether you want to reach it.${gapDesc}`;
+      } else if (avg >= 72 && consistency >= 82) {
+        archetype = 'The Grinder'; archetypeIcon = '⚙️'; archetypeColor = '#818cf8';
+        archetypeDesc = ``;
+        // archetypeDesc=`Admirable consistency for your range — you show up every time. But showing up isn't enough. Your average is plateauing and the gap between you and the upper tier is real.${gapDesc} Consistency is a foundation, not a ceiling.`;
+      } else if (avg >= 72 && revTheoryGap !== null && Math.abs(revTheoryGap) > 10) {
+        archetype = revTheoryGap > 0 ? 'Revision Specialist' : 'Theory Specialist';
+        archetypeIcon = revTheoryGap > 0 ? '🗂️' : '📖'; archetypeColor = 'var(--teal)';
+        archetypeDesc = ``;
+        // archetypeDesc=`There's a ${Math.round(Math.abs(revTheoryGap))}-point gap between your ${revTheoryGap>0?'revision and theory':'theory and revision'} scores. That imbalance will cost you in a final exam that tests both.${revTheoryGap>0?' Your theory understanding needs work.':" Don't let your practical application lag."}`;
+      } else if (avg >= 72 && trend > 1.0) {
+        archetype = 'Climbing'; archetypeIcon = '📈'; archetypeColor = '#4ade80';
+        archetypeDesc = ``;
+        // archetypeDesc=`The trend is going the right way. You're not at the top yet, but you're moving. Keep the trajectory and you'll start cracking the 80s.${gapDesc}`;
+      } else if (avg >= 65) {
+        archetype = 'Mid-Field'; archetypeIcon = '🌱'; archetypeColor = '#9090b0';
+        archetypeDesc = ``;
+        // archetypeDesc=`You're in the middle of the pack, and the middle is a comfortable but dangerous place. Comfortable because you're passing, dangerous because average doesn't stand out.${gapDesc} Identify your weakest exam type and treat it like the priority it is.`;
+      } else if (avg >= 55 && trend > 0.5) {
+        archetype = 'Work in Progress'; archetypeIcon = '🔨'; archetypeColor = '#fb923c';
+        archetypeDesc = ``;
+        // archetypeDesc=`Scores are below where they need to be, but the improving trend is a real positive. Don't mistake momentum for arrival — you still have significant ground to cover.${gapDesc}`;
+      } else if (avg >= 55) {
+        archetype = 'Struggling'; archetypeIcon = '⚠️'; archetypeColor = '#f472b6';
+        archetypeDesc = ``;
+        // archetypeDesc=`These marks aren't close to where you need to be. It's time to be honest about preparation quality.${gapDesc} Are you actually sitting with the material, or going through motions?`;
+      } else {
+        archetype = 'Critical Zone'; archetypeIcon = '🔴'; archetypeColor = 'var(--pink)';
+        archetypeDesc = ``;
+        // archetypeDesc=`Below 55% average in Applied Mathematics is a serious concern. The fundamentals are not in place.${gapDesc} You need guided intervention, not just more study hours — the approach itself needs to change.`;
+      }
+
+      const name = stuData.name, school = stuData.school;
+      const ini = name.split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
+      const gc = stuData.gender === GEN_MALE ? 'var(--male)' : stuData.gender === GEN_FEMALE ? 'var(--female)' : 'var(--text3)';
+
+      // Build global rank badge HTML
+      let rankBadgeHTML = '';
+      if (rankTierInfo && typeof gRank === 'number') {
+        rankBadgeHTML = `
+      <div class="global-rank-badge ${rankTierInfo.tierClass}" title="Ranking by skill rating">
+        <div class="rank-icon">${rankTierInfo.icon}</div>
+        <div>
+          <div class="rank-num">#${gRank}</div>
+          <div class="rank-label">Rank</div>
+          <div class="rank-tier">${rankTierInfo.label}</div>
+        </div>
+        <div style="margin-left:auto;text-align:right">
+          <div style="font-family:'DM Mono',monospace;font-size:9px;opacity:.6">of ${totalStudents.toLocaleString()}</div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;opacity:.6;margin-top:2px">${totalStudents > 0 ? Math.round((1 - gRank / totalStudents) * 100) + 'th pct' : '—'}</div>
+        </div>
+      </div>`;
+      }
+
+      document.getElementById('stu-grid').style.display = 'none';
+      const pv = document.getElementById('stu-profile');
+      pv.style.display = 'block';
+
+      pv.innerHTML = `
+    <div style="margin-bottom:16px">
+      <button onclick="document.getElementById('stu-grid').style.display='grid';document.getElementById('stu-profile').style.display='none'" class="filter-btn">← Back to Search</button>
+    </div>
+
+    ${rankBadgeHTML}
+
+    <div class="student-header">
+      <div class="student-avatar" style="border-color:${gc};color:${gc}">${ini}</div>
+      <div style="flex:1">
+        <div class="student-name">${name}</div>
+        <div class="student-school">${school}</div>
+        <div class="student-pills" style="margin-top:10px">
+          <div class="pill gold">Best: ${best}</div>
+          <div class="pill teal">Avg: ${avgStr}</div>
+          <div class="pill" style="background:rgba(74,222,128,.1);border-color:#4ade80;color:#4ade80">Rating: ${rating}</div>
+          <div class="pill">Worst: ${worst}</div>
+          <div class="pill">Best Rank: #${bestRank}</div>
+          <div class="pill">${apps.length} test${apps.length > 1 ? 's' : ''}</div>
+          ${stuData.gender !== 'U' ? `<div class="pill">${stuData.gender === GEN_MALE ? 'Boy' : 'Girl'}</div>` : ''}
+        </div>
+      </div>
+    </div>
+
+    <div class="verdict-box" style="border-color:${archetypeColor}33;background:${archetypeColor}08">
+      <div class="verdict-icon">${archetypeIcon}</div>
+      <div>
+        <div class="verdict-title" style="color:${archetypeColor}">${archetype}</div>
+        <div class="verdict-text">${archetypeDesc}
+          ${predicted !== null ? ` <span style="color:var(--text3)">Projected next score:</span> <span style="color:var(--amber);font-weight:600">${predicted}</span>.` : ''}
+        </div>
+      </div>
+    </div>
+
+    <div class="insight-grid">
+      <div class="insight-card amber" style="animation-delay:.05s">
+        <div class="insight-label">Consistency</div>
+        <div class="insight-value amber">${consistency}<span style="font-size:14px">%</span></div>
+        <div class="insight-sub">Std dev: ${stdDev.toFixed(1)} marks</div>
+      </div>
+      <div class="insight-card" style="border-color:rgba(74,222,128,.3);animation-delay:.1s">
+        <div class="insight-label">Skill Rating</div>
+        <div class="insight-value" style="color:#4ade80">${rating}</div>
+        <div class="insight-sub">50 = avg · difficulty-adj</div>
+      </div>
+      <div class="insight-card teal" style="animation-delay:.15s">
+        <div class="insight-label">Trend</div>
+        <div class="insight-value" style="color:${trendColor};font-size:22px">${trendLabel}</div>
+        <div class="insight-sub">Slope: ${trend >= 0 ? '+' : ''}${trend.toFixed(2)}/test</div>
+      </div>
+      <div class="insight-card blue" style="animation-delay:.2s">
+        <div class="insight-label">Above Class Avg</div>
+        <div class="insight-value blue">${aboveAvgPct}<span style="font-size:14px">%</span></div>
+        <div class="insight-sub">${aboveAvgCount} of ${apps.length} tests</div>
+      </div>
+      ${classPercentile !== null ? `<div class="insight-card pink" style="animation-delay:.25s">
+        <div class="insight-label">Best Percentile</div>
+        <div class="insight-value pink">${classPercentile}<span style="font-size:14px">th</span></div>
+        <div class="insight-sub">In ${bestExamEntry?.exam_label || ''}</div>
+      </div>`: ''}
+      ${revAvg !== null ? `<div class="insight-card amber" style="animation-delay:.3s">
+        <div class="insight-label">Revision Avg</div>
+        <div class="insight-value amber">${revAvg.toFixed(1)}</div>
+        <div class="insight-sub">${revApps.length} test${revApps.length > 1 ? 's' : ''}</div>
+      </div>`: ''}
+      ${thyAvg !== null ? `<div class="insight-card teal" style="animation-delay:.35s">
+        <div class="insight-label">Theory Avg</div>
+        <div class="insight-value teal">${thyAvg.toFixed(1)}</div>
+        <div class="insight-sub">${thyApps.length} test${thyApps.length > 1 ? 's' : ''}</div>
+      </div>`: ''}
+      ${predicted !== null ? `<div class="insight-card green" style="animation-delay:.4s">
+        <div class="insight-label">Predicted Next</div>
+        <div class="insight-value green">${predicted}</div>
+        <div class="insight-sub">Linear projection</div>
+      </div>`: ''}
+      ${rival ? `<div class="insight-card blue" style="animation-delay:.45s">
+        <div class="insight-label">Closest Rival</div>
+        <div class="insight-value" style="color:var(--blue);font-size:16px;margin-top:4px">${rival.name.split(' ')[0]}</div>
+        <div class="insight-sub">Avg ${rival.marks.toFixed(1)} · diff ${Math.abs(rival.marks - avg).toFixed(1)}</div>
+      </div>`: ''}
+    </div>
+
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header">
+        <div class="card-title">📈 Performance Timeline</div>
+        <div style="display:flex;gap:14px;font-family:'DM Mono',monospace;font-size:10px">
+          ${thyApps.length ? `<span style="color:var(--teal)">● Theory</span>` : ''}
+          ${revApps.length ? `<span style="color:var(--amber)">● Revision</span>` : ''}
+          ${predicted !== null ? `<span style="color:#818cf8">⋯ Predicted</span>` : ''}
+        </div>
+      </div>
+      <div class="card-body"><div style="height:320px;position:relative"><canvas id="stu-chart"></canvas></div></div>
+    </div>
+
+    <div class="two-col" style="margin-bottom:24px">
+      <div class="card">
+        <div class="card-header"><div class="card-title">📋 Test History</div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)">Theory first · Impact = difficulty-adjusted z-score</div>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Test</th><th>Type</th><th>Marks</th><th>Rank</th><th>vs Class</th><th title="How exceptional relative to class spread">Impact</th></tr></thead>
+          <tbody>
+          ${apps.map(a => {
+        const exam = EXAMS.find(e => e.id === a.exam_id);
+        const cAvg = exam ? (exam.students.reduce((s, st) => s + st.marks, 0) / exam.students.length).toFixed(1) : null;
+        const diff = cAvg ? (a.marks - cAvg).toFixed(1) : null;
+        const diffCol = diff > 0 ? '#4ade80' : diff < 0 ? 'var(--pink)' : 'var(--text3)';
+        const z = examZ(a.exam_id, a.marks);
+        const zStr = (z >= 0 ? '+' : '') + z.toFixed(2) + 'σ';
+        const zCol = z >= 1.5 ? '#4ade80' : z >= 0.5 ? 'var(--teal)' : z >= -0.5 ? 'var(--text2)' : z >= -1.5 ? '#fb923c' : 'var(--pink)';
+        const zLabel = z >= 2 ? '🔥 exceptional' : z >= 1 ? '✦ above avg' : z >= -0.5 ? '· average' : z >= -1.5 ? '▼ below avg' : '⚠ struggling';
+        return `<tr>
+              <td class="td-school">${a.exam_label}</td>
+              <td><span style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 6px;border-radius:3px;${a.exam_type === 'theory' ? 'background:rgba(45,212,191,.15);color:var(--teal)' : 'background:rgba(232,160,32,.15);color:var(--amber)'}">${a.exam_type.slice(0, 3).toUpperCase()}</span></td>
+              <td class="td-marks">${a.marks}</td>
+              <td class="td-rank">#${a.rank}</td>
+              <td style="font-family:'DM Mono',monospace;font-size:11px;color:${diffCol}">${diff !== null ? (diff > 0 ? '+' : '') + diff : '—'}</td>
+              <td style="font-family:'DM Mono',monospace;font-size:10px;color:${zCol}" title="${zLabel}">${zStr}</td>
+            </tr>`;
+      }).join('')}
+          </tbody>
+        </table></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">🏫 vs School Peers</div></div>
+        <div class="card-body">
+          ${rival ? `<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);margin-bottom:12px">Top classmates by average score</div>
+          ${schoolMates.slice(0, 8).map((s, i) => {
+        const w = Math.max(...schoolMates.slice(0, 8).map(x => x.marks), avg);
+        const col = i === 0 ? 'var(--amber)' : i === 1 ? 'var(--blue)' : 'var(--text3)';
+        return `<div class="score-bar">
+              <div class="score-bar-label" style="width:130px">${s.name.split(' ')[0]}</div>
+              <div class="score-bar-track"><div class="score-bar-fill" style="width:${s.marks / w * 100}%;background:${col}"></div></div>
+              <div class="score-bar-val">${s.marks}</div>
+            </div>`;
+      }).join('')}
+          <div class="score-bar" style="background:rgba(232,160,32,.05);border-radius:4px;margin-top:4px">
+            <div class="score-bar-label" style="width:130px;color:var(--amber);font-weight:600">${name.split(' ')[0]} (you)</div>
+            <div class="score-bar-track"><div class="score-bar-fill" style="width:${avg / Math.max(...schoolMates.slice(0, 8).map(x => x.marks), avg) * 100}%;background:var(--amber)"></div></div>
+            <div class="score-bar-val" style="color:var(--amber)">${avgStr}</div>
+          </div>`: '<div class="empty" style="padding:24px"><div class="empty-icon">🏫</div>No classmates found</div>'}
+        </div>
+      </div>
+    </div>`;
+
+      // Chart — theory first, then revision (sorted by exam_id within each type)
+      setTimeout(() => {
+        const ctx = document.getElementById('stu-chart')?.getContext('2d');
+        if (!ctx) return;
+        if (CHARTS.stuChart) CHARTS.stuChart.destroy();
+
+        // apps is already sorted theory-first
+        const sortedApps = apps;
+        const sortedMarks = sortedApps.map(a => a.marks);
+        const ptColors = sortedApps.map(a => a.exam_type === 'theory' ? '#2dd4bf' : '#e8a020');
+        const ptSizes = sortedApps.map(a => a.marks === best ? 8 : 5);
+        const thyCount = sortedApps.filter(a => a.exam_type === 'theory').length;
+
+        const datasets = [{
+          label: 'Score',
+          data: sortedMarks,
+          borderColor: '#60a5fa',
+          backgroundColor: (ctx2) => {
+            const c = ctx2.chart.ctx, area = ctx2.chart.chartArea;
+            if (!area) return 'rgba(96,165,250,.08)';
+            const g = c.createLinearGradient(0, area.top, 0, area.bottom);
+            g.addColorStop(0, 'rgba(96,165,250,.15)'); g.addColorStop(1, 'rgba(96,165,250,.02)'); return g;
+          },
+          borderWidth: 2.5, fill: true, tension: .35,
+          pointBackgroundColor: ptColors, pointBorderColor: ptColors,
+          pointBorderWidth: 2, pointRadius: ptSizes, pointHoverRadius: 9,
+        }];
+
+        const classAvgs = sortedApps.map(a => {
+          const exam = EXAMS.find(e => e.id === a.exam_id);
+          return exam ? +(exam.students.reduce((s, st) => s + st.marks, 0) / exam.students.length).toFixed(1) : null;
+        });
+        datasets.push({
+          label: 'Class Avg', data: classAvgs, borderColor: 'rgba(255,255,255,.18)', backgroundColor: 'transparent',
+          borderWidth: 1, borderDash: [5, 4], pointRadius: 0, fill: false, tension: .3
+        });
+
+        if (predicted !== null) {
+          const pd = new Array(sortedMarks.length).fill(null); pd.push(predicted);
+          datasets.push({
+            label: 'Predicted', data: pd, borderColor: '#818cf8', backgroundColor: 'rgba(129,140,248,.18)',
+            borderWidth: 1.5, borderDash: [3, 3], pointRadius: [...new Array(sortedMarks.length).fill(0), 8],
+            pointBackgroundColor: '#818cf8', fill: false
+          });
+        }
+
+        const allLabels = [...sortedApps.map(a => a.exam_label), ...(predicted !== null ? ['Next →'] : [])];
+
+        CHARTS.stuChart = new Chart(ctx, {
+          type: 'line',
+          data: { labels: allLabels, datasets },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: 'rgba(17,17,24,.95)', borderColor: 'rgba(255,255,255,.1)', borderWidth: 1,
+                titleFont: { family: 'DM Mono', size: 11 }, bodyFont: { family: 'DM Mono', size: 11 },
+                callbacks: {
+                  label: (c) => {
+                    if (c.datasetIndex === 0) { const a = sortedApps[c.dataIndex]; return a ? `${a.exam_type === 'theory' ? '▸ Theory' : '▸ Revision'} · ${c.parsed.y} pts` : ''; }
+                    if (c.datasetIndex === 1) return `Class avg · ${c.parsed.y}`;
+                    return `Predicted · ${c.parsed.y}`;
+                  }
+                }
+              },
+            },
+            scales: {
+              x: {
+                ticks: { color: '#5a5a78', font: { family: 'DM Mono', size: 9 }, maxRotation: 30 }, grid: { color: 'rgba(255,255,255,.03)' },
+                afterDrawTickLabels(ax) {
+                  if (thyCount === 0 || thyCount >= sortedApps.length) return;
+                  const chart = ax.chart, meta = chart.getDatasetMeta(0);
+                  if (!meta.data[thyCount - 1]) return;
+                  const xA = meta.data[thyCount - 1].x, xB = meta.data[thyCount]?.x;
+                  const x = xA + (xB ? xB - xA : 0) / 2;
+                  const ctx3 = chart.ctx;
+                  ctx3.save(); ctx3.beginPath(); ctx3.strokeStyle = 'rgba(255,255,255,.12)'; ctx3.lineWidth = 1; ctx3.setLineDash([4, 4]);
+                  ctx3.moveTo(x, chart.chartArea.top); ctx3.lineTo(x, chart.chartArea.bottom); ctx3.stroke();
+                  ctx3.fillStyle = '#5a5a78'; ctx3.font = '8px DM Mono, monospace';
+                  ctx3.fillText('← Theory   Revision →', x - 60, chart.chartArea.top + 12);
+                  ctx3.restore();
+                }
+              },
+              y: {
+                min: Math.max(0, Math.min(...sortedMarks) - 12), max: Math.min(100, Math.max(...sortedMarks) + 10),
+                ticks: { color: '#5a5a78', font: { family: 'DM Mono', size: 9 } }, grid: { color: 'rgba(255,255,255,.04)' }
+              }
+            }
+          }
+        });
+      }, 60);
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  SCHOOLS — Bayesian-adjusted average
+    // ═══════════════════════════════════════════════════
+    // ─── SCHOOL SCORING ENGINE ────────────────────────────────────────────────────
+    //
+    //  The old system averaged raw exam entries, so 1 student × 16 exams ranked
+    //  the same as 16 students × 1 exam. This new engine:
+    //
+    //  1. Aggregates each UNIQUE STUDENT's personal average first.
+    //  2. Averages those student-averages → school raw avg is per-student, not per-entry.
+    //  3. Applies Bayesian shrinkage using UNIQUE STUDENT COUNT (not entry count),
+    //     pulling small schools toward the global mean. C=5 means a 1-student school
+    //     is treated as if it has only 1/(1+5)=17% weight on its own data.
+    //  4. Elite Score = average personal-avg of the school's top-3 unique students
+    //     (or top 10% if the school is large). Rewards depth of talent, not a fluke max.
+    //
+    const SCHOOL_BAYES_C = 5;
+
+    function buildSchoolStats(data) {
+      // Step 1: collect per-school, per-student marks
+      const map = {};
+      data.forEach(r => {
+        if (!r.school) return;
+        if (!map[r.school]) map[r.school] = { stuMap: {}, boys: 0, girls: 0, entries: [] };
+        const d = map[r.school];
+        const key = r.name + '\x00' + (r.gender || 'U');
+        if (!d.stuMap[key]) d.stuMap[key] = { name: r.name, gender: r.gender, marks: [] };
+        d.stuMap[key].marks.push(r.marks);
+        if (r.gender === GEN_MALE) d.boys++;
+        if (r.gender === GEN_FEMALE) d.girls++;
+        d.entries.push(r);
+      });
+
+      // Step 2: compute per-school aggregates
+      const result = {};
+      Object.entries(map).forEach(([school, d]) => {
+        const stuList = Object.values(d.stuMap);
+        const uniqueCount = stuList.length;
+        const totalEntries = d.entries.length;
+
+        // Each student's personal average (across all their exams at this school)
+        const stuAvgs = stuList.map(s => s.marks.reduce((a, b) => a + b, 0) / s.marks.length);
+
+        // Raw school average = mean of student averages (not mean of entries)
+        const rawAvg = stuAvgs.reduce((a, b) => a + b, 0) / uniqueCount;
+
+        // Bayesian-adjusted avg, shrunk toward global mean by unique student count
+        const bayesAvg = (stuAvgs.reduce((a, b) => a + b, 0) + SCHOOL_BAYES_C * _globalMean) / (uniqueCount + SCHOOL_BAYES_C);
+
+        // Elite score = avg of top-3 students' personal averages (top 10% if large school)
+        const topN = Math.max(3, Math.ceil(uniqueCount * 0.1));
+        const sortedAvgs = [...stuAvgs].sort((a, b) => b - a);
+        const eliteScore = sortedAvgs.slice(0, topN).reduce((a, b) => a + b, 0) / Math.min(topN, sortedAvgs.length);
+
+        // Top individual student objects (by personal avg) for detail panel
+        const topStudents = stuList
+          .map(s => ({ name: s.name, gender: s.gender, avg: s.marks.reduce((a, b) => a + b, 0) / s.marks.length, tests: s.marks.length }))
+          .sort((a, b) => b.avg - a.avg);
+
+        result[school] = {
+          uniqueCount, totalEntries, rawAvg: +rawAvg.toFixed(1),
+          bayesAvg: +bayesAvg.toFixed(1), eliteScore: +eliteScore.toFixed(1),
+          boys: d.boys, girls: d.girls, entries: d.entries,
+          topStudents, eliteTopN: Math.min(topN, stuList.length)
+        };
+      });
+      return result;
+    }
+
+    function setSchoolSort(s, btn) {
+      schoolSort = s;
+      document.querySelectorAll('#ss-count,#ss-avg,#ss-top').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderSchools();
+    }
+
+    function renderSchools() {
+      const testId = document.getElementById('school-test')?.value || 'all';
+      const data = testId === 'all' ? ALL : ALL.filter(r => r.exam_id === testId);
+      schoolData = buildSchoolStats(data);
+
+      let schools = Object.entries(schoolData).map(([name, d]) => ({ name, ...d }));
+
+      if (schoolSort === 'count') schools.sort((a, b) => b.totalEntries - a.totalEntries);
+      else if (schoolSort === 'avg') schools.sort((a, b) => b.bayesAvg - a.bayesAvg);
+      else schools.sort((a, b) => b.eliteScore - a.eliteScore);
+
+      const maxVal = schoolSort === 'count'
+        ? Math.max(...schools.map(s => s.totalEntries), 1)
+        : schoolSort === 'avg'
+          ? Math.max(...schools.map(s => s.bayesAvg), 1)
+          : Math.max(...schools.map(s => s.eliteScore), 1);
+
+      const barVal = s => schoolSort === 'count' ? s.totalEntries : schoolSort === 'avg' ? s.bayesAvg : s.eliteScore;
+      const dispVal = s => schoolSort === 'count' ? s.totalEntries : schoolSort === 'avg' ? s.bayesAvg : s.eliteScore;
+      const dispTip = schoolSort === 'count' ? 'Total exam entries'
+        : schoolSort === 'avg' ? 'Bayesian-adj avg (unique-student based)'
+          : `Elite Score (avg of top-${schools[0]?.eliteTopN || 3} students)`;
+
+      document.getElementById('school-list').innerHTML = schools.map((s, i) => `
+    <div class="school-row" onclick="showSchoolDetail('${esc(s.name)}')" style="animation:rowFadeIn .3s ease-out ${i * 18}ms both">
+      <div class="school-rank-num">${i + 1}</div>
+      <div class="school-name">${s.name}
+        <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-left:6px">${s.uniqueCount} stu</span>
+      </div>
+      <div class="school-bar-wrap">
+        <div class="score-bar-track">
+          <div class="score-bar-fill" style="width:${barVal(s) / maxVal * 100}%;background:var(--amber)"></div>
+        </div>
+      </div>
+      <div class="school-count" title="Total exam entries" style="font-size:10px">${s.totalEntries}</div>
+      <div class="school-avg" title="${dispTip}">${dispVal(s)}</div>
+    </div>`).join('');
+    }
+
+    function showSchoolDetail(schoolName) {
+      const d = schoolData[schoolName];
+      if (!d) return;
+
+      const byExam = {};
+      d.entries.forEach(r => {
+        if (!byExam[r.exam_id]) byExam[r.exam_id] = { label: r.exam_label, type: r.exam_type, marks: [] };
+        byExam[r.exam_id].marks.push(r.marks);
+      });
+      // Sort exam rows: theory first
+      const examRows = Object.values(byExam)
+        .map(ex => ({ label: ex.label, type: ex.type, avg: +(ex.marks.reduce((a, b) => a + b, 0) / ex.marks.length).toFixed(1), count: ex.marks.length }))
+        .sort((a, b) => a.type === b.type ? 0 : a.type === 'theory' ? -1 : 1);
+
+      const eliteLabel = `Top-${d.eliteTopN} Elite Score`;
+
+      document.getElementById('school-detail-title').textContent = schoolName;
+      document.getElementById('school-detail').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+      <div class="insight-card amber" style="padding:12px">
+        <div class="insight-label">Unique Students</div>
+        <div class="insight-value amber" style="font-size:26px">${d.uniqueCount}</div>
+        <div class="insight-sub">${d.totalEntries} total entries</div>
+      </div>
+      <div class="insight-card teal" style="padding:12px">
+        <div class="insight-label">Adj. Avg Score</div>
+        <div class="insight-value teal" style="font-size:26px">${d.bayesAvg}</div>
+        <div class="insight-sub">raw avg ${d.rawAvg} · Bayes C=${SCHOOL_BAYES_C}</div>
+      </div>
+      <div class="insight-card" style="padding:12px;border-color:rgba(96,165,250,.3)">
+        <div class="insight-label">${eliteLabel}</div>
+        <div class="insight-value" style="font-size:26px;color:var(--blue)">${d.eliteScore}</div>
+        <div class="insight-sub">avg of top-${d.eliteTopN} students</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <div class="chip" style="color:var(--male)">Boys: ${d.boys}</div>
+      <div class="chip" style="color:var(--female)">Girls: ${d.girls}</div>
+    </div>
+    <div style="margin-bottom:8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">TOP STUDENTS — personal average</div>
+    ${d.topStudents.slice(0, 8).map((s, i) => `
+      <div class="score-bar">
+        <div class="score-bar-label" style="width:140px">
+          ${['🥇', '🥈', '🥉', '4.', '5.', '6.', '7.', '8.'][i]} ${s.name}
+          <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-left:4px">(${s.tests}t)</span>
+        </div>
+        <div class="score-bar-track">
+          <div class="score-bar-fill" style="width:${s.avg}%;background:${i < d.eliteTopN ? '#60a5fa' : 'var(--text3)'}"></div>
+        </div>
+        <div class="score-bar-val" style="color:${i < d.eliteTopN ? 'var(--blue)' : 'var(--text3)'}">${s.avg.toFixed(1)}</div>
+      </div>`).join('')}
+    ${examRows.length > 1 ? `
+      <div style="margin-top:16px;margin-bottom:8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">PER-TEST AVERAGES</div>
+      ${examRows.map(ex => `<div class="score-bar">
+        <div class="score-bar-label">${ex.label}</div>
+        <div class="score-bar-track">
+          <div class="score-bar-fill" style="width:${ex.avg}%;background:${ex.type === 'theory' ? 'var(--teal)' : 'var(--amber)'}"></div>
+        </div>
+        <div class="score-bar-val">${ex.avg}</div>
+      </div>`).join('')}` : ''}`;
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  ANALYTICS
+    // ═══════════════════════════════════════════════════
+    function setAvgType(t, btn) {
+      avgType = t;
+      document.querySelectorAll('#at-all,#at-rev,#at-thy').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderAvgChart();
+    }
+
+    function renderAnalytics() {
+      if (!EXAMS.length) return;
+      renderGenderChart(); renderBandsChart(); renderTestSummaryList();
+      renderAvgChart(); renderSchoolAvgChart(); renderParticipantChart();
+      renderGenderTrendChart(); renderSpreadChart();
+    }
+
+    function renderGenderChart() {
+      const ctx = document.getElementById('gender-chart')?.getContext('2d');
+      if (!ctx) return;
+      if (CHARTS.gender) CHARTS.gender.destroy();
+      const m = ALL.filter(r => r.gender === GEN_MALE).length;
+      const f = ALL.filter(r => r.gender === GEN_FEMALE).length;
+      const u = ALL.filter(r => r.gender !== GEN_MALE && r.gender !== GEN_FEMALE).length;
+      const datasets = [{ data: [m, f], backgroundColor: ['rgba(96,165,250,.7)', 'rgba(244,114,182,.7)'], borderColor: ['#60a5fa', '#f472b6'], borderWidth: 1 }];
+      const labels = ['Boys', 'Girls'];
+      if (u > 0) { datasets[0].data.push(u); datasets[0].backgroundColor.push('rgba(90,90,120,.5)'); datasets[0].borderColor.push('#444'); labels.push('Unknown'); }
+      CHARTS.gender = new Chart(ctx, { type: 'doughnut', data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#9090b0', font: { family: 'DM Mono', size: 11 } } } } } });
+    }
+
+    function renderBandsChart() {
+      const ctx = document.getElementById('bands-chart')?.getContext('2d');
+      if (!ctx) return;
+      if (CHARTS.bands) CHARTS.bands.destroy();
+      const bands = { '90–100': 0, '80–89': 0, '70–79': 0, '60–69': 0, '50–59': 0, '40–49': 0 };
+      ALL.forEach(r => {
+        if (r.marks >= 90) bands['90–100']++;
+        else if (r.marks >= 80) bands['80–89']++;
+        else if (r.marks >= 70) bands['70–79']++;
+        else if (r.marks >= 60) bands['60–69']++;
+        else if (r.marks >= 50) bands['50–59']++;
+        else bands['40–49']++;
+      });
+      CHARTS.bands = new Chart(ctx, {
+        type: 'bar', data: {
+          labels: Object.keys(bands), datasets: [{
+            data: Object.values(bands),
+            backgroundColor: ['rgba(232,160,32,.7)', 'rgba(96,165,250,.6)', 'rgba(45,212,191,.6)', 'rgba(244,114,182,.5)', 'rgba(167,139,250,.5)', 'rgba(90,90,120,.4)'],
+            borderRadius: 4
+          }]
+        }, options: { ...cOpts(), plugins: { legend: { display: false } } }
+      });
+    }
+
+    function renderTestSummaryList() {
+      // Theory first (EXAMS already sorted)
+      document.getElementById('test-summary-list').innerHTML = EXAMS.map(e => {
+        const m = e.students.map(s => s.marks);
+        const avg = (m.reduce((a, b) => a + b) / m.length).toFixed(1);
+        const col = e.type === 'theory' ? 'var(--teal)' : 'var(--amber)';
+        return `<div class="score-bar">
+      <div class="score-bar-label">${e.label}</div>
+      <div class="score-bar-track"><div class="score-bar-fill" style="width:${avg}%;background:${col}"></div></div>
+      <div class="score-bar-val">${avg}</div></div>`;
+      }).join('');
+    }
+
+    function renderAvgChart() {
+      const ctx = document.getElementById('avg-chart')?.getContext('2d');
+      if (!ctx) return;
+      if (CHARTS.avg) CHARTS.avg.destroy();
+      const filtered = avgType === 'all' ? EXAMS : EXAMS.filter(e => e.type === avgType);
+      if (!filtered.length) return;
+      CHARTS.avg = new Chart(ctx, {
+        type: 'line', data: {
+          labels: filtered.map(e => e.label), datasets: [
+            {
+              label: 'Average Score', data: filtered.map(e => (e.students.reduce((s, r) => s + r.marks, 0) / e.students.length).toFixed(1)),
+              borderColor: '#e8a020', backgroundColor: 'rgba(232,160,32,.1)', fill: true, tension: .35, pointRadius: 5, pointBackgroundColor: '#e8a020'
+            },
+            {
+              label: 'Top Score', data: filtered.map(e => Math.max(...e.students.map(s => s.marks))),
+              borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,.05)', fill: false, tension: .35, pointRadius: 3, borderDash: [5, 3]
+            },
+            {
+              label: 'Median', data: filtered.map(e => { const sorted = [...e.students].sort((a, b) => a.marks - b.marks); return sorted[Math.floor(sorted.length / 2)]?.marks || 0; }),
+              borderColor: '#2dd4bf', backgroundColor: 'rgba(45,212,191,.05)', fill: false, tension: .35, pointRadius: 3, borderDash: [3, 3]
+            }
+          ]
+        }, options: cOpts({ ylabel: 'Score' })
+      });
+    }
+
+    function renderSchoolAvgChart() {
+      const ctx = document.getElementById('school-avg-chart')?.getContext('2d');
+      if (!ctx) return;
+      if (CHARTS.schAvg) CHARTS.schAvg.destroy();
+      // Use same engine as school analysis — unique-student Bayesian avg
+      const stats = buildSchoolStats(ALL);
+      const sorted = Object.entries(stats)
+        .map(([s, v]) => ({ s, avg: v.bayesAvg, n: v.uniqueCount }))
+        .sort((a, b) => b.avg - a.avg)
+        .slice(0, 10);
+      CHARTS.schAvg = new Chart(ctx, {
+        type: 'bar', data: {
+          labels: sorted.map(x => x.s.length > 20 ? x.s.slice(0, 18) + '…' : x.s),
+          datasets: [{
+            label: 'Adj. Avg Score', data: sorted.map(x => x.avg.toFixed(1)),
+            backgroundColor: 'rgba(232,160,32,.4)', borderColor: '#e8a020', borderWidth: 1, borderRadius: 4
+          }]
+        },
+        options: { ...cOpts({ ylabel: 'Adj Avg' }), indexAxis: 'y', plugins: { legend: { display: false } } }
+      });
+    }
+
+    function renderParticipantChart() {
+      const ctx = document.getElementById('participant-chart')?.getContext('2d');
+      if (!ctx || !EXAMS.length) return;
+      if (CHARTS.part) CHARTS.part.destroy();
+      // EXAMS already theory-first
+      CHARTS.part = new Chart(ctx, {
+        type: 'bar', data: {
+          labels: EXAMS.map(e => e.label), datasets: [
+            { label: 'Boys', data: EXAMS.map(e => e.students.filter(s => s.gender === GEN_MALE).length), backgroundColor: 'rgba(96,165,250,.5)', borderRadius: 4 },
+            { label: 'Girls', data: EXAMS.map(e => e.students.filter(s => s.gender === GEN_FEMALE).length), backgroundColor: 'rgba(244,114,182,.5)', borderRadius: 4 },
+          ]
+        }, options: {
+          ...cOpts({ ylabel: 'Students' }), plugins: { legend: { labels: { color: '#9090b0', font: { family: 'DM Mono', size: 11 } } } }, scales: {
+            x: { stacked: true, ticks: { color: '#5a5a78', font: { family: 'DM Mono', size: 9 } }, grid: { color: 'rgba(255,255,255,.04)' } },
+            y: { stacked: true, ticks: { color: '#5a5a78', font: { family: 'DM Mono', size: 9 } }, grid: { color: 'rgba(255,255,255,.04)' } }
+          }
+        }
+      });
+    }
+
+    function renderGenderTrendChart() {
+      const ctx = document.getElementById('gender-trend-chart')?.getContext('2d');
+      if (!ctx || !EXAMS.length) return;
+      if (CHARTS.genTrend) CHARTS.genTrend.destroy();
+      CHARTS.genTrend = new Chart(ctx, {
+        type: 'line', data: {
+          labels: EXAMS.map(e => e.label), datasets: [
+            {
+              label: 'Boys Avg', data: EXAMS.map(e => { const b = e.students.filter(s => s.gender === GEN_MALE); return b.length ? (b.reduce((a, x) => a + x.marks, 0) / b.length).toFixed(1) : null; }),
+              borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,.1)', fill: true, tension: .35, pointRadius: 4
+            },
+            {
+              label: 'Girls Avg', data: EXAMS.map(e => { const g = e.students.filter(s => s.gender === GEN_FEMALE); return g.length ? (g.reduce((a, x) => a + x.marks, 0) / g.length).toFixed(1) : null; }),
+              borderColor: '#f472b6', backgroundColor: 'rgba(244,114,182,.1)', fill: true, tension: .35, pointRadius: 4
+            }
+          ]
+        }, options: cOpts({ ylabel: 'Avg Score' })
+      });
+    }
+
+    function renderSpreadChart() {
+      const ctx = document.getElementById('spread-chart')?.getContext('2d');
+      if (!ctx || !EXAMS.length) return;
+      if (CHARTS.spread) CHARTS.spread.destroy();
+      CHARTS.spread = new Chart(ctx, {
+        type: 'line', data: {
+          labels: EXAMS.map(e => e.label), datasets: [
+            { label: 'Max', data: EXAMS.map(e => Math.max(...e.students.map(s => s.marks))), borderColor: '#e8a020', fill: false, tension: .3, pointRadius: 3, borderDash: [5, 3] },
+            { label: 'Avg', data: EXAMS.map(e => (e.students.reduce((a, b) => a + b.marks, 0) / e.students.length).toFixed(1)), borderColor: '#2dd4bf', backgroundColor: 'rgba(45,212,191,.08)', fill: '+1', tension: .3, pointRadius: 3 },
+            { label: 'Min', data: EXAMS.map(e => Math.min(...e.students.map(s => s.marks))), borderColor: '#818cf8', fill: false, tension: .3, pointRadius: 3, borderDash: [5, 3] }
+          ]
+        }, options: cOpts({ ylabel: 'Score' })
+      });
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  GLOBAL SEARCH
+    // ═══════════════════════════════════════════════════
+    let searchTimer;
+    document.getElementById('global-search').addEventListener('input', function () {
+      clearTimeout(searchTimer);
+      const q = this.value.toLowerCase().trim();
+      const res = document.getElementById('search-results');
+      if (q.length < 2) { res.classList.remove('visible'); return; }
+      searchTimer = setTimeout(() => {
+        const map = {};
+        ALL.forEach(r => {
+          if (!r.name.toLowerCase().includes(q)) return;
+          const k = r.name + '||' + r.school;
+          if (!map[k]) map[k] = { name: r.name, school: r.school, gender: r.gender, best: r.marks, tests: 0 };
+          map[k].best = Math.max(map[k].best, r.marks); map[k].tests++;
+        });
+        const hits = Object.values(map).slice(0, 8);
+        if (!hits.length) { res.classList.remove('visible'); return; }
+        res.innerHTML = hits.map(h => `
+      <div class="search-item" onclick="navToStudent('${_ns(h.name)}','${_ns(h.school)}')">
+        <div class="search-name">${h.name}</div>
+        <div class="search-meta">${h.school} · Best: ${h.best} · ${h.tests} test${h.tests > 1 ? 's' : ''}</div>
+      </div>`).join('');
+        res.classList.add('visible');
+      }, 200);
+    });
+    document.addEventListener('click', ev => {
+      if (!ev.target.closest('.search-wrap')) document.getElementById('search-results').classList.remove('visible');
+    });
+
+    document.addEventListener('keydown', ev => {
+      if (ev.key === '/' && document.activeElement.tagName !== 'INPUT') {
+        ev.preventDefault();
+        document.getElementById('global-search').focus();
+      }
+      if (ev.key === 'Escape') {
+        document.getElementById('global-search').blur();
+        document.getElementById('search-results').classList.remove('visible');
+        closeSidebar();
+      }
+    });
+
+    // ═══════════════════════════════════════════════════
+    //  MODAL
+    // ═══════════════════════════════════════════════════
+    function openModal() { document.getElementById('modal-overlay').classList.add('open'); }
+    function closeModal(ev) {
+      if (!ev || ev.target === document.getElementById('modal-overlay')) {
+        document.getElementById('modal-overlay').classList.remove('open');
+      }
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  CHART CONFIG HELPER
+    // ═══════════════════════════════════════════════════
+    function cOpts({ dual = false, ylabel = '' } = {}) {
+      const base = {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: '#9090b0', font: { family: 'DM Mono', size: 11 } } } },
+        scales: {
+          x: { ticks: { color: '#5a5a78', font: { family: 'DM Mono', size: 9 }, maxRotation: 35 }, grid: { color: 'rgba(255,255,255,.04)' } },
+          y: {
+            ticks: { color: '#5a5a78', font: { family: 'DM Mono', size: 9 } }, grid: { color: 'rgba(255,255,255,.04)' },
+            title: ylabel ? { display: true, text: ylabel, color: '#5a5a78', font: { family: 'DM Mono', size: 9 } } : {}
+          }
+        }
+      };
+      if (dual) base.scales.y1 = { position: 'right', ticks: { color: '#5a5a78', font: { family: 'DM Mono', size: 9 } }, grid: { display: false } };
+      return base;
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  UTILS
+    // ═══════════════════════════════════════════════════
+    function esc(s) {
+      return (s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  BOOT
+    // ═══════════════════════════════════════════════════
+    window.addEventListener('DOMContentLoaded', loadData);
+  </script>
+</body>
+
+</html>
