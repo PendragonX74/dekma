@@ -331,7 +331,6 @@
       }
     }
 
-    /* Staggered card entrance */
     @keyframes cardIn {
       from {
         opacity: 0;
@@ -699,7 +698,7 @@
       font-size: 11px;
       color: var(--text2);
       white-space: nowrap;
-      min-width: 180px;
+      min-width: 160px;
       user-select: none
     }
 
@@ -1611,8 +1610,7 @@
       height: 180px
     }
 
-    /* Histogram — tighter */
-
+    /* Histogram */
     .histogram {
       display: flex;
       align-items: flex-end;
@@ -1811,8 +1809,7 @@
       display: block
     }
 
-    /* Top Schools collapse btn */
-    /* Expand btn: desktop hides it, shows all bars */
+    /* Expand btn */
     .expand-btn {
       display: none;
       align-items: center;
@@ -1899,18 +1896,6 @@
       background: rgba(232, 160, 32, .08)
     }
 
-    /* Keyboard shortcut hint */
-    .kbd-hint {
-      font-family: 'DM Mono', monospace;
-      font-size: 9px;
-      color: var(--text3);
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: 3px;
-      padding: 1px 5px;
-      letter-spacing: .5px
-    }
-
     /* School rows */
     .school-row {
       display: flex;
@@ -1970,53 +1955,18 @@
     }
 
     /* Histogram */
-    .hist-bar:nth-child(1) {
-      animation-delay: .05s
-    }
-
-    .hist-bar:nth-child(2) {
-      animation-delay: .08s
-    }
-
-    .hist-bar:nth-child(3) {
-      animation-delay: .11s
-    }
-
-    .hist-bar:nth-child(4) {
-      animation-delay: .14s
-    }
-
-    .hist-bar:nth-child(5) {
-      animation-delay: .17s
-    }
-
-    .hist-bar:nth-child(6) {
-      animation-delay: .2s
-    }
-
-    .hist-bar:nth-child(7) {
-      animation-delay: .23s
-    }
-
-    .hist-bar:nth-child(8) {
-      animation-delay: .26s
-    }
-
-    .hist-bar:nth-child(9) {
-      animation-delay: .29s
-    }
-
-    .hist-bar:nth-child(10) {
-      animation-delay: .32s
-    }
-
-    .hist-bar:nth-child(11) {
-      animation-delay: .35s
-    }
-
-    .hist-bar:nth-child(12) {
-      animation-delay: .38s
-    }
+    .hist-bar:nth-child(1) { animation-delay: .05s }
+    .hist-bar:nth-child(2) { animation-delay: .08s }
+    .hist-bar:nth-child(3) { animation-delay: .11s }
+    .hist-bar:nth-child(4) { animation-delay: .14s }
+    .hist-bar:nth-child(5) { animation-delay: .17s }
+    .hist-bar:nth-child(6) { animation-delay: .2s }
+    .hist-bar:nth-child(7) { animation-delay: .23s }
+    .hist-bar:nth-child(8) { animation-delay: .26s }
+    .hist-bar:nth-child(9) { animation-delay: .29s }
+    .hist-bar:nth-child(10) { animation-delay: .32s }
+    .hist-bar:nth-child(11) { animation-delay: .35s }
+    .hist-bar:nth-child(12) { animation-delay: .38s }
 
     /* ── MOBILE RESPONSIVE ── */
     @media(max-width:768px) {
@@ -2119,7 +2069,7 @@
       }
 
       .tdd-btn {
-        min-width: 140px
+        min-width: 120px
       }
 
       thead th {
@@ -2201,17 +2151,17 @@
       </div>
       <nav>
         <div class="nav-section">Overview</div>
-        <div class="nav-item active" onclick="navigate('dashboard');closeSidebar()"><span class="nav-icon">◈</span>
+        <div class="nav-item" onclick="location.hash='dashboard';closeSidebar()"><span class="nav-icon">◈</span>
           Dashboard</div>
         <div class="nav-section">Data</div>
-        <div class="nav-item" onclick="navigate('tests');closeSidebar()"><span class="nav-icon">▦</span> All Tests</div>
-        <div class="nav-item" onclick="navigate('leaderboard');closeSidebar()"><span class="nav-icon">◉</span>
+        <div class="nav-item" onclick="location.hash='tests';closeSidebar()"><span class="nav-icon">▦</span> All Tests</div>
+        <div class="nav-item" onclick="location.hash='leaderboard';closeSidebar()"><span class="nav-icon">◉</span>
           Leaderboard</div>
         <div class="nav-section">Analysis</div>
-        <div class="nav-item" onclick="navigate('students');closeSidebar()"><span class="nav-icon">◎</span> Students
+        <div class="nav-item" onclick="location.hash='students';closeSidebar()"><span class="nav-icon">◎</span> Students
         </div>
-        <div class="nav-item" onclick="navigate('schools');closeSidebar()"><span class="nav-icon">▤</span> Schools</div>
-        <div class="nav-item" onclick="navigate('analytics');closeSidebar()"><span class="nav-icon">▲</span> Analytics
+        <div class="nav-item" onclick="location.hash='schools';closeSidebar()"><span class="nav-icon">▤</span> Schools</div>
+        <div class="nav-item" onclick="location.hash='analytics';closeSidebar()"><span class="nav-icon">▲</span> Analytics
         </div>
       </nav>
       <div class="sidebar-footer" id="sidebar-footer">—</div>
@@ -2231,7 +2181,7 @@
         </div>
       </header>
 
-      <div class="content">
+      <div class="content" id="main-content">
 
         <!-- DASHBOARD -->
         <div class="page active" id="page-dashboard">
@@ -2344,7 +2294,7 @@
 
         <!-- STUDENTS -->
         <div class="page" id="page-students">
-          <div class="filter-bar">
+          <div class="filter-bar" id="stu-filter-bar">
             <input class="search-input" id="stu-search" placeholder="Type a student name…" oninput="searchStudents()"
               style="width:320px">
             <select class="filter-select" id="stu-school" onchange="searchStudents()">
@@ -2362,9 +2312,7 @@
         <!-- SCHOOLS -->
         <div class="page" id="page-schools">
           <div class="filter-bar">
-            <select class="filter-select" id="school-test" onchange="renderSchools()">
-              <option value="all">All Tests</option>
-            </select>
+            <div id="school-test-sel" class="tdd-wrap"></div>
             <div class="filter-btn" id="ss-count" onclick="setSchoolSort('count',this)">By Students</div>
             <div class="filter-btn active" id="ss-avg" onclick="setSchoolSort('avg',this)">By Avg Score</div>
             <div class="filter-btn" id="ss-top" onclick="setSchoolSort('elite',this)">By Elite Score</div>
@@ -2617,7 +2565,7 @@
     let ALL = [];
     let SCHOOLS = [];
     let CHARTS = {};
-    let _globalMean = 70; // will be computed
+    let _globalMean = 70;
 
     // Leaderboard
     let lbPage = 1;
@@ -2638,6 +2586,7 @@
 
     // Schools
     let schoolSort = 'avg';
+    let schoolTestId = 'all';
     let schoolData = {};
 
     // Analytics
@@ -2656,7 +2605,6 @@
         EXAMS = [];
       }
 
-      // Sort: Theory first (by number), then Revision (by number)
       EXAMS.sort((a, b) => {
         if (a.type === b.type) return (a.number || 0) - (b.number || 0);
         return a.type === 'theory' ? -1 : 1;
@@ -2674,7 +2622,6 @@
 
       SCHOOLS = [...new Set(ALL.map(r => r.school).filter(Boolean))].sort();
 
-      // Compute global mean for Bayesian smoothing
       if (ALL.length) {
         _globalMean = ALL.reduce((s, r) => s + r.marks, 0) / ALL.length;
       }
@@ -2707,26 +2654,52 @@
     }
 
     // ═══════════════════════════════════════════════════
-    //  NAVIGATION
+    //  NAVIGATION — using hash only, no history API
     // ═══════════════════════════════════════════════════
     const PAGE_TITLES = {
       dashboard: 'DASHBOARD', tests: 'ALL TESTS', leaderboard: 'LEADERBOARD',
       students: 'STUDENT LOOKUP', schools: 'SCHOOL ANALYSIS', analytics: 'ANALYTICS'
     };
 
-    function navigate(page) {
+    // Update UI to show the given page (does not change hash)
+    function showPage(page) {
+      if (!PAGE_TITLES[page]) return;
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
       document.getElementById('page-' + page).classList.add('active');
       document.querySelectorAll('.nav-item').forEach(n => {
-        if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + page + "'")) {
+        // Check if the onclick attribute contains the page hash
+        const onclick = n.getAttribute('onclick');
+        if (onclick && onclick.includes("'" + page + "'")) {
           n.classList.add('active');
         }
       });
       document.getElementById('page-title').textContent = PAGE_TITLES[page] || page.toUpperCase();
+
+      // Scroll to top
+      const contentEl = document.getElementById('main-content');
+      if (contentEl) contentEl.scrollTop = 0;
+      window.scrollTo(0, 0);
+
+      // Reset students page state when navigating to it
+      if (page === 'students') {
+        const fb = document.getElementById('stu-filter-bar');
+        if (fb) fb.style.display = '';
+        const sg = document.getElementById('stu-grid');
+        if (sg) sg.style.display = 'grid';
+        const sp = document.getElementById('stu-profile');
+        if (sp) sp.style.display = 'none';
+      }
+
       if (page === 'analytics') setTimeout(renderAnalytics, 50);
       if (page === 'schools') renderSchools();
       if (page === 'leaderboard') renderLeaderboard();
+    }
+
+    // Handle hash change (back/forward buttons)
+    function handleHashChange() {
+      const page = location.hash.replace('#', '') || 'dashboard';
+      showPage(page);
     }
 
     // ═══════════════════════════════════════════════════
@@ -2751,19 +2724,21 @@
       document.getElementById('sidebar-footer').innerHTML =
         `<div>${EXAMS.length} test${EXAMS.length !== 1 ? 's' : ''} loaded</div>` +
         `<div>${ALL.length.toLocaleString()} entries</div>`;
+
+      // Set up hash change listener
+      window.addEventListener('hashchange', handleHashChange);
+      // Initial load based on hash
+      handleHashChange();
     }
 
     function populateSelects() {
-      ['lb-school', 'stu-school', 'school-test'].forEach(id => {
+      // Only lb-school and stu-school — school-test is now a TDD dropdown
+      ['lb-school', 'stu-school'].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
         const firstOpt = el.options[0] ? el.options[0].outerHTML : '';
         el.innerHTML = firstOpt;
-        if (id === 'school-test') {
-          EXAMS.forEach(e => { el.innerHTML += `<option value="${esc(e.id)}">${e.label}</option>`; });
-        } else {
-          SCHOOLS.forEach(s => { el.innerHTML += `<option value="${esc(s)}">${s}</option>`; });
-        }
+        SCHOOLS.forEach(s => { el.innerHTML += `<option value="${esc(s)}">${s}</option>`; });
       });
     }
 
@@ -2791,14 +2766,22 @@
       'podium-sel': { get: () => podiumTestId, set: (id) => { podiumTestId = id; renderPodium(); renderDistribution(); } },
       'top10-sel': { get: () => top10TestId, set: (id) => { top10TestId = id; top10SortField = 'rank'; top10SortAsc = true; renderTop10(); syncTop10Btns(); } },
       'lb-sel': { get: () => lbTestId, set: (id) => { lbTestId = id; lbPage = 1; renderLeaderboard(); } },
+      'school-test-sel': { get: () => schoolTestId, set: (id) => { schoolTestId = id; renderSchools(); } },
     };
 
     function buildTestDropdowns() {
       Object.keys(TDD_CONFIGS).forEach(id => buildOneDropdown(id));
+
       document.addEventListener('click', ev => {
         if (!ev.target.closest('.tdd-wrap') && !ev.target.closest('.tdd-panel')) closeAllDropdowns();
       });
-      window.addEventListener('scroll', closeAllDropdowns, true);
+
+      // FIX: only close dropdown when scrolling OUTSIDE the panel, not inside it
+      window.addEventListener('scroll', (ev) => {
+        if (ev.target && typeof ev.target.closest === 'function' && ev.target.closest('.tdd-panel')) return;
+        closeAllDropdowns();
+      }, true);
+
       window.addEventListener('resize', closeAllDropdowns);
     }
 
@@ -2820,7 +2803,6 @@
     }
 
     function buildPanelHTML(cid, sid) {
-      // Theory first, then revision
       const thy = EXAMS.filter(e => e.type === 'theory');
       const rev = EXAMS.filter(e => e.type === 'revision');
       const sub = e => { const m = e.students.map(s => s.marks); return `${e.students.length} students · avg ${m.length ? (m.reduce((a, b) => a + b) / m.length).toFixed(1) : '—'}`; };
@@ -2861,7 +2843,8 @@
         const rowH = 40, allRowH = 44, headH = 28;
         const colH = Math.min(Math.max(rev, thy, 1) * rowH + headH, 260);
         const totalH = allRowH + colH;
-        const W = 420;
+        // FIX: responsive width — don't overflow the viewport
+        const W = Math.min(420, window.innerWidth - 16);
         const spaceB = window.innerHeight - rect.bottom - 8;
         const top = spaceB >= totalH ? rect.bottom + 4 : rect.top - totalH - 4;
         const left = Math.max(8, Math.min(rect.left, window.innerWidth - W - 8));
@@ -3092,7 +3075,6 @@
       <div class="score-bar-track"><div class="score-bar-fill" style="width:${n / max * 100}%;background:${cols[i % cols.length]}"></div></div>
       <div class="score-bar-val">${n}</div>
     </div>`).join('');
-      // Show expand button only if more than ALWAYS_SHOW
       const btn = document.getElementById('schools-expand-btn');
       if (btn) btn.style.display = sorted.length > ALWAYS_SHOW ? 'flex' : 'none';
     }
@@ -3264,7 +3246,7 @@
     }
 
     // ═══════════════════════════════════════════════════
-    //  LEADERBOARD  — medals use GLOBAL rank, not filtered position
+    //  LEADERBOARD
     // ═══════════════════════════════════════════════════
     const PER_PAGE = 40;
 
@@ -3345,7 +3327,7 @@
     }
 
     // ═══════════════════════════════════════════════════
-    //  TABLE BUILDER — medals reflect global rank
+    //  TABLE BUILDER
     // ═══════════════════════════════════════════════════
     function buildTable(data, opts = {}) {
       if (!data.length) return '<div class="empty"><div class="empty-icon">📭</div>No results</div>';
@@ -3374,7 +3356,6 @@
           ? (globalRanks[gRankKey] || (isAgg ? globalRank(r.name, r.school) : (r.rank || '—')))
           : (i + 1);
 
-        // Medals are based on GLOBAL rank, not filtered position
         const numRank = typeof gRankVal === 'number' ? gRankVal : parseInt(gRankVal);
         const medal = numRank === 1 ? '🥇' : numRank === 2 ? '🥈' : numRank === 3 ? '🥉' : '';
         const isTop3 = numRank >= 1 && numRank <= 3;
@@ -3437,6 +3418,9 @@
       const sch = document.getElementById('stu-school')?.value || '';
       document.getElementById('stu-grid').style.display = 'grid';
       document.getElementById('stu-profile').style.display = 'none';
+      // Ensure filter bar is visible when searching
+      const fb = document.getElementById('stu-filter-bar');
+      if (fb) fb.style.display = '';
       if (!q && !sch && !stuGender) {
         document.getElementById('stu-grid').innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔍</div>Type a name or pick a school</div>';
         return;
@@ -3483,7 +3467,9 @@
       document.getElementById('search-results').classList.remove('visible');
       document.getElementById('global-search').value = '';
       const idx = STU_REGISTRY.findIndex(s => s.name === name && s.school === school);
-      navigate('students');
+      // Use hash navigation to go to students page
+      location.hash = 'students';
+      // Wait a tick for the page to show, then open profile
       setTimeout(() => { if (idx >= 0) openStudentProfile(idx); }, 80);
     }
 
@@ -3491,6 +3477,10 @@
     //  STUDENT PROFILE
     // ═══════════════════════════════════════════════════
     function openStudentProfile(idxOrName, _legacySchool) {
+      // Hide filter bar when viewing a profile
+      const fb = document.getElementById('stu-filter-bar');
+      if (fb) fb.style.display = 'none';
+
       let stuData, apps;
       if (typeof idxOrName === 'number') {
         stuData = STU_REGISTRY[idxOrName];
@@ -3503,7 +3493,7 @@
         apps = [...stuData.apps];
       }
 
-      // Sort apps: theory first, then revision (each by exam_id)
+      // Sort apps: theory first, then revision
       apps.sort((a, b) => {
         if (a.exam_type === b.exam_type) return a.exam_id.localeCompare(b.exam_id);
         return a.exam_type === 'theory' ? -1 : 1;
@@ -3591,65 +3581,38 @@
 
       let archetype, archetypeDesc, archetypeIcon, archetypeColor;
       if (avg >= 93 && consistency >= 80) {
-        archetype = 'Exceptional'; archetypeIcon = '🌠'; archetypeColor = '#e8a020';
-        archetypeDesc = ``;
-        // archetypeDesc=`Genuinely rare. Only a handful of students sit at this level. Your consistency at the very top is what separates you — don't mistake this as "done".${gapDesc}`;
+        archetype = 'Exceptional'; archetypeIcon = '🌠'; archetypeColor = '#e8a020'; archetypeDesc = ``;
       } else if (avg >= 90) {
-        archetype = 'Elite Performer'; archetypeIcon = '🏆'; archetypeColor = '#e8a020';
-        archetypeDesc = ``;
-        // archetypeDesc=`Top of the class, and you know it. The question is whether you can sustain this as the exams get harder.${predicted!==null&&predicted<avg?' Your projected trajectory is slightly downward — address this now.':''}${gapDesc}`;
+        archetype = 'Elite Performer'; archetypeIcon = '🏆'; archetypeColor = '#e8a020'; archetypeDesc = ``;
       } else if (avg >= 85 && consistency < 65) {
-        archetype = 'Volatile Talent'; archetypeIcon = '⚡'; archetypeColor = '#f59e0b';
-        archetypeDesc = ``;
-        // archetypeDesc=`You have clearly capable of excellence — that ${best} proves it. But you also have a ${worst}. The gap between your best and worst is too wide. Until you floor your bad days, you'll never be trusted at the top.${gapDesc}`;
+        archetype = 'Volatile Talent'; archetypeIcon = '⚡'; archetypeColor = '#f59e0b'; archetypeDesc = ``;
       } else if (avg >= 80 && trend > 1.2) {
-        archetype = 'Rising Force'; archetypeIcon = '🚀'; archetypeColor = '#4ade80';
-        archetypeDesc = ``;
-        // archetypeDesc=`Solid average and a clear upward trend. This is the trajectory that produces top performers. Keep the pressure on — consistency is what takes you from good to great.${gapDesc}`;
+        archetype = 'Rising Force'; archetypeIcon = '🚀'; archetypeColor = '#4ade80'; archetypeDesc = ``;
       } else if (avg >= 80 && trend < -1.0) {
-        archetype = 'Fading Grip'; archetypeIcon = '📉'; archetypeColor = '#f472b6';
-        archetypeDesc = ``;
-        // archetypeDesc=`You started strong — the early scores showed real promise. But recent tests are slipping. This is a warning sign, not a verdict. Something has changed — workload, preparation quality, or focus.${gapDesc} Diagnose it before it becomes a pattern.`;
+        archetype = 'Fading Grip'; archetypeIcon = '📉'; archetypeColor = '#f472b6'; archetypeDesc = ``;
       } else if (avg >= 80) {
-        archetype = 'Solid Performer'; archetypeIcon = '🎯'; archetypeColor = '#60a5fa';
-        archetypeDesc = ``;
-        // archetypeDesc=`A reliable 80+ average is respectable, but it doesn't put you in the top tier. There are students around you averaging 90+. The ceiling is visible — you need to decide whether you want to reach it.${gapDesc}`;
+        archetype = 'Solid Performer'; archetypeIcon = '🎯'; archetypeColor = '#60a5fa'; archetypeDesc = ``;
       } else if (avg >= 72 && consistency >= 82) {
-        archetype = 'The Grinder'; archetypeIcon = '⚙️'; archetypeColor = '#818cf8';
-        archetypeDesc = ``;
-        // archetypeDesc=`Admirable consistency for your range — you show up every time. But showing up isn't enough. Your average is plateauing and the gap between you and the upper tier is real.${gapDesc} Consistency is a foundation, not a ceiling.`;
+        archetype = 'The Grinder'; archetypeIcon = '⚙️'; archetypeColor = '#818cf8'; archetypeDesc = ``;
       } else if (avg >= 72 && revTheoryGap !== null && Math.abs(revTheoryGap) > 10) {
         archetype = revTheoryGap > 0 ? 'Revision Specialist' : 'Theory Specialist';
-        archetypeIcon = revTheoryGap > 0 ? '🗂️' : '📖'; archetypeColor = 'var(--teal)';
-        archetypeDesc = ``;
-        // archetypeDesc=`There's a ${Math.round(Math.abs(revTheoryGap))}-point gap between your ${revTheoryGap>0?'revision and theory':'theory and revision'} scores. That imbalance will cost you in a final exam that tests both.${revTheoryGap>0?' Your theory understanding needs work.':" Don't let your practical application lag."}`;
+        archetypeIcon = revTheoryGap > 0 ? '🗂️' : '📖'; archetypeColor = 'var(--teal)'; archetypeDesc = ``;
       } else if (avg >= 72 && trend > 1.0) {
-        archetype = 'Climbing'; archetypeIcon = '📈'; archetypeColor = '#4ade80';
-        archetypeDesc = ``;
-        // archetypeDesc=`The trend is going the right way. You're not at the top yet, but you're moving. Keep the trajectory and you'll start cracking the 80s.${gapDesc}`;
+        archetype = 'Climbing'; archetypeIcon = '📈'; archetypeColor = '#4ade80'; archetypeDesc = ``;
       } else if (avg >= 65) {
-        archetype = 'Mid-Field'; archetypeIcon = '🌱'; archetypeColor = '#9090b0';
-        archetypeDesc = ``;
-        // archetypeDesc=`You're in the middle of the pack, and the middle is a comfortable but dangerous place. Comfortable because you're passing, dangerous because average doesn't stand out.${gapDesc} Identify your weakest exam type and treat it like the priority it is.`;
+        archetype = 'Mid-Field'; archetypeIcon = '🌱'; archetypeColor = '#9090b0'; archetypeDesc = ``;
       } else if (avg >= 55 && trend > 0.5) {
-        archetype = 'Work in Progress'; archetypeIcon = '🔨'; archetypeColor = '#fb923c';
-        archetypeDesc = ``;
-        // archetypeDesc=`Scores are below where they need to be, but the improving trend is a real positive. Don't mistake momentum for arrival — you still have significant ground to cover.${gapDesc}`;
+        archetype = 'Work in Progress'; archetypeIcon = '🔨'; archetypeColor = '#fb923c'; archetypeDesc = ``;
       } else if (avg >= 55) {
-        archetype = 'Struggling'; archetypeIcon = '⚠️'; archetypeColor = '#f472b6';
-        archetypeDesc = ``;
-        // archetypeDesc=`These marks aren't close to where you need to be. It's time to be honest about preparation quality.${gapDesc} Are you actually sitting with the material, or going through motions?`;
+        archetype = 'Struggling'; archetypeIcon = '⚠️'; archetypeColor = '#f472b6'; archetypeDesc = ``;
       } else {
-        archetype = 'Critical Zone'; archetypeIcon = '🔴'; archetypeColor = 'var(--pink)';
-        archetypeDesc = ``;
-        // archetypeDesc=`Below 55% average in Applied Mathematics is a serious concern. The fundamentals are not in place.${gapDesc} You need guided intervention, not just more study hours — the approach itself needs to change.`;
+        archetype = 'Critical Zone'; archetypeIcon = '🔴'; archetypeColor = 'var(--pink)'; archetypeDesc = ``;
       }
 
       const name = stuData.name, school = stuData.school;
       const ini = name.split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
       const gc = stuData.gender === GEN_MALE ? 'var(--male)' : stuData.gender === GEN_FEMALE ? 'var(--female)' : 'var(--text3)';
 
-      // Build global rank badge HTML
       let rankBadgeHTML = '';
       if (rankTierInfo && typeof gRank === 'number') {
         rankBadgeHTML = `
@@ -3673,7 +3636,7 @@
 
       pv.innerHTML = `
     <div style="margin-bottom:16px">
-      <button onclick="document.getElementById('stu-grid').style.display='grid';document.getElementById('stu-profile').style.display='none'" class="filter-btn">← Back to Search</button>
+      <button onclick="document.getElementById('stu-filter-bar').style.display='';document.getElementById('stu-grid').style.display='grid';document.getElementById('stu-profile').style.display='none'" class="filter-btn">← Back to Search</button>
     </div>
 
     ${rankBadgeHTML}
@@ -3816,13 +3779,12 @@
       </div>
     </div>`;
 
-      // Chart — theory first, then revision (sorted by exam_id within each type)
+      // Chart
       setTimeout(() => {
         const ctx = document.getElementById('stu-chart')?.getContext('2d');
         if (!ctx) return;
         if (CHARTS.stuChart) CHARTS.stuChart.destroy();
 
-        // apps is already sorted theory-first
         const sortedApps = apps;
         const sortedMarks = sortedApps.map(a => a.marks);
         const ptColors = sortedApps.map(a => a.exam_type === 'theory' ? '#2dd4bf' : '#e8a020');
@@ -3913,23 +3875,9 @@
     // ═══════════════════════════════════════════════════
     //  SCHOOLS — Bayesian-adjusted average
     // ═══════════════════════════════════════════════════
-    // ─── SCHOOL SCORING ENGINE ────────────────────────────────────────────────────
-    //
-    //  The old system averaged raw exam entries, so 1 student × 16 exams ranked
-    //  the same as 16 students × 1 exam. This new engine:
-    //
-    //  1. Aggregates each UNIQUE STUDENT's personal average first.
-    //  2. Averages those student-averages → school raw avg is per-student, not per-entry.
-    //  3. Applies Bayesian shrinkage using UNIQUE STUDENT COUNT (not entry count),
-    //     pulling small schools toward the global mean. C=5 means a 1-student school
-    //     is treated as if it has only 1/(1+5)=17% weight on its own data.
-    //  4. Elite Score = average personal-avg of the school's top-3 unique students
-    //     (or top 10% if the school is large). Rewards depth of talent, not a fluke max.
-    //
     const SCHOOL_BAYES_C = 5;
 
     function buildSchoolStats(data) {
-      // Step 1: collect per-school, per-student marks
       const map = {};
       data.forEach(r => {
         if (!r.school) return;
@@ -3943,32 +3891,20 @@
         d.entries.push(r);
       });
 
-      // Step 2: compute per-school aggregates
       const result = {};
       Object.entries(map).forEach(([school, d]) => {
         const stuList = Object.values(d.stuMap);
         const uniqueCount = stuList.length;
         const totalEntries = d.entries.length;
-
-        // Each student's personal average (across all their exams at this school)
         const stuAvgs = stuList.map(s => s.marks.reduce((a, b) => a + b, 0) / s.marks.length);
-
-        // Raw school average = mean of student averages (not mean of entries)
         const rawAvg = stuAvgs.reduce((a, b) => a + b, 0) / uniqueCount;
-
-        // Bayesian-adjusted avg, shrunk toward global mean by unique student count
         const bayesAvg = (stuAvgs.reduce((a, b) => a + b, 0) + SCHOOL_BAYES_C * _globalMean) / (uniqueCount + SCHOOL_BAYES_C);
-
-        // Elite score = avg of top-3 students' personal averages (top 10% if large school)
         const topN = Math.max(3, Math.ceil(uniqueCount * 0.1));
         const sortedAvgs = [...stuAvgs].sort((a, b) => b - a);
         const eliteScore = sortedAvgs.slice(0, topN).reduce((a, b) => a + b, 0) / Math.min(topN, sortedAvgs.length);
-
-        // Top individual student objects (by personal avg) for detail panel
         const topStudents = stuList
           .map(s => ({ name: s.name, gender: s.gender, avg: s.marks.reduce((a, b) => a + b, 0) / s.marks.length, tests: s.marks.length }))
           .sort((a, b) => b.avg - a.avg);
-
         result[school] = {
           uniqueCount, totalEntries, rawAvg: +rawAvg.toFixed(1),
           bayesAvg: +bayesAvg.toFixed(1), eliteScore: +eliteScore.toFixed(1),
@@ -3987,7 +3923,8 @@
     }
 
     function renderSchools() {
-      const testId = document.getElementById('school-test')?.value || 'all';
+      // Use schoolTestId state (set by TDD dropdown) instead of a native select
+      const testId = schoolTestId;
       const data = testId === 'all' ? ALL : ALL.filter(r => r.exam_id === testId);
       schoolData = buildSchoolStats(data);
 
@@ -4034,7 +3971,6 @@
         if (!byExam[r.exam_id]) byExam[r.exam_id] = { label: r.exam_label, type: r.exam_type, marks: [] };
         byExam[r.exam_id].marks.push(r.marks);
       });
-      // Sort exam rows: theory first
       const examRows = Object.values(byExam)
         .map(ex => ({ label: ex.label, type: ex.type, avg: +(ex.marks.reduce((a, b) => a + b, 0) / ex.marks.length).toFixed(1), count: ex.marks.length }))
         .sort((a, b) => a.type === b.type ? 0 : a.type === 'theory' ? -1 : 1);
@@ -4142,7 +4078,6 @@
     }
 
     function renderTestSummaryList() {
-      // Theory first (EXAMS already sorted)
       document.getElementById('test-summary-list').innerHTML = EXAMS.map(e => {
         const m = e.students.map(s => s.marks);
         const avg = (m.reduce((a, b) => a + b) / m.length).toFixed(1);
@@ -4184,7 +4119,6 @@
       const ctx = document.getElementById('school-avg-chart')?.getContext('2d');
       if (!ctx) return;
       if (CHARTS.schAvg) CHARTS.schAvg.destroy();
-      // Use same engine as school analysis — unique-student Bayesian avg
       const stats = buildSchoolStats(ALL);
       const sorted = Object.entries(stats)
         .map(([s, v]) => ({ s, avg: v.bayesAvg, n: v.uniqueCount }))
@@ -4206,7 +4140,6 @@
       const ctx = document.getElementById('participant-chart')?.getContext('2d');
       if (!ctx || !EXAMS.length) return;
       if (CHARTS.part) CHARTS.part.destroy();
-      // EXAMS already theory-first
       CHARTS.part = new Chart(ctx, {
         type: 'bar', data: {
           labels: EXAMS.map(e => e.label), datasets: [
