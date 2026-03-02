@@ -517,8 +517,23 @@
     .insight-sub { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3); line-height: 1.4 }
     .agg-note { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); padding: 6px 14px; background: rgba(45,212,191,.05); border-bottom: 1px solid var(--border) }
 
+    /* Type-specific rank chips (Theory / Revision) shown beside the main rank badge */
+    .type-rank-chip {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+      padding: 8px 16px;
+      border: 1px solid;
+      border-radius: var(--radius2);
+      cursor: default;
+      transition: transform .2s;
+      animation: rankBadgePop .5s cubic-bezier(.34,1.56,.64,1) .35s both
+    }
+    .type-rank-chip:hover { transform: scale(1.03) }
+
     /* Global Rank Badge */
-    .global-rank-badge { display: inline-flex; align-items: center; gap: 10px; padding: 12px 18px; border-radius: var(--radius2); margin-bottom: 16px; animation: rankBadgePop .6s cubic-bezier(.34,1.56,.64,1) .2s both; cursor: default; transition: transform .2s }
+    .global-rank-badge { display: inline-flex; align-items: center; gap: 10px; padding: 12px 18px; border-radius: var(--radius2); animation: rankBadgePop .6s cubic-bezier(.34,1.56,.64,1) .2s both; cursor: default; transition: transform .2s }
     .global-rank-badge:hover { transform: scale(1.03) }
     .global-rank-badge .rank-icon { font-size: 28px; line-height: 1; flex-shrink: 0 }
     .global-rank-badge .rank-num { font-family: 'Bebas Neue', sans-serif; font-size: 36px; line-height: 1 }
@@ -1596,18 +1611,37 @@
     // ═══════════════════════════════════════════════════
     //  GLOBAL RANK MAP
     // ═══════════════════════════════════════════════════
+    let _thyRankMap  = {};
+    let _revRankMap  = {};
+
+    function buildRankMapFromRows(rows) {
+      if (!rows.length) return {};
+      const agg = aggregateByStudent(rows);
+      agg.sort((a,b) => b.rating - a.rating);
+      const map = {};
+      let rank = 1;
+      agg.forEach((s, i) => {
+        if (i > 0 && s.rating !== agg[i-1].rating) rank = i + 1;
+        map[s.name + '\x00' + s.school] = rank;
+      });
+      return map;
+    }
+
     function buildGlobalRankMap() {
       if (!ALL.length) return;
-      const all = aggregateByStudent(ALL);
-      all.sort((a,b) => b.rating - a.rating);
-      _globalRankMap = {};
-      let rank = 1;
-      all.forEach((s, i) => {
-        if (i > 0 && s.rating !== all[i-1].rating) rank = i + 1;
-        _globalRankMap[s.name + '\x00' + s.school] = rank;
-      });
+      _globalRankMap = buildRankMapFromRows(ALL);
+      _thyRankMap    = buildRankMapFromRows(ALL.filter(r => {
+        const e = EXAMS.find(x => x.id === r.exam_id);
+        return e && e.type === 'theory';
+      }));
+      _revRankMap    = buildRankMapFromRows(ALL.filter(r => {
+        const e = EXAMS.find(x => x.id === r.exam_id);
+        return e && e.type === 'revision';
+      }));
     }
     function globalRank(name, school) { return _globalRankMap[name + '\x00' + school] || '—'; }
+    function thyRank(name, school)    { return _thyRankMap[name   + '\x00' + school] || '—'; }
+    function revRank(name, school)    { return _revRankMap[name   + '\x00' + school] || '—'; }
 
     // ═══════════════════════════════════════════════════
     //  TEST SELECTION ENGINE — multi-select, range, type filter
@@ -2387,13 +2421,26 @@
         return lbSortAsc ? -v : v;
       });
 
+      // For aggregated views, compute rank from the CURRENT selection's data
+      // so ranks match the visible sorted order, not the all-time global map.
+      let displayRankMap = singleExamGlobalRanks;
+      if (isAll) {
+        const sortedForRank = [...aggregateByStudent(getRowsForSel(sel))].sort((a,b) => b.rating - a.rating);
+        displayRankMap = {};
+        let rk = 1;
+        sortedForRank.forEach((s, i) => {
+          if (i > 0 && s.rating !== sortedForRank[i-1].rating) rk = i + 1;
+          displayRankMap[s.name + '\x00' + s.school] = rk;
+        });
+      }
+
       const total = data.length, pages = Math.ceil(total/PER_PAGE) || 1;
       lbPage = Math.min(lbPage, pages);
       const slice = data.slice((lbPage-1)*PER_PAGE, lbPage*PER_PAGE);
       const examLabel = isAll ? selLabel(sel) + (sel.mode === 'all' ? ' (Aggregated)' : '') : (EXAMS.find(x => x.id === resolveExamIds(sel)[0])?.label || '');
       document.getElementById('lb-count').textContent = `${total.toLocaleString()} ${isAll?'students':'entries'}`;
       document.getElementById('lb-title').textContent = examLabel;
-      document.getElementById('lb-table').innerHTML = buildTable(slice, { showExam:false, isAgg:isAll, rowHighlight:3, globalRanks:isAll ? _globalRankMap : singleExamGlobalRanks, useGlobalRank:true });
+      document.getElementById('lb-table').innerHTML = buildTable(slice, { showExam:false, isAgg:isAll, rowHighlight:3, globalRanks:displayRankMap, useGlobalRank:true });
 
       const pag = document.getElementById('lb-pager');
       if (pages <= 1) { pag.innerHTML = ''; return; }
@@ -2615,7 +2662,11 @@
       const meanRating = post.meanRating; // best-estimate skill level
 
       const gRank        = globalRank(stuData.name, stuData.school);
+      const tRank        = thyApps.length  ? thyRank(stuData.name, stuData.school) : null;
+      const rRank        = revApps.length  ? revRank(stuData.name, stuData.school) : null;
       const totalStudents = Object.keys(_globalRankMap).length;
+      const totalThy     = Object.keys(_thyRankMap).length;
+      const totalRev     = Object.keys(_revRankMap).length;
       const rankTierInfo = typeof gRank === 'number' ? getRankTier(gRank, totalStudents) : null;
 
       const stdDev     = marks.length > 1 ? Math.sqrt(marks.reduce((s,m) => s+(m-avg)**2,0)/marks.length) : 0;
@@ -2691,18 +2742,35 @@
 
       let rankBadgeHTML = '';
       if (rankTierInfo && typeof gRank === 'number') {
+        // Secondary type-specific rank chips
+        const tRankHTML = (tRank && typeof tRank === 'number' && totalThy > 1) ? `
+          <div class="type-rank-chip" style="border-color:rgba(45,212,191,.3);background:rgba(45,212,191,.06)">
+            <span style="color:var(--teal);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;opacity:.7">Theory</span>
+            <span style="color:var(--teal);font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1">#${tRank}</span>
+            <span style="color:var(--teal);font-family:'DM Mono',monospace;font-size:9px;opacity:.5">of ${totalThy}</span>
+          </div>` : '';
+        const rRankHTML = (rRank && typeof rRank === 'number' && totalRev > 1) ? `
+          <div class="type-rank-chip" style="border-color:rgba(232,160,32,.3);background:rgba(232,160,32,.06)">
+            <span style="color:var(--amber);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;opacity:.7">Revision</span>
+            <span style="color:var(--amber);font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1">#${rRank}</span>
+            <span style="color:var(--amber);font-family:'DM Mono',monospace;font-size:9px;opacity:.5">of ${totalRev}</span>
+          </div>` : '';
+
         rankBadgeHTML = `
-          <div class="global-rank-badge ${rankTierInfo.tierClass}">
-            <div class="rank-icon">${rankTierInfo.icon}</div>
-            <div>
-              <div class="rank-num">#${gRank}</div>
-              <div class="rank-label">Rank</div>
-              <div class="rank-tier">${rankTierInfo.label}</div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+            <div class="global-rank-badge ${rankTierInfo.tierClass}" style="margin-bottom:0">
+              <div class="rank-icon">${rankTierInfo.icon}</div>
+              <div>
+                <div class="rank-num">#${gRank}</div>
+                <div class="rank-label">Overall Rank</div>
+                <div class="rank-tier">${rankTierInfo.label}</div>
+              </div>
+              <div style="margin-left:auto;text-align:right">
+                <div style="font-family:'DM Mono',monospace;font-size:9px;opacity:.6">of ${totalStudents.toLocaleString()}</div>
+                <div style="font-family:'DM Mono',monospace;font-size:9px;opacity:.6;margin-top:2px">${totalStudents>0?Math.round((1-gRank/totalStudents)*100)+'th pct':'—'}</div>
+              </div>
             </div>
-            <div style="margin-left:auto;text-align:right">
-              <div style="font-family:'DM Mono',monospace;font-size:9px;opacity:.6">of ${totalStudents.toLocaleString()}</div>
-              <div style="font-family:'DM Mono',monospace;font-size:9px;opacity:.6;margin-top:2px">${totalStudents>0?Math.round((1-gRank/totalStudents)*100)+'th pct':'—'}</div>
-            </div>
+            ${tRankHTML}${rRankHTML}
           </div>`;
       }
 
