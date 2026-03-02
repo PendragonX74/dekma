@@ -1681,10 +1681,27 @@
     }
 
     // ═══════════════════════════════════════════════════
-    //  FAIR RANKING ENGINE
+    //  FAIR RANKING ENGINE  — Empirical Bayes + Credible Bound
     // ═══════════════════════════════════════════════════
-    const BAYES_C = 4;
+    //
+    //  Model:  true_skill θ ~ N(0, τ²)  [population prior]
+    //          exam_z | θ  ~ N(θ, σ²)   [per-exam measurement noise]
+    //
+    //  τ² (between-student skill spread) and σ² (within-student noise) are
+    //  estimated directly from the data so no arbitrary constant is needed.
+    //
+    //  Ranking score = lower 90% credible bound of the posterior:
+    //    lb = μ_post − RANK_CI × σ_post
+    //
+    //  Effect:
+    //    • 16/16 exams → σ_post tiny  → lb ≈ μ_post  (almost no penalty)
+    //    • 13/16 exams → σ_post tiny+ → lb ~0.3 pts lower (fair for 3 absences)
+    //    • 1/16 exam   → σ_post large → lb pulled well below μ_post (can't game it)
+    //    • The effective Bayes constant k = σ²/τ² replaces the hard-coded 4
+    // ─────────────────────────────────────────────────────────────────────────
+    const RANK_CI = 1.28;           // one-sided 90% CI — balances fairness vs rigour
     let _examStats = {};
+    let _ebParams  = { tau_sq: 0.25, sigma_sq: 1.0 }; // sane fallback
 
     function buildExamStats() {
       _examStats = {};
@@ -1695,6 +1712,46 @@
         const stdev = Math.sqrt(m.reduce((s,v) => s+(v-mean)**2,0)/m.length) || 1;
         _examStats[e.id] = { mean, stdev };
       });
+      buildEmpiricalBayesParams(); // calibrate after exam stats are ready
+    }
+
+    // Estimate τ² and σ² directly from the data.
+    // Uses only students who sat ≥ 3 exams so the estimates are stable.
+    function buildEmpiricalBayesParams() {
+      // Build deduplicated z-score arrays per student
+      const map = {};
+      ALL.forEach(r => {
+        const key = r.name + '||' + r.school;
+        if (!map[key]) map[key] = {};
+        const ek = r.exam_id;
+        const z  = examZ(r.exam_id, r.marks);
+        if (!(ek in map[key]) || r.marks > map[key][ek].marks) {
+          map[key][ek] = { marks: r.marks, z };
+        }
+      });
+      const groups = Object.values(map)
+        .map(em => Object.values(em).map(e => e.z))
+        .filter(zs => zs.length >= 3);
+
+      if (groups.length < 3) return; // not enough data, keep fallback
+
+      // σ²: average within-student variance of z-scores (exam-to-exam noise)
+      let varSum = 0;
+      groups.forEach(zs => {
+        const mu = zs.reduce((a,b) => a+b,0) / zs.length;
+        varSum  += zs.reduce((s,z) => s+(z-mu)**2, 0) / zs.length;
+      });
+      const sigma_sq = Math.max(0.1, varSum / groups.length);
+
+      // τ²: between-student true-skill variance
+      // Observed variance of student z-means minus the measurement noise component
+      const means     = groups.map(zs => zs.reduce((a,b) => a+b,0) / zs.length);
+      const grandMean = means.reduce((a,b) => a+b,0) / means.length;
+      const obsVar    = means.reduce((s,m) => s+(m-grandMean)**2, 0) / means.length;
+      const avgN      = groups.reduce((s,zs) => s+zs.length, 0) / groups.length;
+      const tau_sq    = Math.max(0.05, obsVar - sigma_sq / avgN);
+
+      _ebParams = { tau_sq, sigma_sq };
     }
 
     function examZ(examId, mark) {
@@ -1704,6 +1761,26 @@
     }
     function zToRating(z) { return Math.round(Math.min(100, Math.max(0, 50 + z*15)) * 10) / 10; }
     function _ns(s) { return String(s).replace(/\\/g,'\\\\').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/\n/g,'\\n'); }
+
+    // ─── Posterior skill estimate ────────────────────────────────────────────
+    // Returns { mu_post, sig_post, skillZ (lcb), rating, meanRating }
+    // Uses the empirically-calibrated _ebParams so it is consistent with
+    // aggregateByStudent and buildGlobalRankMap.
+    function computePosterior(zList) {
+      const N = zList.length;
+      if (N === 0) return { mu_post:0, sig_post:1, skillZ:-2, rating:0, meanRating:0 };
+      const { tau_sq, sigma_sq } = _ebParams;
+      const z_mean = zList.reduce((a,b) => a+b,0) / N;
+      const k       = sigma_sq / tau_sq;
+      const mu_post = z_mean * N / (N + k);
+      const sig_post = Math.sqrt(sigma_sq * tau_sq / (N * tau_sq + sigma_sq));
+      const skillZ  = mu_post - RANK_CI * sig_post;
+      return {
+        mu_post, sig_post, skillZ,
+        rating:     zToRating(skillZ),       // conservative lower-bound rating (used for ranking)
+        meanRating: zToRating(mu_post),      // best-estimate rating (for display)
+      };
+    }
 
     // Deduplicate an array of student objects by name+school, keeping highest mark
     function deduplicateStudents(arr) {
@@ -1737,14 +1814,18 @@
       return Object.values(map).map(s => {
         const rows   = deduplicateRows(s.rows);
         const mList  = rows.map(r => r.marks);
-        const rawAvg = mList.reduce((a,b) => a+b,0)/mList.length;
-        const zSum   = rows.reduce((acc,r) => acc + examZ(r.exam_id, r.marks), 0);
-        const N = rows.length;
-        const skillZ = zSum / (BAYES_C + N);
+        const zList  = rows.map(r => examZ(r.exam_id, r.marks));
+        const rawAvg = mList.reduce((a,b) => a+b,0) / mList.length;
+        const z_mean = zList.reduce((a,b) => a+b,0) / zList.length;
+        const N      = rows.length;
+
+        // ── Empirical Bayes posterior (shared computePosterior) ─────────────
+        const post = computePosterior(zList);
+
         return {
           name: s.name, school: s.school, gender: s.gender,
           marks: parseFloat(rawAvg.toFixed(1)),
-          rating: zToRating(skillZ), skillZ,
+          rating: post.rating, skillZ: post.skillZ,
           best: Math.max(...mList),
           rank: Math.min(...rows.map(r => r.rank)),
           tests: N,
@@ -2348,9 +2429,10 @@
       const revAvg    = revApps.length ? revApps.reduce((s,a) => s+a.marks,0)/revApps.length : null;
       const thyAvg    = thyApps.length ? thyApps.reduce((s,a) => s+a.marks,0)/thyApps.length : null;
 
-      const zSum   = apps.reduce((acc,a) => acc + examZ(a.exam_id, a.marks), 0);
-      const skillZ = zSum / (BAYES_C + apps.length);
-      const rating = zToRating(skillZ);
+      const zList  = apps.map(a => examZ(a.exam_id, a.marks));
+      const post   = computePosterior(zList);
+      const rating = post.rating;       // conservative lower-bound (same as global rank)
+      const meanRating = post.meanRating; // best-estimate skill level
 
       const gRank        = globalRank(stuData.name, stuData.school);
       const totalStudents = Object.keys(_globalRankMap).length;
@@ -2468,7 +2550,7 @@
             <div class="student-pills" style="margin-top:10px">
               <div class="pill gold">Best: ${best}</div>
               <div class="pill teal">Avg: ${avgStr}</div>
-              <div class="pill" style="background:rgba(74,222,128,.1);border-color:#4ade80;color:#4ade80">Rating: ${rating}</div>
+              <div class="pill" style="background:rgba(74,222,128,.1);border-color:#4ade80;color:#4ade80" title="Rank rating: conservative lower-bound estimate. Skill estimate: ${meanRating}">Rating: ${rating}<span style="opacity:.5;font-size:9px;margin-left:4px">/ ${meanRating}</span></div>
               <div class="pill">Worst: ${worst}</div>
               <div class="pill">Best Rank: #${bestRank}</div>
               <div class="pill">${apps.length} test${apps.length>1?'s':''}</div>
@@ -2649,7 +2731,10 @@
     // ═══════════════════════════════════════════════════
     //  SCHOOLS
     // ═══════════════════════════════════════════════════
-    const SCHOOL_BAYES_C = 5;
+    // School ranking uses the same EB calibration as student ranking.
+    // k = sigma_sq/tau_sq gives the effective Bayes constant (replaces hard-coded 5).
+    // This is computed lazily from _ebParams which is set during buildExamStats().
+    function schoolBayesK() { return _ebParams.sigma_sq / _ebParams.tau_sq; }
 
     function buildSchoolStats(data) {
       const map = {};
@@ -2670,7 +2755,7 @@
         const uniqueCount = stuList.length;
         const stuAvgs    = stuList.map(s => s.marks.reduce((a,b)=>a+b,0)/s.marks.length);
         const rawAvg     = stuAvgs.reduce((a,b)=>a+b,0)/uniqueCount;
-        const bayesAvg   = (stuAvgs.reduce((a,b)=>a+b,0) + SCHOOL_BAYES_C*_globalMean)/(uniqueCount+SCHOOL_BAYES_C);
+        const bayesAvg   = (stuAvgs.reduce((a,b)=>a+b,0) + schoolBayesK()*_globalMean)/(uniqueCount+schoolBayesK());
         const topN       = Math.max(3, Math.ceil(uniqueCount*0.1));
         const sortedAvgs = [...stuAvgs].sort((a,b)=>b-a);
         const eliteScore = sortedAvgs.slice(0,topN).reduce((a,b)=>a+b,0)/Math.min(topN,sortedAvgs.length);
