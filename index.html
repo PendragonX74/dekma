@@ -387,6 +387,27 @@
     .tdd-option-sub { font-size: 9px; color: var(--text3); margin-top: 1px }
     .tdd-check { font-size: 10px; color: var(--amber); opacity: 0; flex-shrink: 0; margin-left: 2px }
 
+    /* Multi-select TDD enhancements */
+    .tdd-panel-multi { flex-direction: column }
+    .tdd-presets { display: flex; gap: 6px; padding: 8px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--bg3) }
+    .tdd-preset { background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; padding: 4px 12px; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); cursor: pointer; transition: all .15s; letter-spacing: .5px; white-space: nowrap }
+    .tdd-preset:hover { border-color: var(--border2); color: var(--text2) }
+    .tdd-preset.active { border-color: var(--amber); color: var(--amber); background: rgba(232,160,32,.1) }
+    .tdd-col-head { display: flex; align-items: center; justify-content: space-between }
+    .tdd-col-toggle { font-size: 9px; color: var(--text3); cursor: pointer; transition: color .15s; letter-spacing: 0; text-transform: none; font-family: 'DM Mono', monospace }
+    .tdd-col-toggle:hover { color: var(--amber) }
+    .tdd-cb-row { cursor: pointer }
+    .tdd-checkbox { width: 13px; height: 13px; border: 1.5px solid var(--border2); border-radius: 3px; flex-shrink: 0; transition: all .12s; display: flex; align-items: center; justify-content: center }
+    .tdd-checkbox::after { content: ''; display: block; width: 5px; height: 5px; border-radius: 1px; background: var(--amber); opacity: 0; transition: opacity .12s }
+    .tdd-checkbox.checked { border-color: var(--amber); background: rgba(232,160,32,.15) }
+    .tdd-checkbox.checked::after { opacity: 1 }
+    .tdd-cb-row.selected .tdd-checkbox { border-color: var(--amber) }
+    .tdd-footer { display: flex; align-items: center; justify-content: space-between; padding: 7px 12px; border-top: 1px solid var(--border); flex-shrink: 0; background: var(--bg3) }
+    .tdd-footer-count { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text2) }
+    .tdd-footer-clear { background: none; border: 1px solid var(--border); border-radius: 4px; padding: 3px 10px; font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3); cursor: pointer; transition: all .15s }
+    .tdd-footer-clear:hover { border-color: var(--amber); color: var(--amber) }
+    .tdd-empty { padding: 10px 12px; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3) }
+
     /* Podium */
     .podium { display: flex; align-items: flex-end; justify-content: center; gap: 12px; padding: 24px 16px 12px }
     .podium-slot { display: flex; flex-direction: column; align-items: center; gap: 8px; transition: transform .2s; cursor: pointer }
@@ -1144,13 +1165,13 @@
     let _globalMean = 70;
 
     // Leaderboard
-    let lbPage = 1, lbGender = '', lbTestId = 'all', lbSortField = 'rating', lbSortAsc = false;
+    let lbPage = 1, lbGender = '', lbTestSel = {mode:'all'}, lbSortField = 'rating', lbSortAsc = false;
     // Dashboard
-    let podiumTestId = 'all', top10TestId = 'all', top10SortField = 'rank', top10SortAsc = true, _schoolsExpanded = false;
+    let podiumTestSel = {mode:'all'}, top10TestSel = {mode:'all'}, top10SortField = 'rank', top10SortAsc = true, _schoolsExpanded = false;
     // Students
     let stuGender = '';
     // Schools
-    let schoolSort = 'avg', schoolTestId = 'all', schoolData = {};
+    let schoolSort = 'avg', schoolTestSel = {mode:'all'}, schoolData = {};
     // Analytics
     let avgType = 'all';
     // Global rank cache
@@ -1314,9 +1335,9 @@
       document.title = `DEKMA ${selectedCity} ${selectedYear}`;
 
       // Reset all state
-      lbPage = 1; lbGender = ''; lbTestId = 'all'; lbSortField = 'rating'; lbSortAsc = false;
-      podiumTestId = 'all'; top10TestId = 'all'; top10SortField = 'rank'; top10SortAsc = true;
-      stuGender = ''; schoolSort = 'avg'; schoolTestId = 'all'; schoolData = {};
+      lbPage = 1; lbGender = ''; lbTestSel = {mode:'all'}; lbSortField = 'rating'; lbSortAsc = false;
+      podiumTestSel = {mode:'all'}; top10TestSel = {mode:'all'}; top10SortField = 'rank'; top10SortAsc = true;
+      stuGender = ''; schoolSort = 'avg'; schoolTestSel = {mode:'all'}; schoolData = {};
       avgType = 'all'; _schoolsExpanded = false;
 
       // Destroy all charts
@@ -1589,13 +1610,63 @@
     function globalRank(name, school) { return _globalRankMap[name + '\x00' + school] || '—'; }
 
     // ═══════════════════════════════════════════════════
-    //  TEST DROPDOWN SELECTOR
+    //  TEST SELECTION ENGINE — multi-select, range, type filter
     // ═══════════════════════════════════════════════════
+
+    // sel = { mode: 'all'|'theory'|'revision'|'custom', ids?: Set<string> }
+    function resolveExamIds(sel) {
+      if (!sel || sel.mode === 'all') return EXAMS.map(e => e.id);
+      if (sel.mode === 'theory')      return EXAMS.filter(e => e.type === 'theory').map(e => e.id);
+      if (sel.mode === 'revision')    return EXAMS.filter(e => e.type === 'revision').map(e => e.id);
+      if (sel.mode === 'custom')      return [...(sel.ids || [])];
+      return EXAMS.map(e => e.id);
+    }
+
+    function getRowsForSel(sel) {
+      const ids = resolveExamIds(sel);
+      if (ids.length === EXAMS.length) return [...ALL];
+      const set = new Set(ids);
+      return ALL.filter(r => set.has(r.exam_id));
+    }
+
+    function isAgg(sel) { return resolveExamIds(sel).length !== 1; }
+
+    function selLabel(sel) {
+      if (!sel || sel.mode === 'all')      return 'All Tests';
+      if (sel.mode === 'theory')           return `Theory Only (${EXAMS.filter(e=>e.type==='theory').length})`;
+      if (sel.mode === 'revision')         return `Revision Only (${EXAMS.filter(e=>e.type==='revision').length})`;
+      if (sel.mode === 'custom') {
+        const ids = [...(sel.ids||[])];
+        if (ids.length === 0)              return 'None Selected';
+        if (ids.length === 1) {
+          const e = EXAMS.find(x => x.id === ids[0]);
+          return e ? e.label : ids[0];
+        }
+        return `${ids.length} Tests Selected`;
+      }
+      return 'All Tests';
+    }
+
+    function selDotColor(sel) {
+      if (!sel || sel.mode === 'all')  return 'var(--blue)';
+      if (sel.mode === 'theory')       return 'var(--teal)';
+      if (sel.mode === 'revision')     return 'var(--amber)';
+      if (sel.mode === 'custom') {
+        const ids = [...(sel.ids||[])];
+        if (ids.length === 1) {
+          const e = EXAMS.find(x => x.id === ids[0]);
+          return e?.type === 'revision' ? 'var(--amber)' : 'var(--teal)';
+        }
+        return 'var(--blue)';
+      }
+      return 'var(--blue)';
+    }
+
     const TDD_CONFIGS = {
-      'podium-sel'     : { get: () => podiumTestId,  set: (id) => { podiumTestId  = id; renderPodium(); renderDistribution(); } },
-      'top10-sel'      : { get: () => top10TestId,   set: (id) => { top10TestId   = id; top10SortField = 'rank'; top10SortAsc = true; renderTop10(); syncTop10Btns(); } },
-      'lb-sel'         : { get: () => lbTestId,      set: (id) => { lbTestId      = id; lbPage = 1; renderLeaderboard(); } },
-      'school-test-sel': { get: () => schoolTestId,  set: (id) => { schoolTestId  = id; renderSchools(); } },
+      'podium-sel'     : { get: () => podiumTestSel,  set: (sel) => { podiumTestSel  = sel; renderPodium(); renderDistribution(); } },
+      'top10-sel'      : { get: () => top10TestSel,   set: (sel) => { top10TestSel   = sel; top10SortField = 'rank'; top10SortAsc = true; renderTop10(); syncTop10Btns(); } },
+      'lb-sel'         : { get: () => lbTestSel,      set: (sel) => { lbTestSel      = sel; lbPage = 1; renderLeaderboard(); } },
+      'school-test-sel': { get: () => schoolTestSel,  set: (sel) => { schoolTestSel  = sel; renderSchools(); } },
     };
 
     function buildTestDropdowns() {
@@ -1614,42 +1685,139 @@
     function buildOneDropdown(cid) {
       const el = document.getElementById(cid);
       if (!el) return;
-      const sid  = TDD_CONFIGS[cid].get();
-      const exam = EXAMS.find(x => x.id === sid);
-      const dot  = sid === 'all' ? 'var(--blue)' : exam?.type === 'revision' ? 'var(--amber)' : 'var(--teal)';
-      const label = sid === 'all' ? 'All Tests' : (exam?.label || sid);
+      const sel = TDD_CONFIGS[cid].get();
       el.innerHTML = `<div class="tdd-btn" id="${cid}-btn" onclick="toggleDropdown('${cid}',event)">
-        <div class="tdd-dot" style="background:${dot}"></div>
-        <span class="tdd-label">${label}</span>
+        <div class="tdd-dot" style="background:${selDotColor(sel)}"></div>
+        <span class="tdd-label">${selLabel(sel)}</span>
         <span class="tdd-arrow">▾</span>
       </div>`;
       let panel = document.getElementById(cid + '-panel');
-      if (!panel) { panel = document.createElement('div'); panel.id = cid + '-panel'; panel.className = 'tdd-panel'; document.body.appendChild(panel); }
-      panel.innerHTML = buildPanelHTML(cid, sid);
+      if (!panel) { panel = document.createElement('div'); panel.id = cid + '-panel'; panel.className = 'tdd-panel tdd-panel-multi'; document.body.appendChild(panel); }
+      rebuildPanelHTML(cid);
     }
 
-    function buildPanelHTML(cid, sid) {
+    function rebuildPanelHTML(cid) {
+      const panel = document.getElementById(cid + '-panel');
+      if (!panel) return;
+      const sel    = TDD_CONFIGS[cid].get();
+      const checked = new Set(resolveExamIds(sel));
       const thy = EXAMS.filter(e => e.type === 'theory');
       const rev = EXAMS.filter(e => e.type === 'revision');
-      const sub = e => { const m = e.students.map(s => s.marks); return `${e.students.length} students · avg ${m.length ? (m.reduce((a,b) => a+b)/m.length).toFixed(1) : '—'}`; };
-      const opt = (e, col) => `<div class="tdd-option ${sid === e.id ? 'selected' : ''}" onclick="selectTest('${cid}','${esc(e.id)}')">
-        <div class="tdd-option-dot" style="background:${col}"></div>
-        <div class="tdd-option-text"><div class="tdd-option-name">${e.label}</div><div class="tdd-option-sub">${sub(e)}</div></div>
-        <span class="tdd-check">✓</span></div>`;
-      return `
-        <div class="tdd-all-row"><div class="tdd-option ${sid === 'all' ? 'selected' : ''}" onclick="selectTest('${cid}','all')">
-          <div class="tdd-option-dot" style="background:var(--blue)"></div>
-          <div class="tdd-option-text"><div class="tdd-option-name">All Tests</div><div class="tdd-option-sub">${EXAMS.length} tests · aggregated averages</div></div>
-          <span class="tdd-check">✓</span></div></div>
+      const allCount = EXAMS.length;
+      const thyCount = thy.length, revCount = rev.length;
+      const selCount = resolveExamIds(sel).length;
+
+      const presetActive = (m) => sel.mode === m && m !== 'custom' ? 'active' : '';
+      const allActive    = sel.mode === 'all' ? 'active' : '';
+
+      const sub = e => {
+        const m = deduplicateStudents([...e.students]).map(s => s.marks);
+        return `${m.length} · avg ${m.length ? (m.reduce((a,b)=>a+b)/m.length).toFixed(1) : '—'}`;
+      };
+
+      const opt = (e, col) => {
+        const on = checked.has(e.id);
+        return `<div class="tdd-option tdd-cb-row ${on ? 'selected' : ''}" onclick="toggleExamInSel('${cid}','${esc(e.id)}',event)">
+          <div class="tdd-checkbox ${on ? 'checked' : ''}"></div>
+          <div class="tdd-option-dot" style="background:${col}"></div>
+          <div class="tdd-option-text"><div class="tdd-option-name">${e.label}</div><div class="tdd-option-sub">${sub(e)}</div></div>
+        </div>`;
+      };
+
+      panel.innerHTML = `
+        <div class="tdd-presets">
+          <button class="tdd-preset ${allActive}" onclick="applyPreset('${cid}','all')">All</button>
+          <button class="tdd-preset ${presetActive('theory')}" onclick="applyPreset('${cid}','theory')">Theory</button>
+          <button class="tdd-preset ${presetActive('revision')}" onclick="applyPreset('${cid}','revision')">Revision</button>
+        </div>
         <div class="tdd-cols-wrap">
-          <div class="tdd-col"><div class="tdd-col-head" style="color:var(--teal)">Theory (${thy.length})</div>
-            <div class="tdd-col-scroll">${thy.length ? thy.map(e => opt(e,'var(--teal)')).join('') : '<div style="padding:10px 12px;font-family:DM Mono,monospace;font-size:10px;color:var(--text3)">None loaded</div>'}</div></div>
-          <div class="tdd-col"><div class="tdd-col-head" style="color:var(--amber)">Revision (${rev.length})</div>
-            <div class="tdd-col-scroll">${rev.length ? rev.map(e => opt(e,'var(--amber)')).join('') : '<div style="padding:10px 12px;font-family:DM Mono,monospace;font-size:10px;color:var(--text3)">None loaded</div>'}</div></div>
+          <div class="tdd-col">
+            <div class="tdd-col-head" style="color:var(--teal)">
+              <span>Theory (${thyCount})</span>
+              <span class="tdd-col-toggle" onclick="toggleTypeInSel('${cid}','theory',event)">${thy.every(e=>checked.has(e.id)) ? 'Deselect all' : 'Select all'}</span>
+            </div>
+            <div class="tdd-col-scroll">${thy.length ? thy.map(e => opt(e,'var(--teal)')).join('') : '<div class="tdd-empty">None loaded</div>'}</div>
+          </div>
+          <div class="tdd-col">
+            <div class="tdd-col-head" style="color:var(--amber)">
+              <span>Revision (${revCount})</span>
+              <span class="tdd-col-toggle" onclick="toggleTypeInSel('${cid}','revision',event)">${rev.every(e=>checked.has(e.id)) ? 'Deselect all' : 'Select all'}</span>
+            </div>
+            <div class="tdd-col-scroll">${rev.length ? rev.map(e => opt(e,'var(--amber)')).join('') : '<div class="tdd-empty">None loaded</div>'}</div>
+          </div>
+        </div>
+        <div class="tdd-footer">
+          <span class="tdd-footer-count">${selCount === allCount ? 'All ' + allCount : selCount} test${selCount !== 1 ? 's' : ''} selected</span>
+          <button class="tdd-footer-clear" onclick="applyPreset('${cid}','all')">Reset</button>
         </div>`;
     }
 
-    function selectTest(cid, examId) { TDD_CONFIGS[cid].set(examId); closeAllDropdowns(); buildOneDropdown(cid); }
+    function applyPreset(cid, mode) {
+      TDD_CONFIGS[cid].set({ mode });
+      buildOneDropdown(cid);
+      // Keep panel open, just refresh it
+      const panel = document.getElementById(cid + '-panel');
+      if (panel) panel.classList.add('open');
+      const btn = document.getElementById(cid + '-btn');
+      if (btn) btn.classList.add('open');
+    }
+
+    function toggleExamInSel(cid, examId, ev) {
+      if (ev) ev.stopPropagation();
+      const sel   = TDD_CONFIGS[cid].get();
+      const allIds = EXAMS.map(e => e.id);
+      // Derive current checked set
+      let ids = new Set(resolveExamIds(sel));
+      if (ids.has(examId)) ids.delete(examId);
+      else ids.add(examId);
+      // Snap back to preset modes if matches
+      let newSel;
+      if (ids.size === allIds.length)
+        newSel = { mode: 'all' };
+      else if (ids.size === EXAMS.filter(e=>e.type==='theory').length &&
+               EXAMS.filter(e=>e.type==='theory').every(e=>ids.has(e.id)))
+        newSel = { mode: 'theory' };
+      else if (ids.size === EXAMS.filter(e=>e.type==='revision').length &&
+               EXAMS.filter(e=>e.type==='revision').every(e=>ids.has(e.id)))
+        newSel = { mode: 'revision' };
+      else
+        newSel = { mode: 'custom', ids };
+      TDD_CONFIGS[cid].set(newSel);
+      buildOneDropdown(cid);
+      // Keep panel open
+      const panel = document.getElementById(cid + '-panel');
+      if (panel) panel.classList.add('open');
+      const btn = document.getElementById(cid + '-btn');
+      if (btn) btn.classList.add('open');
+    }
+
+    function toggleTypeInSel(cid, type, ev) {
+      if (ev) ev.stopPropagation();
+      const sel   = TDD_CONFIGS[cid].get();
+      const typeExams = EXAMS.filter(e => e.type === type).map(e => e.id);
+      let ids = new Set(resolveExamIds(sel));
+      const allOn = typeExams.every(id => ids.has(id));
+      if (allOn) typeExams.forEach(id => ids.delete(id));
+      else       typeExams.forEach(id => ids.add(id));
+      const allIds = EXAMS.map(e => e.id);
+      let newSel;
+      if (ids.size === allIds.length)
+        newSel = { mode: 'all' };
+      else if (ids.size === EXAMS.filter(e=>e.type==='theory').length &&
+               EXAMS.filter(e=>e.type==='theory').every(e=>ids.has(e.id)))
+        newSel = { mode: 'theory' };
+      else if (ids.size === EXAMS.filter(e=>e.type==='revision').length &&
+               EXAMS.filter(e=>e.type==='revision').every(e=>ids.has(e.id)))
+        newSel = { mode: 'revision' };
+      else
+        newSel = { mode: 'custom', ids };
+      TDD_CONFIGS[cid].set(newSel);
+      buildOneDropdown(cid);
+      const panel = document.getElementById(cid + '-panel');
+      if (panel) panel.classList.add('open');
+      const btn = document.getElementById(cid + '-btn');
+      if (btn) btn.classList.add('open');
+    }
 
     function toggleDropdown(cid, ev) {
       if (ev) ev.stopPropagation();
@@ -1659,16 +1827,16 @@
       const wasOpen = panel.classList.contains('open');
       closeAllDropdowns();
       if (!wasOpen) {
-        const rect = btn.getBoundingClientRect();
-        const rev = EXAMS.filter(e => e.type === 'revision').length;
-        const thy = EXAMS.filter(e => e.type === 'theory').length;
-        const rowH = 40, allRowH = 44, headH = 28;
-        const colH = Math.min(Math.max(rev,thy,1)*rowH + headH, 260);
-        const totalH = allRowH + colH;
-        const W = Math.min(420, window.innerWidth - 16);
-        const spaceB = window.innerHeight - rect.bottom - 8;
-        const top  = spaceB >= totalH ? rect.bottom + 4 : rect.top - totalH - 4;
-        const left = Math.max(8, Math.min(rect.left, window.innerWidth - W - 8));
+        const rect    = btn.getBoundingClientRect();
+        const rev     = EXAMS.filter(e => e.type === 'revision').length;
+        const thy     = EXAMS.filter(e => e.type === 'theory').length;
+        const rowH    = 38, headH = 32, presetsH = 44, footerH = 38;
+        const colH    = Math.min(Math.max(rev,thy,1)*rowH + headH, 280);
+        const totalH  = presetsH + colH + footerH;
+        const W       = Math.min(460, window.innerWidth - 16);
+        const spaceB  = window.innerHeight - rect.bottom - 8;
+        const top     = spaceB >= totalH ? rect.bottom + 4 : Math.max(8, rect.top - totalH - 4);
+        const left    = Math.max(8, Math.min(rect.left, window.innerWidth - W - 8));
         panel.style.cssText = `top:${top}px;left:${left}px;width:${W}px;height:${totalH}px`;
         panel.classList.add('open');
         btn.classList.add('open');
@@ -1916,11 +2084,14 @@
     function renderPodium() {
       const wrap = document.getElementById('podium-wrap');
       if (!EXAMS.length) { wrap.innerHTML = '<div class="empty"><div class="empty-icon">🏆</div>No data</div>'; return; }
-      let top3; const isAvg = podiumTestId === 'all';
+      const sel   = podiumTestSel;
+      const isAvg = isAgg(sel);
+      let top3;
       if (isAvg) {
-        top3 = getTopByAverage(ALL, 3);
+        top3 = getTopByAverage(getRowsForSel(sel), 3);
       } else {
-        const exam = EXAMS.find(x => x.id === podiumTestId);
+        const eid  = resolveExamIds(sel)[0];
+        const exam = EXAMS.find(x => x.id === eid);
         if (!exam) { wrap.innerHTML = '<div class="empty"><div class="empty-icon">🏆</div>No data</div>'; return; }
         top3 = deduplicateStudents([...exam.students]).sort((a,b) => b.marks - a.marks).slice(0,3);
       }
@@ -1946,10 +2117,12 @@
 
     function renderDistribution() {
       let data;
-      if (podiumTestId === 'all') {
-        data = ALL; document.getElementById('dist-label').textContent = 'All Tests';
+      const sel = podiumTestSel;
+      if (isAgg(sel)) {
+        data = getRowsForSel(sel);
+        document.getElementById('dist-label').textContent = selLabel(sel);
       } else {
-        const exam = EXAMS.find(x => x.id === podiumTestId);
+        const exam = EXAMS.find(x => x.id === resolveExamIds(sel)[0]);
         data = exam ? exam.students : ALL;
         document.getElementById('dist-label').textContent = exam ? exam.label : '';
       }
@@ -2018,22 +2191,24 @@
     }
 
     function renderTop10() {
-      let rows; const isAll = top10TestId === 'all';
-      if (isAll) { rows = getTopByAverage(ALL, 200); }
+      const sel    = top10TestSel;
+      const isAggr = isAgg(sel);
+      let rows;
+      if (isAggr) { rows = getTopByAverage(getRowsForSel(sel), 200); }
       else {
-        const exam = EXAMS.find(x => x.id === top10TestId);
+        const eid  = resolveExamIds(sel)[0];
+        const exam = EXAMS.find(x => x.id === eid);
         if (!exam) { document.getElementById('top10-table').innerHTML = '<div class="empty"><div class="empty-icon">📋</div>No data</div>'; return; }
         rows = deduplicateStudents([...exam.students]).sort((a,b) => b.marks - a.marks);
       }
       if (top10SortField === 'avg') { rows.sort((a,b) => top10SortAsc ? a.marks-b.marks : b.marks-a.marks); }
-      else { if (!isAll) rows.sort((a,b) => top10SortAsc ? a.marks-b.marks : b.marks-a.marks); }
-      // Include at least top 10, plus anyone tying the 10th position
+      else { if (!isAggr) rows.sort((a,b) => top10SortAsc ? a.marks-b.marks : b.marks-a.marks); }
       if (rows.length > 10) {
-        const scoreKey = r => isAll ? r.rating : r.marks;
+        const scoreKey = r => isAggr ? r.rating : r.marks;
         const boundary = scoreKey(rows[9]);
         rows = rows.filter((r, i) => i < 10 || scoreKey(r) === boundary);
       }
-      document.getElementById('top10-table').innerHTML = buildTop10Table(rows, isAll);
+      document.getElementById('top10-table').innerHTML = buildTop10Table(rows, isAggr);
     }
 
     function buildTop10Table(data, isAll) {
@@ -2161,13 +2336,14 @@
     function renderLeaderboard() {
       const schF  = document.getElementById('lb-school')?.value || '';
       const nameF = (document.getElementById('lb-name')?.value || '').toLowerCase();
-      const isAll = lbTestId === 'all';
+      const sel   = lbTestSel;
+      const isAll = isAgg(sel);
 
       let singleExamGlobalRanks = {};
       if (!isAll) {
-        const exam = EXAMS.find(x => x.id === lbTestId);
+        const eid  = resolveExamIds(sel)[0];
+        const exam = EXAMS.find(x => x.id === eid);
         if (exam) {
-          // Deduplicate by student, then build tie-aware rank by marks
           const uniq = deduplicateStudents([...exam.students]).sort((a,b) => b.marks - a.marks);
           let seRank = 1;
           uniq.forEach((s, i) => {
@@ -2177,14 +2353,18 @@
         }
       }
 
-      let raw = isAll ? [...ALL] : ALL.filter(r => r.exam_id === lbTestId);
+      let raw = getRowsForSel(sel);
       if (schF)   raw = raw.filter(r => r.school === schF);
       if (lbGender) raw = raw.filter(r => r.gender === lbGender);
       if (nameF)  raw = raw.filter(r => r.name.toLowerCase().includes(nameF));
 
       document.getElementById('lb-agg-note').style.display = isAll ? 'block' : 'none';
+      // Update lb-agg-note text when a subset is selected
+      if (isAll && sel.mode !== 'all') {
+        const noteEl = document.getElementById('lb-agg-note');
+        if (noteEl) noteEl.textContent = `Showing aggregated results for: ${selLabel(sel)}`;
+      }
 
-      // For single-exam view, deduplicate by student name+school (keep highest mark)
       let data;
       if (isAll) {
         data = aggregateByStudent(raw);
@@ -2210,7 +2390,7 @@
       const total = data.length, pages = Math.ceil(total/PER_PAGE) || 1;
       lbPage = Math.min(lbPage, pages);
       const slice = data.slice((lbPage-1)*PER_PAGE, lbPage*PER_PAGE);
-      const examLabel = isAll ? 'All Tests (Aggregated)' : (EXAMS.find(x => x.id === lbTestId)?.label || lbTestId);
+      const examLabel = isAll ? selLabel(sel) + (sel.mode === 'all' ? ' (Aggregated)' : '') : (EXAMS.find(x => x.id === resolveExamIds(sel)[0])?.label || '');
       document.getElementById('lb-count').textContent = `${total.toLocaleString()} ${isAll?'students':'entries'}`;
       document.getElementById('lb-title').textContent = examLabel;
       document.getElementById('lb-table').innerHTML = buildTable(slice, { showExam:false, isAgg:isAll, rowHighlight:3, globalRanks:isAll ? _globalRankMap : singleExamGlobalRanks, useGlobalRank:true });
@@ -2773,8 +2953,7 @@
     }
 
     function renderSchools() {
-      const testId = schoolTestId;
-      const data   = testId === 'all' ? ALL : ALL.filter(r => r.exam_id === testId);
+      const data = getRowsForSel(schoolTestSel);
       schoolData   = buildSchoolStats(data);
       let schools  = Object.entries(schoolData).map(([name,d]) => ({name,...d}));
       if (schoolSort === 'count')  schools.sort((a,b) => b.totalEntries - a.totalEntries);
