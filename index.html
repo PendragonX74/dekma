@@ -196,7 +196,7 @@
       color: var(--text3)
     }
 
-    .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column }
+    .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-width: 0 }
     .topbar {
       position: sticky;
       top: 0;
@@ -272,7 +272,7 @@
     .badge-b { background: rgba(96,165,250,.15); color: var(--male) }
     .badge-g { background: rgba(244,114,182,.15); color: var(--female) }
 
-    .content { padding: 32px; flex: 1 }
+    .content { padding: 32px; flex: 1; min-width: 0; overflow-x: hidden }
     .page { display: none }
     .page.active { display: block; animation: fadeIn .3s ease-out }
 
@@ -581,18 +581,18 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-direction: column;
-      gap: 0;
+      overflow-y: auto;
       animation: fadeIn .4s ease-out
     }
     .splash-bg-glow {
-      position: absolute;
+      position: fixed;
       width: 600px; height: 600px;
       border-radius: 50%;
       background: radial-gradient(circle, rgba(232,160,32,.06) 0%, transparent 70%);
       pointer-events: none;
       top: 50%; left: 50%;
-      transform: translate(-50%, -50%)
+      transform: translate(-50%, -50%);
+      z-index: 0
     }
     .splash-inner {
       position: relative;
@@ -600,7 +600,8 @@
       text-align: center;
       max-width: 520px;
       width: 100%;
-      padding: 0 24px
+      padding: 48px 24px;
+      box-sizing: border-box
     }
     .splash-badge {
       font-family: 'DM Mono', monospace;
@@ -743,6 +744,7 @@
     .sidebar-overlay.open { display: block }
 
     .expand-btn { display: none; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 10px; background: none; border: none; border-top: 1px solid var(--border); cursor: pointer; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); transition: all .15s; letter-spacing: 1px }
+    @media(min-width:769px) { .expand-btn { display: none !important } }
     .expand-btn:hover { color: var(--amber); background: rgba(232,160,32,.04) }
     .expand-btn-icon { transition: transform .3s }
     .expand-btn.expanded .expand-btn-icon { transform: rotate(180deg) }
@@ -784,54 +786,97 @@
     @media(max-width:768px) {
       .sidebar { transform: translateX(-100%) }
       .sidebar.open { transform: translateX(0) }
-      .main { margin-left: 0 }
-      .content { padding: 14px }
-      .topbar { padding: 12px 16px }
+      .main { margin-left: 0; min-width: 0 }
+      .content { padding: 12px; min-width: 0 }
+      .topbar { padding: 10px 14px }
       .page-title { font-size: 20px; letter-spacing: 2px }
-      .search-input { width: 160px }
+      .search-input { width: 150px }
       .hamburger { display: flex }
       .stats-grid { grid-template-columns: repeat(2,1fr); gap: 10px }
       .stat-value { font-size: 32px }
+      .stat-card { padding: 14px }
       .two-col, .three-col { grid-template-columns: 1fr }
       .podium { gap: 6px; padding: 16px 8px 8px }
       .podium-slot:nth-child(2) .podium-avatar { width: 52px; height: 52px; font-size: 22px }
       .podium-slot:nth-child(2) .podium-marks { font-size: 28px }
-      .student-header { flex-direction: column; gap: 14px }
+      .student-header { flex-direction: column; gap: 12px; padding: 16px }
       .student-avatar { width: 54px; height: 54px; font-size: 24px }
-      .student-name { font-size: 24px }
-      .insight-grid { grid-template-columns: repeat(2,1fr) }
-      .filter-bar { gap: 8px }
+      .student-name { font-size: 22px }
+      .student-school { font-size: 11px }
+      .student-pills { gap: 6px }
+      .pill { font-size: 9px; padding: 3px 8px }
+      .verdict-box { padding: 14px 16px; gap: 12px }
+      .verdict-icon { font-size: 26px }
+      .verdict-title { font-size: 18px }
+      .verdict-text { font-size: 13px }
+      .insight-grid { grid-template-columns: repeat(2,1fr); gap: 10px }
+      .insight-card { padding: 12px }
+      .insight-value { font-size: 24px }
+      .filter-bar { gap: 6px }
       .filter-select, .filter-btn { font-size: 11px; padding: 7px 10px }
       .school-bar-wrap { display: none }
-      .tdd-btn { min-width: 120px }
-      thead th { padding: 8px 10px; font-size: 9px }
-      tbody td { padding: 8px 10px; font-size: 13px }
+      .tdd-btn { min-width: 110px; font-size: 10px; padding: 6px 10px }
+      thead th { padding: 7px 8px; font-size: 9px }
+      tbody td { padding: 7px 8px; font-size: 13px }
       .td-marks, .td-avg { font-size: 16px }
       .card-header { flex-direction: column; align-items: flex-start; gap: 8px }
+      .card { border-radius: 10px }
+      .card-body { padding: 14px }
       .expand-btn { display: flex }
       .schools-bar-hidden { display: none !important }
       .schools-bar-hidden.visible-mobile { display: flex !important }
-      .splash-title { font-size: 52px }
       .logo-year-text { font-size: 22px }
       .logo-city-text { font-size: 15px }
-      /* Promote context badge as main selector on mobile; hide verbose page title */
       .page-title { display: none }
-      .context-badge {
-        font-size: 12px;
-        padding: 6px 14px;
-        gap: 8px;
-        border-radius: 8px;
-        letter-spacing: 1px
-      }
+      .context-badge { font-size: 12px; padding: 6px 14px; gap: 8px; border-radius: 8px; letter-spacing: 1px }
       .context-badge-arrow { font-size: 9px }
+      .global-rank-badge { padding: 10px 14px; gap: 8px }
+      .global-rank-badge .rank-num { font-size: 28px }
+      .global-rank-badge .rank-icon { font-size: 22px }
+      .type-rank-chip { padding: 6px 12px }
+      .td-school { font-size: 11px }
+      .page { max-width: 100%; overflow-x: hidden }
+      .filter-bar { max-width: 100% }
+      .stu-search-input { width: 100% !important }
+      #lb-name { width: 100% !important; max-width: 100% }
+      /* Splash: compress vertical spacing so all content fits without scrolling */
+      .splash-title { font-size: 52px; letter-spacing: 5px }
+      .splash-subtitle { font-size: 10px; letter-spacing: 1.5px; margin-bottom: 24px }
+      .splash-options { margin-bottom: 16px }
+      .splash-divider { margin-bottom: 16px; height: 28px }
+      .splash-step-label { margin-bottom: 8px }
+      .splash-opt { font-size: 18px; padding: 10px 18px; min-width: 80px }
+      .splash-opt.city-opt { font-size: 15px; min-width: 110px }
+      .splash-go-btn { padding: 12px 36px; font-size: 18px }
+      .splash-inner { padding: 36px 20px }
     }
     @media(max-width:480px) {
-      .stats-grid { grid-template-columns: 1fr 1fr }
-      .stat-value { font-size: 28px }
-      .search-input { width: 130px; font-size: 11px }
+      .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px }
+      .stat-value { font-size: 26px }
+      .stat-label { font-size: 9px }
+      .stat-sub { font-size: 10px }
+      .search-input { width: 120px; font-size: 11px }
       .podium-name { font-size: 11px }
-      .two-col, .three-col { gap: 12px }
-      .splash-title { font-size: 40px; letter-spacing: 4px }
+      .two-col, .three-col { gap: 10px }
+      .score-bar-label { width: 110px; font-size: 12px }
+      .school-count { width: 40px; font-size: 10px }
+      .school-avg { font-size: 16px; width: 42px }
+      .school-rank-num { font-size: 18px; width: 28px }
+      .school-name { font-size: 13px }
+      .section-title { font-size: 16px }
+      .card-title { font-size: 10px }
+      /* Splash: even tighter on small phones */
+      .splash-title { font-size: 44px; letter-spacing: 4px }
+      .splash-badge { font-size: 9px; letter-spacing: 2px; margin-bottom: 8px }
+      .splash-subtitle { font-size: 9px; margin-bottom: 20px }
+      .splash-opt { font-size: 16px; padding: 9px 14px; min-width: 72px }
+      .splash-opt.city-opt { font-size: 13px; min-width: 100px }
+      .splash-inner { padding: 28px 16px }
+    }
+    @media(max-width:360px) {
+      .splash-title { font-size: 38px; letter-spacing: 3px }
+      .splash-opt { font-size: 14px; padding: 8px 12px; min-width: 64px }
+      .splash-opt.city-opt { font-size: 12px; min-width: 88px }
     }
   </style>
 </head>
@@ -950,7 +995,26 @@
               </div>
             </div>
           </div>
+          <div class="card" style="margin-bottom:24px">
+            <div class="card-header">
+              <div class="card-title">⭐ Top 10</div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div id="top10-sel" class="tdd-wrap"></div>
+                <button class="t10-sort-btn active" id="t10-rank-btn" onclick="setTop10Sort('rank',this)">By Rank</button>
+                <button class="t10-sort-btn" id="t10-avg-btn" onclick="setTop10Sort('avg',this)">By Avg</button>
+              </div>
+            </div>
+            <div class="table-wrap" id="top10-table"></div>
+          </div>
           <div class="two-col">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">📈 Tests Overview</div>
+              </div>
+              <div class="card-body">
+                <div class="chart-wrap"><canvas id="tests-chart"></canvas></div>
+              </div>
+            </div>
             <div class="card">
               <div class="card-header">
                 <div class="card-title">🏫 Top Schools (by entries)</div>
@@ -964,25 +1028,6 @@
                 </button>
               </div>
             </div>
-            <div class="card">
-              <div class="card-header">
-                <div class="card-title">📈 Tests Overview</div>
-              </div>
-              <div class="card-body">
-                <div class="chart-wrap"><canvas id="tests-chart"></canvas></div>
-              </div>
-            </div>
-          </div>
-          <div class="card" style="margin-bottom:24px">
-            <div class="card-header">
-              <div class="card-title">⭐ Top 10</div>
-              <div style="display:flex;align-items:center;gap:8px">
-                <div id="top10-sel" class="tdd-wrap"></div>
-                <button class="t10-sort-btn active" id="t10-rank-btn" onclick="setTop10Sort('rank',this)">By Rank</button>
-                <button class="t10-sort-btn" id="t10-avg-btn" onclick="setTop10Sort('avg',this)">By Avg</button>
-              </div>
-            </div>
-            <div class="table-wrap" id="top10-table"></div>
           </div>
         </div>
 
@@ -1008,7 +1053,7 @@
             <div class="filter-btn active" id="lb-g-all" onclick="setLbGender('',this)">All Genders</div>
             <div class="filter-btn" id="lb-g-b" onclick="setLbGender('B',this)">Boys</div>
             <div class="filter-btn" id="lb-g-g" onclick="setLbGender('G',this)">Girls</div>
-            <input class="search-input" id="lb-name" placeholder="Filter by name…" oninput="lbPage=1;renderLeaderboard()" style="width:200px">
+            <input class="search-input" id="lb-name" placeholder="Filter by name…" oninput="lbPage=1;renderLeaderboard()" style="width:200px;max-width:100%">
           </div>
           <div class="card">
             <div class="card-header">
@@ -1026,7 +1071,7 @@
         <!-- STUDENTS -->
         <div class="page" id="page-students">
           <div class="filter-bar" id="stu-filter-bar">
-            <input class="search-input" id="stu-search" placeholder="Type a student name…" oninput="searchStudents()" style="width:320px">
+            <input class="search-input stu-search-input" id="stu-search" placeholder="Type a student name…" oninput="searchStudents()" style="width:320px;max-width:100%">
             <select class="filter-select" id="stu-school" onchange="searchStudents()">
               <option value="">All Schools</option>
             </select>
@@ -2770,7 +2815,9 @@
                 <div style="font-family:'DM Mono',monospace;font-size:9px;opacity:.6;margin-top:2px">${totalStudents>0?Math.round((1-gRank/totalStudents)*100)+'th pct':'—'}</div>
               </div>
             </div>
-            ${tRankHTML}${rRankHTML}
+            <div style="display:flex;gap:10px;flex-shrink:0">
+              ${tRankHTML}${rRankHTML}
+            </div>
           </div>`;
       }
 
@@ -2839,8 +2886,7 @@
           ${classPercentile!==null ? `<div class="insight-card pink" style="animation-delay:.25s"><div class="insight-label">Best Percentile</div><div class="insight-value pink">${classPercentile}<span style="font-size:14px">th</span></div><div class="insight-sub">In ${bestExamEntry?.exam_label||''}</div></div>` : ''}
           ${revAvg!==null ? `<div class="insight-card amber" style="animation-delay:.3s"><div class="insight-label">Revision Avg</div><div class="insight-value amber">${revAvg.toFixed(1)}</div><div class="insight-sub">${revApps.length} test${revApps.length>1?'s':''}</div></div>` : ''}
           ${thyAvg!==null ? `<div class="insight-card teal" style="animation-delay:.35s"><div class="insight-label">Theory Avg</div><div class="insight-value teal">${thyAvg.toFixed(1)}</div><div class="insight-sub">${thyApps.length} test${thyApps.length>1?'s':''}</div></div>` : ''}
-          ${predicted!==null ? `<div class="insight-card green" style="animation-delay:.4s"><div class="insight-label">Predicted Next</div><div class="insight-value green">${predicted}</div><div class="insight-sub">Linear projection</div></div>` : ''}
-          ${rival ? `<div class="insight-card blue" style="animation-delay:.45s"><div class="insight-label">Closest Rival</div><div class="insight-value" style="color:var(--blue);font-size:16px;margin-top:4px">${rival.name.split(' ')[0]}</div><div class="insight-sub">Avg ${rival.marks.toFixed(1)} · diff ${Math.abs(rival.marks-avg).toFixed(1)}</div></div>` : ''}
+
         </div>
 
         <div class="card" style="margin-bottom:20px">
@@ -2852,7 +2898,7 @@
               ${predicted!==null ? `<span style="color:#818cf8">⋯ Predicted</span>` : ''}
             </div>
           </div>
-          <div class="card-body"><div style="height:320px;position:relative"><canvas id="stu-chart"></canvas></div></div>
+          <div class="card-body"><div style="height:240px;position:relative"><canvas id="stu-chart"></canvas></div></div>
         </div>
 
         <div class="two-col" style="margin-bottom:24px">
@@ -2913,8 +2959,15 @@
         const sortedApps  = apps;
         const sortedMarks = sortedApps.map(a => a.marks);
         const ptColors    = sortedApps.map(a => a.exam_type==='theory' ? '#2dd4bf' : '#e8a020');
-        const ptSizes     = sortedApps.map(a => a.marks===best ? 8 : 5);
         const thyCount    = sortedApps.filter(a => a.exam_type==='theory').length;
+
+        // Scriptable point radius — scales with the chart's actual rendered width
+        const dynRadius = (ctx) => {
+          const w = ctx.chart.width || 300;
+          const base = w < 320 ? 2 : w < 500 ? 3 : 5;
+          return sortedApps[ctx.dataIndex]?.marks === best ? base + 3 : base;
+        };
+        const dynHover = (ctx) => { const w = ctx.chart.width || 300; return w < 500 ? 6 : 9; };
 
         const datasets = [{
           label:'Score', data:sortedMarks,
@@ -2927,7 +2980,7 @@
           },
           borderWidth:2.5, fill:true, tension:.35,
           pointBackgroundColor:ptColors, pointBorderColor:ptColors,
-          pointBorderWidth:2, pointRadius:ptSizes, pointHoverRadius:9,
+          pointBorderWidth:2, pointRadius:dynRadius, pointHoverRadius:dynHover,
         }];
 
         const classAvgs = sortedApps.map(a => {
@@ -2938,7 +2991,7 @@
 
         if (predicted !== null) {
           const pd = new Array(sortedMarks.length).fill(null); pd.push(predicted);
-          datasets.push({ label:'Predicted', data:pd, borderColor:'#818cf8', backgroundColor:'rgba(129,140,248,.18)', borderWidth:1.5, borderDash:[3,3], pointRadius:[...new Array(sortedMarks.length).fill(0),8], pointBackgroundColor:'#818cf8', fill:false });
+          datasets.push({ label:'Predicted', data:pd, borderColor:'#818cf8', backgroundColor:'rgba(129,140,248,.18)', borderWidth:1.5, borderDash:[3,3], pointRadius:(ctx) => { const w=ctx.chart.width||300; return ctx.dataIndex===sortedMarks.length?(w<500?5:8):0; }, pointBackgroundColor:'#818cf8', fill:false });
         }
 
         const allLabels = [...sortedApps.map(a => a.exam_label), ...(predicted!==null ? ['Next →'] : [])];
@@ -2969,7 +3022,7 @@
                   ctx3.restore();
                 }
               },
-              y:{ min:Math.max(0,Math.min(...sortedMarks)-12), max:Math.min(100,Math.max(...sortedMarks)+10), ticks:{color:'#5a5a78',font:{family:'DM Mono',size:9}}, grid:{color:'rgba(255,255,255,.04)'} }
+              y:{ min:Math.max(0,Math.min(...sortedMarks,...classAvgs.filter(v=>v!==null))-14), max:Math.min(105,Math.max(...sortedMarks,...classAvgs.filter(v=>v!==null))+12), ticks:{color:'#5a5a78',font:{family:'DM Mono',size:9}}, grid:{color:'rgba(255,255,255,.04)'} }
             }
           }
         });
@@ -3254,6 +3307,46 @@
     //  BOOT
     // ═══════════════════════════════════════════════════
     window.addEventListener('DOMContentLoaded', loadData);
+
+    // ═══════════════════════════════════════════════════
+    //  SECRET ADMIN TRIGGER
+    //  Sequence: Ctrl × 3, then type "asoiaf"
+    // ═══════════════════════════════════════════════════
+    (function() {
+      const KONAMI_KEY  = 'asoiaf';
+      const CTRL_NEEDED = 3;
+      let ctrlCount = 0, ctrlTimer = null;
+      let seqBuf = '', seqActive = false;
+
+      document.addEventListener('keydown', e => {
+        // Phase 1: count Ctrl presses (ignore if user is typing in a field)
+        if (e.key === 'Control' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+          ctrlCount++;
+          clearTimeout(ctrlTimer);
+          ctrlTimer = setTimeout(() => { ctrlCount = 0; }, 1200);
+          if (ctrlCount >= CTRL_NEEDED) {
+            ctrlCount = 0;
+            seqBuf = '';
+            seqActive = true;
+          }
+          return;
+        }
+        // Phase 2: collect the keyword
+        if (seqActive && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+          if (e.key === 'Escape') { seqActive = false; seqBuf = ''; return; }
+          if (e.key.length === 1) {
+            seqBuf += e.key.toLowerCase();
+            if (seqBuf.length > KONAMI_KEY.length) seqBuf = seqBuf.slice(-KONAMI_KEY.length);
+            if (seqBuf === KONAMI_KEY) {
+              seqActive = false; seqBuf = '';
+              // Drop a short-lived token then navigate
+              sessionStorage.setItem('__adm', Date.now().toString());
+              window.location.href = 'admin.html';
+            }
+          }
+        }
+      });
+    })();
   </script>
 </body>
 

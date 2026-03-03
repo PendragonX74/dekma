@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>—</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:     #0a0a0f;
+      --bg2:    #111118;
+      --bg3:    #18181f;
+      --border: #2a2a38;
+      --border2:#3a3a50;
+      --amber:  #e8a020;
+      --amber2: #f5c060;
+      --teal:   #2dd4bf;
+      --pink:   #f472b6;
+      --blue:   #60a5fa;
+      --red:    #ef4444;
+      --green:  #4ade80;
+      --text:   #e8e8f0;
+      --text2:  #9090b0;
+      --text3:  #5a5a78;
+      --radius: 8px;
+      --radius2:14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0 }
+    html { scroll-behavior: smooth }
+    body {
+      font-family: 'Crimson Pro', serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 9999; opacity: .6;
+    }
+    ::-webkit-scrollbar { width: 5px }
+    ::-webkit-scrollbar-track { background: var(--bg2) }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px }
+
+    /* ── GATE ── */
+    #gate {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 500;
+      flex-direction: column;
+      gap: 0;
+    }
+    .gate-box {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 0;
+    }
+    #gate-input {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 20px;
+      font-family: 'DM Mono', monospace;
+      font-size: 15px;
+      color: var(--text);
+      width: 260px;
+      outline: none;
+      letter-spacing: 3px;
+      text-align: center;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    #gate-input:focus { border-color: var(--amber); box-shadow: 0 0 0 3px rgba(232,160,32,.08) }
+    #gate-input.shake {
+      animation: shake .35s ease;
+      border-color: var(--pink);
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0) }
+      20%      { transform: translateX(-6px) }
+      40%      { transform: translateX(6px) }
+      60%      { transform: translateX(-4px) }
+      80%      { transform: translateX(4px) }
+    }
+    #gate-hint {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+      margin-top: 10px;
+      letter-spacing: 1px;
+      opacity: 0;
+      transition: opacity .3s;
+    }
+    #gate-hint.visible { opacity: 1 }
+
+    /* ── APP (hidden until unlocked) ── */
+    #app { display: none; min-height: 100vh; flex-direction: column }
+    #app.unlocked { display: flex }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(10,10,15,.9);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 14px }
+    .back-btn {
+      font-family: 'DM Mono', monospace; font-size: 11px;
+      color: var(--text3); cursor: pointer;
+      padding: 6px 12px; border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: none; transition: all .15s; letter-spacing: .5px;
+    }
+    .back-btn:hover { color: var(--text); border-color: var(--border2) }
+    .topbar-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px; letter-spacing: 3px;
+      color: var(--amber);
+    }
+    .topbar-badge {
+      font-family: 'DM Mono', monospace; font-size: 9px;
+      letter-spacing: 2px; text-transform: uppercase;
+      padding: 3px 10px; border-radius: 20px;
+      background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.3);
+      color: var(--red);
+    }
+    .lock-btn {
+      font-family: 'DM Mono', monospace; font-size: 10px;
+      color: var(--text3); cursor: pointer;
+      padding: 6px 12px; border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: none; transition: all .15s;
+    }
+    .lock-btn:hover { color: var(--pink); border-color: rgba(244,114,182,.4) }
+
+    /* ── CONTENT ── */
+    .content { padding: 36px 32px; flex: 1 }
+
+    /* ── SECTION PICKER ── */
+    .section-picker {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 20px; max-width: 640px; margin: 0 auto 40px;
+    }
+    .section-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius2); padding: 32px 28px;
+      cursor: pointer; transition: all .2s; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .section-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      opacity: 0; transition: opacity .2s;
+    }
+    .section-card.student::before { background: var(--teal) }
+    .section-card.test::before    { background: var(--amber) }
+    .section-card:hover { border-color: var(--border2); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,.4) }
+    .section-card:hover::before { opacity: 1 }
+    .section-card.active.student { border-color: var(--teal); background: rgba(45,212,191,.05) }
+    .section-card.active.test    { border-color: var(--amber); background: rgba(232,160,32,.05) }
+    .section-card.active::before { opacity: 1 }
+    .sc-icon { font-size: 36px; margin-bottom: 14px; display: block }
+    .sc-title {
+      font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+      letter-spacing: 2px; color: var(--text); margin-bottom: 6px;
+    }
+    .sc-desc {
+      font-family: 'DM Mono', monospace; font-size: 10px;
+      color: var(--text3); letter-spacing: .5px; line-height: 1.6;
+    }
+
+    /* ── PANEL BASE ── */
+    .panel { display: none; animation: fadeIn .3s ease-out }
+    .panel.active { display: block }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(10px) } to { opacity:1; transform:translateY(0) } }
+
+    .panel-header {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 28px;
+    }
+    .panel-back {
+      background: none; border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 6px 12px; font-family: 'DM Mono', monospace; font-size: 10px;
+      color: var(--text3); cursor: pointer; transition: all .15s;
+    }
+    .panel-back:hover { color: var(--text); border-color: var(--border2) }
+    .panel-title {
+      font-family: 'Bebas Neue', sans-serif; font-size: 26px;
+      letter-spacing: 2px;
+    }
+    .panel-title.teal { color: var(--teal) }
+    .panel-title.amber { color: var(--amber) }
+
+    /* ── SHARED FORM ELEMENTS ── */
+    .field-label {
+      font-family: 'DM Mono', monospace; font-size: 9px;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--text3); margin-bottom: 6px; display: block;
+    }
+    .field-input, .field-select {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 10px 14px;
+      font-family: 'DM Mono', monospace; font-size: 12px;
+      color: var(--text); outline: none; width: 100%;
+      transition: border-color .2s;
+    }
+    .field-input:focus, .field-select:focus { border-color: var(--amber) }
+    .field-select option { background: var(--bg2) }
+    .field-group { margin-bottom: 18px }
+    .btn {
+      font-family: 'DM Mono', monospace; font-size: 11px;
+      letter-spacing: 1px; padding: 10px 22px;
+      border-radius: var(--radius); border: 1px solid; cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-primary {
+      background: var(--amber); border-color: var(--amber);
+      color: #000; font-weight: 500;
+    }
+    .btn-primary:hover { background: var(--amber2); border-color: var(--amber2) }
+    .btn-ghost {
+      background: none; border-color: var(--border);
+      color: var(--text2);
+    }
+    .btn-ghost:hover { border-color: var(--border2); color: var(--text) }
+    .btn-danger {
+      background: rgba(239,68,68,.1); border-color: rgba(239,68,68,.3);
+      color: var(--red);
+    }
+    .btn-danger:hover { background: rgba(239,68,68,.18); border-color: var(--red) }
+    .btn-success {
+      background: rgba(74,222,128,.1); border-color: rgba(74,222,128,.3);
+      color: var(--green);
+    }
+    .btn-success:hover { background: rgba(74,222,128,.18); border-color: var(--green) }
+
+    /* ── EDIT STUDENT PANEL ── */
+    .search-row { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 24px }
+    .search-row .field-group { flex: 1; margin-bottom: 0 }
+    .student-result-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px }
+    .student-result-item {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 12px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; transition: all .15s;
+    }
+    .student-result-item:hover { border-color: var(--teal); background: rgba(45,212,191,.04) }
+    .sri-name { font-size: 15px; color: var(--text) }
+    .sri-meta { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); margin-top: 2px }
+    .sri-arrow { color: var(--text3); font-size: 16px }
+
+    .student-edit-form {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius2); padding: 24px;
+    }
+    .sef-header {
+      display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
+      padding-bottom: 16px; border-bottom: 1px solid var(--border);
+    }
+    .sef-avatar {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: var(--bg3); border: 2px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+      color: var(--teal); flex-shrink: 0;
+    }
+    .sef-name { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 1px }
+    .sef-school { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); margin-top: 2px }
+    .sef-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px }
+    .gender-btns { display: flex; gap: 8px }
+    .gender-btn {
+      flex: 1; padding: 9px; text-align: center;
+      font-family: 'DM Mono', monospace; font-size: 11px;
+      border-radius: var(--radius); border: 1px solid var(--border);
+      background: var(--bg3); color: var(--text3); cursor: pointer;
+      transition: all .15s;
+    }
+    .gender-btn:hover { border-color: var(--border2); color: var(--text2) }
+    .gender-btn.active-b { border-color: var(--blue); background: rgba(96,165,250,.1); color: var(--blue) }
+    .gender-btn.active-g { border-color: var(--pink); background: rgba(244,114,182,.1); color: var(--pink) }
+    .sef-actions { display: flex; gap: 10px; justify-content: flex-end }
+
+    /* ── EDIT TEST PANEL ── */
+    .test-selector {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius2); padding: 24px; margin-bottom: 24px;
+    }
+    .test-sel-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px }
+    .test-sheet-wrap {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius2); overflow: hidden;
+    }
+    .test-sheet-header {
+      padding: 14px 20px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap;
+    }
+    .test-sheet-title {
+      font-family: 'Bebas Neue', sans-serif; font-size: 18px;
+      letter-spacing: 1px; color: var(--text);
+    }
+    .test-sheet-search {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 7px 12px;
+      font-family: 'DM Mono', monospace; font-size: 11px;
+      color: var(--text); outline: none; width: 220px;
+      transition: border-color .2s;
+    }
+    .test-sheet-search:focus { border-color: var(--amber) }
+    .test-sheet-search::placeholder { color: var(--text3) }
+    .test-table-wrap { overflow-x: auto; max-height: 480px; overflow-y: auto }
+    .test-table-wrap::-webkit-scrollbar { width: 4px; height: 4px }
+    .test-table-wrap::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px }
+    table.test-tbl { width: 100%; border-collapse: collapse }
+    table.test-tbl thead { position: sticky; top: 0; z-index: 2 }
+    table.test-tbl thead tr { background: var(--bg3) }
+    table.test-tbl thead th {
+      padding: 10px 14px; font-family: 'DM Mono', monospace;
+      font-size: 9px; color: var(--text3); letter-spacing: 1px;
+      text-transform: uppercase; text-align: left;
+      border-bottom: 1px solid var(--border); white-space: nowrap;
+    }
+    table.test-tbl tbody tr { border-bottom: 1px solid var(--border); transition: background .1s }
+    table.test-tbl tbody tr:last-child { border-bottom: none }
+    table.test-tbl tbody tr:hover { background: var(--bg3) }
+    table.test-tbl tbody td {
+      padding: 10px 14px; font-size: 14px; color: var(--text);
+    }
+    .tbl-rank { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); width: 50px }
+    .tbl-marks { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--amber) }
+    .tbl-school { font-size: 12px; color: var(--text2) }
+    .edit-score-cell { display: flex; align-items: center; gap: 8px }
+    .score-edit-input {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 5px; padding: 5px 10px;
+      font-family: 'Bebas Neue', monospace; font-size: 18px;
+      color: var(--amber); outline: none; width: 70px; text-align: center;
+      transition: border-color .2s;
+    }
+    .score-edit-input:focus { border-color: var(--amber) }
+    .score-save-btn {
+      background: rgba(74,222,128,.1); border: 1px solid rgba(74,222,128,.3);
+      border-radius: 5px; padding: 4px 10px;
+      font-family: 'DM Mono', monospace; font-size: 9px;
+      color: var(--green); cursor: pointer; transition: all .15s;
+      letter-spacing: 1px; white-space: nowrap;
+    }
+    .score-save-btn:hover { background: rgba(74,222,128,.18); border-color: var(--green) }
+    .score-save-btn:disabled { opacity: .35; pointer-events: none }
+    .score-saved-badge {
+      font-family: 'DM Mono', monospace; font-size: 9px;
+      color: var(--green); letter-spacing: 1px; opacity: 0;
+      transition: opacity .2s;
+    }
+    .score-saved-badge.visible { opacity: 1 }
+
+    /* placeholder / empty states */
+    .panel-empty {
+      text-align: center; padding: 60px 20px;
+      font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3);
+    }
+    .panel-empty-icon { font-size: 36px; margin-bottom: 12px }
+
+    /* notification toast */
+    #toast {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--bg2); border: 1px solid var(--border2);
+      border-radius: var(--radius); padding: 12px 18px;
+      font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text2);
+      box-shadow: 0 8px 32px rgba(0,0,0,.5);
+      transform: translateY(12px); opacity: 0;
+      transition: transform .25s, opacity .25s;
+      pointer-events: none; z-index: 1000; max-width: 320px;
+    }
+    #toast.show { transform: translateY(0); opacity: 1 }
+    #toast.success { border-color: rgba(74,222,128,.4); color: var(--green) }
+    #toast.error   { border-color: rgba(244,114,182,.4); color: var(--pink) }
+
+    @media(max-width:600px) {
+      .content { padding: 20px 16px }
+      .topbar  { padding: 12px 16px }
+      .section-picker { grid-template-columns: 1fr; max-width: 100% }
+      .test-sel-grid { grid-template-columns: 1fr }
+      .sef-grid { grid-template-columns: 1fr }
+      .topbar-title { font-size: 18px }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── GATE ── -->
+<div id="gate">
+  <div class="gate-box">
+    <input id="gate-input" type="text" autocomplete="off" spellcheck="false" placeholder="">
+    <div id="gate-hint"></div>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div id="app">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="back-btn" onclick="window.location.href='index.html'">← Back</button>
+      <div class="topbar-title">ADMIN</div>
+      <div class="topbar-badge">RESTRICTED</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div id="file-status" style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;padding:4px 10px;border-radius:20px;background:rgba(90,90,120,.2);border:1px solid var(--border);color:var(--text3)">NO FILE LINKED</div>
+      <button class="lock-btn" id="link-file-btn" onclick="linkResultsFile()" style="color:var(--amber);border-color:rgba(232,160,32,.3)">🔗 Link results.js</button>
+      <button class="lock-btn" onclick="lockPanel()">Lock ⌫</button>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- Section picker (home) -->
+    <div id="panel-home">
+      <div class="section-picker">
+        <div class="section-card student" onclick="openPanel('student')">
+          <span class="sc-icon">◎</span>
+          <div class="sc-title">Edit Student Data</div>
+          <div class="sc-desc">Name · School · Gender<br>and profile fields</div>
+        </div>
+        <div class="section-card test" onclick="openPanel('test')">
+          <span class="sc-icon">▦</span>
+          <div class="sc-title">Edit Test Data</div>
+          <div class="sc-desc">Find a student in a test<br>and update their score</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Edit Student Panel ── -->
+    <div class="panel" id="panel-student">
+      <div class="panel-header">
+        <button class="panel-back" onclick="openPanel('home')">← Back</button>
+        <div class="panel-title teal">Edit Student Data</div>
+      </div>
+
+      <div class="search-row">
+        <div class="field-group">
+          <label class="field-label">Student Name</label>
+          <input class="field-input" id="stu-search-q" placeholder="Type to search…" oninput="searchStudentAdmin()">
+        </div>
+        <div class="field-group" style="max-width:200px">
+          <label class="field-label">School</label>
+          <select class="field-select" id="stu-search-school" onchange="searchStudentAdmin()">
+            <option value="">All Schools</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="stu-result-list" class="student-result-list"></div>
+
+      <div id="stu-edit-form" style="display:none">
+        <div class="student-edit-form">
+          <div class="sef-header">
+            <div class="sef-avatar" id="sef-avatar"></div>
+            <div>
+              <div class="sef-name" id="sef-display-name"></div>
+              <div class="sef-school" id="sef-display-school"></div>
+            </div>
+          </div>
+          <div class="sef-grid">
+            <div class="field-group">
+              <label class="field-label">Full Name</label>
+              <input class="field-input" id="sef-name" placeholder="Full name">
+            </div>
+            <div class="field-group">
+              <label class="field-label">School</label>
+              <input class="field-input" id="sef-school" placeholder="School name">
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Gender</label>
+            <div class="gender-btns">
+              <div class="gender-btn" id="gb-b" onclick="setGender('B')">Boy</div>
+              <div class="gender-btn" id="gb-g" onclick="setGender('G')">Girl</div>
+            </div>
+          </div>
+          <div class="sef-actions">
+            <button class="btn btn-ghost" onclick="cancelStudentEdit()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveStudentEdit()">Save Changes</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="stu-empty" class="panel-empty">
+        <div class="panel-empty-icon">◎</div>
+        Search for a student above to edit their profile.
+      </div>
+    </div>
+
+    <!-- ── Edit Test Panel ── -->
+    <div class="panel" id="panel-test">
+      <div class="panel-header">
+        <button class="panel-back" onclick="openPanel('home')">← Back</button>
+        <div class="panel-title amber">Edit Test Data</div>
+      </div>
+
+      <!-- Step 1: pick test -->
+      <div class="test-selector">
+        <div class="test-sel-grid">
+          <div class="field-group" style="margin-bottom:0">
+            <label class="field-label">City</label>
+            <select class="field-select" id="test-sel-city" onchange="populateTestYears()">
+              <option value="">— Select city —</option>
+            </select>
+          </div>
+          <div class="field-group" style="margin-bottom:0">
+            <label class="field-label">Year</label>
+            <select class="field-select" id="test-sel-year" onchange="populateTestExams()" disabled>
+              <option value="">— Select year —</option>
+            </select>
+          </div>
+          <div class="field-group" style="margin-bottom:0">
+            <label class="field-label">Test</label>
+            <select class="field-select" id="test-sel-exam" onchange="loadTestSheet()" disabled>
+              <option value="">— Select test —</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: score sheet -->
+      <div id="test-sheet-area">
+        <div class="panel-empty">
+          <div class="panel-empty-icon">▦</div>
+          Select a city, year, and test above to load the score sheet.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  // ── ENTRY GUARD ──────────────────────────────────────────────────────────
+  // admin.html is only reachable if index.html wrote a fresh token (<30s old).
+  // Direct URL access or a stale/missing token bounces back to index.html.
+  (function() {
+    const raw = sessionStorage.getItem('__adm');
+    sessionStorage.removeItem('__adm'); // consume immediately — one-time use
+    if (!raw || (Date.now() - parseInt(raw, 10)) > 30000) {
+      window.location.replace('index.html');
+    }
+  })();
+</script>
+<script src="data/results.js"></script>
+<script>
+  // ═══════════════════════════════════════════════
+  //  GATE
+  // ═══════════════════════════════════════════════
+  const PASS   = 'oil and water';
+  let unlocked = false;
+  const gateEl  = document.getElementById('gate');
+  const appEl   = document.getElementById('app');
+  const gateInp = document.getElementById('gate-input');
+
+  gateInp.addEventListener('input', () => {
+    if (gateInp.value === PASS) {
+      unlocked = true;
+      gateEl.style.transition = 'opacity .3s';
+      gateEl.style.opacity = '0';
+      setTimeout(() => {
+        gateEl.style.display = 'none';
+        appEl.classList.add('unlocked');
+        bootAdmin();
+      }, 300);
+    }
+  });
+
+  window.addEventListener('DOMContentLoaded', () => setTimeout(() => gateInp.focus(), 60));
+
+  function lockPanel() {
+    unlocked = false;
+    appEl.classList.remove('unlocked');
+    gateEl.style.opacity = '1';
+    gateEl.style.display = 'flex';
+    gateInp.value = '';
+    setTimeout(() => gateInp.focus(), 60);
+  }
+
+  // ═══════════════════════════════════════════════
+  //  FILE SYSTEM — link & write results.js directly
+  // ═══════════════════════════════════════════════
+  let _fileHandle = null;
+
+  async function linkResultsFile() {
+    if (!window.showOpenFilePicker) {
+      showToast('File System Access API not supported in this browser. Try Chrome/Edge.', 'error');
+      return;
+    }
+    try {
+      const [handle] = await window.showOpenFilePicker({
+        types: [{ description: 'results.js', accept: { 'text/javascript': ['.js'] } }],
+        multiple: false
+      });
+      _fileHandle = handle;
+      updateFileStatus(handle.name);
+      showToast('results.js linked — changes will now save directly to disk.', 'success');
+    } catch (e) {
+      // user cancelled — ignore
+    }
+  }
+
+  function updateFileStatus(name) {
+    const el = document.getElementById('file-status');
+    const btn = document.getElementById('link-file-btn');
+    if (name) {
+      el.textContent = '✓ ' + name;
+      el.style.background = 'rgba(74,222,128,.1)';
+      el.style.borderColor = 'rgba(74,222,128,.3)';
+      el.style.color = '#4ade80';
+      btn.textContent = '🔗 Relink';
+    } else {
+      el.textContent = 'NO FILE LINKED';
+      el.style.background = 'rgba(90,90,120,.2)';
+      el.style.borderColor = 'var(--border)';
+      el.style.color = 'var(--text3)';
+      btn.textContent = '🔗 Link results.js';
+    }
+  }
+
+  async function writeResultsFile() {
+    if (!_fileHandle) {
+      showToast('No file linked. Click "Link results.js" in the toolbar first.', 'error');
+      return false;
+    }
+    try {
+      const content = 'window.dekmaData = ' + JSON.stringify(ADMIN_DATA, null, 2) + ';\n';
+      const writable = await _fileHandle.createWritable();
+      await writable.write(content);
+      await writable.close();
+      return true;
+    } catch (e) {
+      showToast('Write failed: ' + e.message, 'error');
+      return false;
+    }
+  }
+
+  // ═══════════════════════════════════════════════
+  //  BOOT
+  // ═══════════════════════════════════════════════
+  let ADMIN_DATA    = null;
+  let currentPanel  = 'home';
+  let editingStudent = null;   // { name, school, gender } — original values at time of edit
+  let editingGender  = '';
+
+  function bootAdmin() {
+    ADMIN_DATA = window.dekmaData ? JSON.parse(JSON.stringify(window.dekmaData)) : null;
+    openPanel('home');
+    if (ADMIN_DATA) {
+      populateStuSchoolFilter();
+      populateTestCities();
+    }
+  }
+
+  // ═══════════════════════════════════════════════
+  //  PANEL NAVIGATION
+  // ═══════════════════════════════════════════════
+  function openPanel(name) {
+    currentPanel = name;
+    document.getElementById('panel-home').style.display = name === 'home' ? 'block' : 'none';
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    if (name !== 'home') {
+      const el = document.getElementById('panel-' + name);
+      if (el) el.classList.add('active');
+    }
+  }
+
+  // ═══════════════════════════════════════════════
+  //  DATA HELPERS
+  // ═══════════════════════════════════════════════
+  function forEachStudent(cb) {
+    if (!ADMIN_DATA) return;
+    for (const city of Object.keys(ADMIN_DATA))
+      for (const year of Object.keys(ADMIN_DATA[city]))
+        for (const exam of (ADMIN_DATA[city][year].exams || []))
+          for (const s of exam.students)
+            cb(s, exam, city, year);
+  }
+
+  function getUniqueStudents() {
+    const map = {};
+    forEachStudent(s => {
+      const k = s.name + '\x00' + s.school;
+      if (!map[k]) map[k] = { name: s.name, school: s.school, gender: s.gender };
+    });
+    return Object.values(map).sort((a,b) => a.name.localeCompare(b.name));
+  }
+
+  function getSchools() {
+    const set = new Set();
+    forEachStudent(s => set.add(s.school));
+    return [...set].sort();
+  }
+
+  // Recompute rank within one exam (handles ties — same mark = same rank)
+  function recomputeRanks(exam) {
+    const sorted = [...exam.students].sort((a,b) => b.marks - a.marks);
+    sorted.forEach((s, i) => {
+      s.rank = i > 0 && s.marks === sorted[i-1].marks ? sorted[i-1].rank : i + 1;
+    });
+  }
+
+  // ═══════════════════════════════════════════════
+  //  EDIT STUDENT
+  // ═══════════════════════════════════════════════
+  function populateStuSchoolFilter() {
+    const el = document.getElementById('stu-search-school');
+    // clear previous options except first
+    while (el.options.length > 1) el.remove(1);
+    getSchools().forEach(s => {
+      const o = document.createElement('option');
+      o.value = s; o.textContent = s; el.appendChild(o);
+    });
+  }
+
+  function searchStudentAdmin() {
+    const q   = (document.getElementById('stu-search-q').value || '').toLowerCase().trim();
+    const sch = document.getElementById('stu-search-school').value;
+    document.getElementById('stu-edit-form').style.display = 'none';
+    const empty = document.getElementById('stu-empty');
+    const list  = document.getElementById('stu-result-list');
+    list.style.display = 'flex';
+
+    if (!q && !sch) {
+      list.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    let students = getUniqueStudents();
+    if (q)   students = students.filter(s => s.name.toLowerCase().includes(q));
+    if (sch) students = students.filter(s => s.school === sch);
+
+    empty.style.display = 'none';
+    if (!students.length) {
+      list.innerHTML = '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--text3);padding:12px 0">No students found.</div>';
+      return;
+    }
+    list.innerHTML = students.slice(0, 60).map((s, i) => `
+      <div class="student-result-item" onclick="openStudentEdit(${i})">
+        <div>
+          <div class="sri-name">${esc(s.name)}</div>
+          <div class="sri-meta">${esc(s.school)} · ${s.gender === 'B' ? 'Boy' : s.gender === 'G' ? 'Girl' : '—'}</div>
+        </div>
+        <div class="sri-arrow">›</div>
+      </div>`).join('');
+    list._students = students.slice(0, 60);
+  }
+
+  function openStudentEdit(idx) {
+    const list = document.getElementById('stu-result-list');
+    const s = list._students[idx];
+    if (!s) return;
+    // Store originals so we can uniquely identify this student later
+    editingStudent = { name: s.name, school: s.school, gender: s.gender };
+    editingGender  = s.gender;
+    const ini = s.name.split(' ').map(w => w[0]||'').join('').slice(0,2).toUpperCase();
+    document.getElementById('sef-avatar').textContent         = ini;
+    document.getElementById('sef-display-name').textContent   = s.name;
+    document.getElementById('sef-display-school').textContent = s.school;
+    document.getElementById('sef-name').value   = s.name;
+    document.getElementById('sef-school').value = s.school;
+    setGender(s.gender);
+    document.getElementById('stu-edit-form').style.display   = 'block';
+    document.getElementById('stu-result-list').style.display = 'none';
+    document.getElementById('stu-empty').style.display       = 'none';
+  }
+
+  function setGender(g) {
+    editingGender = g;
+    document.getElementById('gb-b').className = 'gender-btn' + (g === 'B' ? ' active-b' : '');
+    document.getElementById('gb-g').className = 'gender-btn' + (g === 'G' ? ' active-g' : '');
+  }
+
+  function cancelStudentEdit() {
+    editingStudent = null;
+    document.getElementById('stu-edit-form').style.display   = 'none';
+    document.getElementById('stu-result-list').style.display = 'flex';
+  }
+
+  async function saveStudentEdit() {
+    if (!editingStudent || !ADMIN_DATA) return showToast('Nothing to save.', 'error');
+    const newName   = document.getElementById('sef-name').value.trim();
+    const newSchool = document.getElementById('sef-school').value.trim();
+    const newGender = editingGender;
+    if (!newName || !newSchool) return showToast('Name and school cannot be empty.', 'error');
+
+    const origName   = editingStudent.name;
+    const origSchool = editingStudent.school;
+
+    // Only update records that match BOTH original name AND original school
+    let changed = 0;
+    forEachStudent(s => {
+      if (s.name === origName && s.school === origSchool) {
+        s.name   = newName;
+        s.school = newSchool;
+        s.gender = newGender;
+        changed++;
+      }
+    });
+
+    if (!changed) return showToast('No matching records found.', 'error');
+
+    const ok = await writeResultsFile();
+    if (ok) {
+      showToast(`Saved — updated ${changed} record${changed !== 1 ? 's' : ''} in results.js.`, 'success');
+      // Update display
+      editingStudent = { name: newName, school: newSchool, gender: newGender };
+      document.getElementById('sef-display-name').textContent   = newName;
+      document.getElementById('sef-display-school').textContent = newSchool;
+      document.getElementById('sef-avatar').textContent = newName.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
+    }
+  }
+
+  // ═══════════════════════════════════════════════
+  //  EDIT TEST SCORES
+  // ═══════════════════════════════════════════════
+  function populateTestCities() {
+    const el = document.getElementById('test-sel-city');
+    while (el.options.length > 1) el.remove(1);
+    if (!ADMIN_DATA) return;
+    Object.keys(ADMIN_DATA).sort().forEach(c => {
+      const o = document.createElement('option');
+      o.value = c; o.textContent = c; el.appendChild(o);
+    });
+  }
+
+  function populateTestYears() {
+    const city = document.getElementById('test-sel-city').value;
+    const yr   = document.getElementById('test-sel-year');
+    const ex   = document.getElementById('test-sel-exam');
+    yr.innerHTML = '<option value="">— Select year —</option>';
+    ex.innerHTML = '<option value="">— Select test —</option>';
+    yr.disabled = true; ex.disabled = true;
+    if (!city || !ADMIN_DATA[city]) return;
+    Object.keys(ADMIN_DATA[city]).sort((a,b) => b - a).forEach(y => {
+      const o = document.createElement('option');
+      o.value = y; o.textContent = y; yr.appendChild(o);
+    });
+    yr.disabled = false;
+    resetTestSheet();
+  }
+
+  function populateTestExams() {
+    const city = document.getElementById('test-sel-city').value;
+    const year = document.getElementById('test-sel-year').value;
+    const ex   = document.getElementById('test-sel-exam');
+    ex.innerHTML = '<option value="">— Select test —</option>';
+    ex.disabled = true;
+    if (!city || !year || !ADMIN_DATA[city]?.[year]) return;
+    (ADMIN_DATA[city][year].exams || []).forEach(e => {
+      const o = document.createElement('option');
+      o.value = e.id; o.textContent = e.label; ex.appendChild(o);
+    });
+    ex.disabled = false;
+    resetTestSheet();
+  }
+
+  function resetTestSheet() {
+    document.getElementById('test-sheet-area').innerHTML = `
+      <div class="panel-empty">
+        <div class="panel-empty-icon">▦</div>
+        Select a city, year, and test above to load the score sheet.
+      </div>`;
+  }
+
+  let _currentExam = null;
+
+  function loadTestSheet() {
+    const city   = document.getElementById('test-sel-city').value;
+    const year   = document.getElementById('test-sel-year').value;
+    const examId = document.getElementById('test-sel-exam').value;
+    if (!city || !year || !examId || !ADMIN_DATA) return resetTestSheet();
+    const exam = (ADMIN_DATA[city][year].exams || []).find(e => e.id === examId);
+    if (!exam) return resetTestSheet();
+    _currentExam = exam;
+    renderTestSheet(exam, '');
+  }
+
+  function renderTestSheet(exam, filterQ) {
+    let students = [...exam.students].sort((a,b) => b.marks - a.marks);
+    if (filterQ) students = students.filter(s => s.name.toLowerCase().includes(filterQ.toLowerCase().trim()));
+
+    const area = document.getElementById('test-sheet-area');
+    area.innerHTML = `
+      <div class="test-sheet-wrap">
+        <div class="test-sheet-header">
+          <div class="test-sheet-title">${esc(exam.label)}
+            <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);margin-left:8px;text-transform:uppercase;letter-spacing:.5px">${exam.type} · ${exam.students.length} students</span>
+          </div>
+          <input class="test-sheet-search" placeholder="Search student…"
+            oninput="renderTestSheet(_currentExam, this.value)"
+            value="${esc(filterQ || '')}">
+        </div>
+        <div class="test-table-wrap">
+          <table class="test-tbl">
+            <thead><tr>
+              <th style="width:50px">Rank</th>
+              <th>Name</th>
+              <th>School</th>
+              <th style="width:60px">Gender</th>
+              <th style="width:180px">Score</th>
+            </tr></thead>
+            <tbody>
+              ${students.map(s => {
+                const gBadge = s.gender === 'B'
+                  ? `<span style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:3px;background:rgba(96,165,250,.12);color:#60a5fa">B</span>`
+                  : s.gender === 'G'
+                  ? `<span style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:3px;background:rgba(244,114,182,.12);color:#f472b6">G</span>`
+                  : '<span style="color:var(--text3)">—</span>';
+                return `<tr>
+                  <td class="tbl-rank">#${s.rank || '—'}</td>
+                  <td style="font-weight:600">${esc(s.name)}</td>
+                  <td class="tbl-school">${esc(s.school)}</td>
+                  <td>${gBadge}</td>
+                  <td>
+                    <div class="edit-score-cell">
+                      <input class="score-edit-input" type="number" min="0" max="100"
+                        value="${s.marks}" data-orig="${s.marks}"
+                        data-name="${esc(s.name)}" data-school="${esc(s.school)}"
+                        oninput="markScoreDirty(this)">
+                      <button class="score-save-btn" disabled onclick="saveScore(this)">Save</button>
+                      <span class="score-saved-badge">✓</span>
+                    </div>
+                  </td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+  }
+
+  function markScoreDirty(inp) {
+    const newVal = parseInt(inp.value, 10);
+    const orig   = parseInt(inp.dataset.orig, 10);
+    const btn    = inp.closest('.edit-score-cell').querySelector('.score-save-btn');
+    btn.disabled = isNaN(newVal) || newVal === orig || newVal < 0 || newVal > 100;
+  }
+
+  async function saveScore(btn) {
+    const cell   = btn.closest('.edit-score-cell');
+    const inp    = cell.querySelector('.score-edit-input');
+    const badge  = cell.querySelector('.score-saved-badge');
+    const newVal = parseInt(inp.value, 10);
+    if (isNaN(newVal) || newVal < 0 || newVal > 100) return showToast('Invalid score.', 'error');
+
+    const origName   = inp.dataset.name;
+    const origSchool = inp.dataset.school;
+
+    // Find and update the student in the current exam
+    const student = _currentExam.students.find(s => s.name === origName && s.school === origSchool);
+    if (!student) return showToast('Student not found in exam data.', 'error');
+
+    student.marks = newVal;
+
+    // Recompute ranks for the whole exam (handles ties correctly)
+    recomputeRanks(_currentExam);
+
+    // Write to disk
+    const ok = await writeResultsFile();
+    if (!ok) return;
+
+    // Update the row's rank cell immediately without full re-render
+    inp.dataset.orig = newVal;
+    btn.disabled = true;
+    badge.classList.add('visible');
+    setTimeout(() => badge.classList.remove('visible'), 2000);
+
+    // Refresh rank column in the rendered table
+    const newRank = student.rank;
+    const rankCell = inp.closest('tr').querySelector('.tbl-rank');
+    if (rankCell) rankCell.textContent = '#' + newRank;
+
+    showToast(`Saved — ${origName}: ${inp.dataset.orig} → ${newVal}, rank recalculated.`, 'success');
+  }
+
+  // ═══════════════════════════════════════════════
+  //  TOAST
+  // ═══════════════════════════════════════════════
+  let _toastTimer;
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'show' + (type ? ' ' + type : '');
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => t.className = '', 3800);
+  }
+
+  // ═══════════════════════════════════════════════
+  //  UTILS
+  // ═══════════════════════════════════════════════
+  function esc(s) {
+    return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+  }
+</script>
+</body>
+</html>
