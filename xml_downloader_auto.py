@@ -6,7 +6,7 @@ Resume-safe downloader:
  - Scans existing files under DEKMA RESULTS/<center>/<year>/
  - For each exam type (T and R) starts from max(existing)+1
  - Downloads only genuinely new XML files
- - Uses basic XML validation (same as your previous is_valid_xml)
+ - Uses basic XML validation
  - Writes a small marker file `.new_downloads` if any new files were saved
 """
 
@@ -18,9 +18,8 @@ from pathlib import Path
 
 BASE_URL = "http://dekma.api.dekma.edu.lk/api/Performance/GetExamResult"
 
-# Configure centers and years you want to monitor
 CENTERS = ["Galle", "Matara", "Hambanthota"]
-YEARS = range(2019, 2029)            # adjust end year as you prefer, end is exclusive
+YEARS = [2026, 2027]   # Only check current/future years — past years won't have new tests
 EXAM_TYPES = ["R", "T"]
 
 ROOT_FOLDER = Path("DEKMA RESULTS")
@@ -38,7 +37,6 @@ SLEEP_BETWEEN = 0.4  # polite delay between requests
 def is_valid_xml(content: bytes) -> bool:
     try:
         root = ET.fromstring(content)
-        # Simple rule: XML contains at least one 'Performance' node
         for elem in root:
             if elem.tag.endswith("Performance"):
                 return True
@@ -71,9 +69,6 @@ def save_file(path: Path, content: bytes):
         fh.write(content)
 
 def download_for_center_year(center: str, year: int) -> bool:
-    """
-    Returns True if at least one new file was downloaded for this center/year.
-    """
     year_folder = ROOT_FOLDER / center / str(year)
     any_new = False
 
@@ -81,7 +76,6 @@ def download_for_center_year(center: str, year: int) -> bool:
         start_no = find_max_existing_number(year_folder, exam_type, year) + 1
         test_no = start_no
 
-        # safety ceiling to avoid infinite loops in weird cases
         MAX_TRIES = 500
         tries = 0
 
@@ -103,11 +97,9 @@ def download_for_center_year(center: str, year: int) -> bool:
 
             content = resp.content
             if not content or not is_valid_xml(content):
-                # No valid XML at this code means server hasn't uploaded that exam yet
-                print(f"[{center} {exam_code}] not valid XML, stopping for this sequence")
+                print(f"[{center} {exam_code}] no valid XML found, stopping sequence")
                 break
 
-            # If we reached here, XML is valid. Save file if not already present.
             file_path = year_folder / f"{exam_code}.xml"
             if file_path.exists():
                 print(f"[{center} {exam_code}] already exists, skipping")
@@ -123,27 +115,27 @@ def download_for_center_year(center: str, year: int) -> bool:
 
 def main():
     print("Starting xml_downloader_auto.py")
+    print(f"Checking years: {YEARS}")
     new_downloads = False
+
     for center in CENTERS:
         for year in YEARS:
-            print(f"Checking {center} {year}")
+            print(f"\nChecking {center} {year}...")
             try:
                 changed = download_for_center_year(center, year)
                 if changed:
                     new_downloads = True
             except Exception as e:
                 print(f"Error while checking {center} {year}: {e}")
-                # continue scanning other centers/years
 
-    # Touch marker if new files saved
     marker = ROOT_FOLDER / ".new_downloads"
     if new_downloads:
         marker.write_text("new\n", encoding="utf-8")
-        print("New files downloaded, marker created:", marker)
+        print("\nNew files downloaded, marker created:", marker)
     else:
         if marker.exists():
             marker.unlink()
-        print("No new files downloaded")
+        print("\nNo new files downloaded")
 
     print("Done.")
 
