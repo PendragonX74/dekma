@@ -760,10 +760,11 @@
       if (!comRes.ok) { const e = await comRes.json().catch(()=>({})); throw new Error('Commit: ' + (e.message||comRes.status)); }
       const { tree: { sha: treeSha } } = await comRes.json();
 
-      // 3. Create blob — no size limit unlike Contents API
+      // 3. Create blob — base64 encoded (GitHub requires this for large files)
+      const contentB64 = btoa(unescape(encodeURIComponent(content)));
       const blobRes = await fetch(`${api}/git/blobs`, {
         method: 'POST', headers,
-        body: JSON.stringify({ content, encoding: 'utf-8' })
+        body: JSON.stringify({ content: contentB64, encoding: 'base64' })
       });
       if (!blobRes.ok) { const e = await blobRes.json().catch(()=>({})); throw new Error('Blob: ' + (e.message||blobRes.status)); }
       const { sha: blobSha } = await blobRes.json();
