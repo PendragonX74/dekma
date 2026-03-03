@@ -11,27 +11,39 @@
     rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
-  <!-- ========== CACHE‑BUSTED DATA LOADING ========== -->
+  <!-- ========== VERSION‑BASED CACHE BUSTING ========== -->
   <script>
-    // Generate a unique timestamp for this page load – used to bust the cache
-    // for all data files, so a refresh always fetches the latest from GitHub.
-    window._cacheBust = Date.now();
+    // Fetch the current version from data/version.txt synchronously.
+    // This tiny request blocks page rendering only briefly.
+    var version = '0'; // fallback
+    (function() {
+      var xhr = new XMLHttpRequest();
+      // Add a cache‑buster for the version file itself (but it's tiny)
+      xhr.open('GET', 'data/version.txt?_=' + Date.now(), false);
+      try {
+        xhr.send();
+        if (xhr.status === 200) {
+          version = xhr.responseText.trim();
+        }
+      } catch (e) {
+        console.warn('Could not load version.txt, using fallback', e);
+      }
+    })();
   </script>
 
   <script>
-    // Load results_index.js with cache busting
-    document.write('<script src="data/results_index.js?v=' + window._cacheBust + '"><\/script>');
+    // Load results_index.js with the version number
+    document.write('<script src="data/results_index.js?v=' + version + '"><\/script>');
   </script>
 
   <script>
-    // Load all data chunks synchronously before the app boots
+    // Load all data chunks with the same version number
     (function () {
       window.dekmaData = {};
       var chunks = window.dekmaChunks || [];
       function slug(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, ''); }
       chunks.forEach(function (c) {
-        // Append the same cache‑buster timestamp to every chunk file
-        document.write('<script src="data/' + c.file + '?v=' + window._cacheBust + '"><\/script>');
+        document.write('<script src="data/' + c.file + '?v=' + version + '"><\/script>');
       });
     })();
   </script>
