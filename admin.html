@@ -379,6 +379,32 @@
     #toast.success { border-color: rgba(74,222,128,.4); color: var(--green) }
     #toast.error   { border-color: rgba(244,114,182,.4); color: var(--pink) }
 
+    /* ── GITHUB MODAL ── */
+    #gh-modal {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.72);
+      z-index: 600;
+      display: none; align-items: center; justify-content: center;
+      backdrop-filter: blur(5px);
+    }
+    #gh-modal.open { display: flex }
+    .gh-modal-box {
+      background: var(--bg2); border: 1px solid var(--border2);
+      border-radius: var(--radius2); padding: 32px;
+      width: min(500px, 95vw); position: relative;
+    }
+    .gh-modal-title {
+      font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+      letter-spacing: 2px; color: var(--amber); margin-bottom: 4px;
+    }
+    .gh-modal-sub {
+      font-family: 'DM Mono', monospace; font-size: 10px;
+      color: var(--text3); margin-bottom: 22px; line-height: 1.7;
+    }
+    .gh-modal-sub code { color: var(--amber2) }
+    .gh-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px }
+    .gh-modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px }
+
     @media(max-width:600px) {
       .content { padding: 20px 16px }
       .topbar  { padding: 12px 16px }
@@ -386,6 +412,7 @@
       .test-sel-grid { grid-template-columns: 1fr }
       .sef-grid { grid-template-columns: 1fr }
       .topbar-title { font-size: 18px }
+      .gh-two-col { grid-template-columns: 1fr }
     }
   </style>
 </head>
@@ -409,8 +436,8 @@
       <div class="topbar-badge">RESTRICTED</div>
     </div>
     <div style="display:flex;align-items:center;gap:10px">
-      <div id="file-status" style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;padding:4px 10px;border-radius:20px;background:rgba(90,90,120,.2);border:1px solid var(--border);color:var(--text3)">NO FILE LINKED</div>
-      <button class="lock-btn" id="link-file-btn" onclick="linkResultsFile()" style="color:var(--amber);border-color:rgba(232,160,32,.3)">🔗 Link results.js</button>
+      <div id="file-status" style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;padding:4px 10px;border-radius:20px;background:rgba(90,90,120,.2);border:1px solid var(--border);color:var(--text3)">GITHUB NOT CONFIGURED</div>
+      <button class="lock-btn" id="gh-cfg-btn" onclick="openGhModal()" style="color:var(--amber);border-color:rgba(232,160,32,.3)">⚙ GitHub</button>
       <button class="lock-btn" onclick="lockPanel()">Lock ⌫</button>
     </div>
   </header>
@@ -537,6 +564,45 @@
   </div>
 </div>
 
+<!-- ── GITHUB CONFIG MODAL ── -->
+<div id="gh-modal">
+  <div class="gh-modal-box">
+    <div class="gh-modal-title">GitHub Config</div>
+    <div class="gh-modal-sub">
+      Saved for this session only — never written to disk.<br>
+      Requires a PAT with <code>Contents: Read &amp; Write</code> permission on the repo.
+    </div>
+    <div class="field-group">
+      <label class="field-label">Personal Access Token (PAT)</label>
+      <input class="field-input" id="gh-token" type="password" placeholder="github_pat_… or ghp_…" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="gh-two-col">
+      <div class="field-group">
+        <label class="field-label">Owner (username / org)</label>
+        <input class="field-input" id="gh-owner" placeholder="e.g. yourname">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Repository name</label>
+        <input class="field-input" id="gh-repo" placeholder="e.g. dekma-results">
+      </div>
+    </div>
+    <div class="gh-two-col">
+      <div class="field-group">
+        <label class="field-label">Branch</label>
+        <input class="field-input" id="gh-branch" placeholder="main">
+      </div>
+      <div class="field-group">
+        <label class="field-label">File path in repo</label>
+        <input class="field-input" id="gh-path" placeholder="data/results.js">
+      </div>
+    </div>
+    <div class="gh-modal-actions">
+      <button class="btn btn-ghost" onclick="closeGhModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveGhConfig()">Save Config</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -554,16 +620,28 @@
 <script src="data/results.js"></script>
 <script>
   // ═══════════════════════════════════════════════
-  //  GATE
+  //  GATE  —  password stored as SHA-256 hash only
+  //           (plaintext never appears in source)
   // ═══════════════════════════════════════════════
-  const PASS   = 'oil and water';
+  // To change the password: compute SHA-256 of your new password and replace this constant.
+  // Quick way: open browser console, run:
+  //   crypto.subtle.digest('SHA-256', new TextEncoder().encode('yourpassword'))
+  //     .then(b => console.log([...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')))
+  const PASS_HASH = '9e1779aad19fe80324cb6d070f47eede2490eb0416921255ed207d852499797c';
+
   let unlocked = false;
   const gateEl  = document.getElementById('gate');
   const appEl   = document.getElementById('app');
   const gateInp = document.getElementById('gate-input');
 
-  gateInp.addEventListener('input', () => {
-    if (gateInp.value === PASS) {
+  async function sha256(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  gateInp.addEventListener('input', async () => {
+    const h = await sha256(gateInp.value);
+    if (h === PASS_HASH) {
       unlocked = true;
       gateEl.style.transition = 'opacity .3s';
       gateEl.style.opacity = '0';
@@ -587,59 +665,133 @@
   }
 
   // ═══════════════════════════════════════════════
-  //  FILE SYSTEM — link & write results.js directly
+  //  GITHUB CONFIG  —  stored in sessionStorage only
   // ═══════════════════════════════════════════════
-  let _fileHandle = null;
+  const GH_SESSION_KEY = '__gh_cfg';
 
-  async function linkResultsFile() {
-    if (!window.showOpenFilePicker) {
-      showToast('File System Access API not supported in this browser. Try Chrome/Edge.', 'error');
-      return;
-    }
-    try {
-      const [handle] = await window.showOpenFilePicker({
-        types: [{ description: 'results.js', accept: { 'text/javascript': ['.js'] } }],
-        multiple: false
-      });
-      _fileHandle = handle;
-      updateFileStatus(handle.name);
-      showToast('results.js linked — changes will now save directly to disk.', 'success');
-    } catch (e) {
-      // user cancelled — ignore
-    }
+  function loadGhConfig() {
+    try { return JSON.parse(sessionStorage.getItem(GH_SESSION_KEY) || 'null'); }
+    catch { return null; }
   }
 
-  function updateFileStatus(name) {
+  function openGhModal() {
+    const cfg = loadGhConfig() || {};
+    document.getElementById('gh-token').value  = cfg.token  || '';
+    document.getElementById('gh-owner').value  = cfg.owner  || '';
+    document.getElementById('gh-repo').value   = cfg.repo   || '';
+    document.getElementById('gh-branch').value = cfg.branch || 'main';
+    document.getElementById('gh-path').value   = cfg.path   || 'data/results.js';
+    document.getElementById('gh-modal').classList.add('open');
+    setTimeout(() => document.getElementById('gh-token').focus(), 80);
+  }
+
+  function closeGhModal() {
+    document.getElementById('gh-modal').classList.remove('open');
+  }
+
+  function saveGhConfig() {
+    const token  = document.getElementById('gh-token').value.trim();
+    const owner  = document.getElementById('gh-owner').value.trim();
+    const repo   = document.getElementById('gh-repo').value.trim();
+    const branch = document.getElementById('gh-branch').value.trim() || 'main';
+    const path   = document.getElementById('gh-path').value.trim() || 'data/results.js';
+
+    if (!token || !owner || !repo) {
+      showToast('Token, owner, and repo are required.', 'error');
+      return;
+    }
+
+    const cfg = { token, owner, repo, branch, path };
+    sessionStorage.setItem(GH_SESSION_KEY, JSON.stringify(cfg));
+    closeGhModal();
+    updateFileStatus(true, owner + '/' + repo);
+    showToast('GitHub config saved for this session.', 'success');
+  }
+
+  // Close modal on backdrop click
+  document.getElementById('gh-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('gh-modal')) closeGhModal();
+  });
+
+  function updateFileStatus(ok, label) {
     const el = document.getElementById('file-status');
-    const btn = document.getElementById('link-file-btn');
-    if (name) {
-      el.textContent = '✓ ' + name;
+    if (ok) {
+      el.textContent = '✓ ' + label;
       el.style.background = 'rgba(74,222,128,.1)';
       el.style.borderColor = 'rgba(74,222,128,.3)';
       el.style.color = '#4ade80';
-      btn.textContent = '🔗 Relink';
     } else {
-      el.textContent = 'NO FILE LINKED';
+      el.textContent = 'GITHUB NOT CONFIGURED';
       el.style.background = 'rgba(90,90,120,.2)';
       el.style.borderColor = 'var(--border)';
       el.style.color = 'var(--text3)';
-      btn.textContent = '🔗 Link results.js';
     }
   }
 
+  // ═══════════════════════════════════════════════
+  //  GITHUB API — write results.js to repo
+  // ═══════════════════════════════════════════════
   async function writeResultsFile() {
-    if (!_fileHandle) {
-      showToast('No file linked. Click "Link results.js" in the toolbar first.', 'error');
+    const cfg = loadGhConfig();
+    if (!cfg || !cfg.token || !cfg.owner || !cfg.repo) {
+      showToast('GitHub not configured. Click ⚙ GitHub in the toolbar first.', 'error');
       return false;
     }
+
+    const { token, owner, repo, branch, path } = cfg;
+    const apiBase = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+    const content = 'window.dekmaData = ' + JSON.stringify(ADMIN_DATA, null, 2) + ';\n';
+    const contentB64 = btoa(unescape(encodeURIComponent(content)));
+
     try {
-      const content = 'window.dekmaData = ' + JSON.stringify(ADMIN_DATA, null, 2) + ';\n';
-      const writable = await _fileHandle.createWritable();
-      await writable.write(content);
-      await writable.close();
+      // Step 1: get current file SHA (required by GitHub API for updates)
+      const getRes = await fetch(`${apiBase}?ref=${branch}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28'
+        }
+      });
+
+      let sha = null;
+      if (getRes.ok) {
+        const data = await getRes.json();
+        sha = data.sha;
+      } else if (getRes.status !== 404) {
+        const err = await getRes.json().catch(() => ({}));
+        showToast('GitHub error: ' + (err.message || getRes.status), 'error');
+        return false;
+      }
+
+      // Step 2: push updated file
+      const body = {
+        message: `admin: update results.js [${new Date().toISOString().slice(0,16).replace('T',' ')}]`,
+        content: contentB64,
+        branch
+      };
+      if (sha) body.sha = sha;
+
+      const putRes = await fetch(apiBase, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (!putRes.ok) {
+        const err = await putRes.json().catch(() => ({}));
+        showToast('GitHub write failed: ' + (err.message || putRes.status), 'error');
+        return false;
+      }
+
       return true;
+
     } catch (e) {
-      showToast('Write failed: ' + e.message, 'error');
+      showToast('Network error: ' + e.message, 'error');
       return false;
     }
   }
@@ -649,7 +801,7 @@
   // ═══════════════════════════════════════════════
   let ADMIN_DATA    = null;
   let currentPanel  = 'home';
-  let editingStudent = null;   // { name, school, gender } — original values at time of edit
+  let editingStudent = null;
   let editingGender  = '';
 
   function bootAdmin() {
@@ -658,6 +810,11 @@
     if (ADMIN_DATA) {
       populateStuSchoolFilter();
       populateTestCities();
+    }
+    // Restore GitHub status badge if config exists in session
+    const cfg = loadGhConfig();
+    if (cfg && cfg.owner && cfg.repo) {
+      updateFileStatus(true, cfg.owner + '/' + cfg.repo);
     }
   }
 
@@ -701,7 +858,6 @@
     return [...set].sort();
   }
 
-  // Recompute rank within one exam (handles ties — same mark = same rank)
   function recomputeRanks(exam) {
     const sorted = [...exam.students].sort((a,b) => b.marks - a.marks);
     sorted.forEach((s, i) => {
@@ -714,7 +870,6 @@
   // ═══════════════════════════════════════════════
   function populateStuSchoolFilter() {
     const el = document.getElementById('stu-search-school');
-    // clear previous options except first
     while (el.options.length > 1) el.remove(1);
     getSchools().forEach(s => {
       const o = document.createElement('option');
@@ -759,7 +914,6 @@
     const list = document.getElementById('stu-result-list');
     const s = list._students[idx];
     if (!s) return;
-    // Store originals so we can uniquely identify this student later
     editingStudent = { name: s.name, school: s.school, gender: s.gender };
     editingGender  = s.gender;
     const ini = s.name.split(' ').map(w => w[0]||'').join('').slice(0,2).toUpperCase();
@@ -796,7 +950,6 @@
     const origName   = editingStudent.name;
     const origSchool = editingStudent.school;
 
-    // Only update records that match BOTH original name AND original school
     let changed = 0;
     forEachStudent(s => {
       if (s.name === origName && s.school === origSchool) {
@@ -811,8 +964,7 @@
 
     const ok = await writeResultsFile();
     if (ok) {
-      showToast(`Saved — updated ${changed} record${changed !== 1 ? 's' : ''} in results.js.`, 'success');
-      // Update display
+      showToast(`Saved — updated ${changed} record${changed !== 1 ? 's' : ''} in results.js on GitHub.`, 'success');
       editingStudent = { name: newName, school: newSchool, gender: newGender };
       document.getElementById('sef-display-name').textContent   = newName;
       document.getElementById('sef-display-school').textContent = newSchool;
@@ -887,8 +1039,6 @@
 
   function renderTestSheet(exam) {
     const area = document.getElementById('test-sheet-area');
-
-    // Build the shell once — search input lives here and is never destroyed
     area.innerHTML = `
       <div class="test-sheet-wrap">
         <div class="test-sheet-header">
@@ -911,9 +1061,7 @@
           </table>
         </div>
       </div>`;
-
     filterTestSheet('');
-    // Focus the search box after sheet loads
     setTimeout(() => {
       const s = document.getElementById('test-search-inp');
       if (s) s.focus();
@@ -969,7 +1117,6 @@
     const origName   = inp.dataset.name;
     const origSchool = inp.dataset.school;
 
-    // Show saving state immediately — clear feedback before async work
     btn.disabled = true;
     btn.textContent = 'Saving…';
     btn.style.color = 'var(--amber)';
@@ -987,14 +1134,12 @@
     const ok = await writeResultsFile();
 
     if (!ok) {
-      // Revert on failure
       student.marks = prevMarks;
       recomputeRanks(_currentExam);
       btn.textContent = 'Save'; btn.style.color = ''; btn.disabled = false;
       return;
     }
 
-    // Success
     inp.dataset.orig = newVal;
     btn.textContent = 'Save';
     btn.style.color = '';
@@ -1004,7 +1149,7 @@
     const rankCell = inp.closest('tr').querySelector('.tbl-rank');
     if (rankCell) rankCell.textContent = '#' + student.rank;
 
-    showToast(`Saved — ${origName}: ${prevMarks} → ${newVal}, ranks updated.`, 'success');
+    showToast(`Saved to GitHub — ${origName}: ${prevMarks} → ${newVal}, ranks updated.`, 'success');
   }
 
   // ═══════════════════════════════════════════════
