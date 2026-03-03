@@ -119,16 +119,10 @@ def build_index():
             continue
         # The city slug is everything between "results_" and the last "_" + year
         # e.g. results_galle_2020 -> city_slug = "galle", year = "2020"
-        # But if city slug itself contains underscores (unlikely), this simple split works.
         year = parts[-1]
         city_slug = '_'.join(parts[1:-1])
-        # We need to map the slug back to the original city name? Not required for the index.
-        # The index stores city, year, file.
-        # We can try to recover original city by looking at the slug? For simplicity,
-        # we store the slug as the city identifier. That matches how admin.html uses it.
-        # Admin uses the same slug to build the variable name.
         chunks.append({
-            "city": city_slug,  # store slug, but original name not needed for JS
+            "city": city_slug,
             "year": int(year),
             "file": f.name
         })
@@ -216,7 +210,8 @@ def main():
     index_file.write_text(f"window.dekmaChunks={json_str};\n", encoding="utf-8")
     print(f"\nWrote index {index_file} ({len(chunks)} chunks)")
 
-    total_exams = sum(len(yd["exams"]) for yd in city_year_exams.values())
+    # --- Summary statistics ---
+    total_exams = sum(len(yd) for yd in city_year_exams.values())  # FIXED: yd is the list of exams
     total_students = sum(len(e["students"]) for exams in city_year_exams.values() for e in exams)
     print(f"\n{len(city_year_exams)} city‑year folders | {total_exams} exams | {total_students} student records")
     print("Done.")
