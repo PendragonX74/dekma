@@ -10,18 +10,33 @@
     href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap"
     rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-  <script src="data/results_index.js"></script>
+
+  <!-- ========== CACHE‑BUSTED DATA LOADING ========== -->
   <script>
-    // Load all data chunks, merge into window.dekmaData
+    // Generate a unique timestamp for this page load – used to bust the cache
+    // for all data files, so a refresh always fetches the latest from GitHub.
+    window._cacheBust = Date.now();
+  </script>
+
+  <script>
+    // Load results_index.js with cache busting
+    document.write('<script src="data/results_index.js?v=' + window._cacheBust + '"><\/script>');
+  </script>
+
+  <script>
+    // Load all data chunks synchronously before the app boots
     (function () {
       window.dekmaData = {};
       var chunks = window.dekmaChunks || [];
       function slug(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, ''); }
       chunks.forEach(function (c) {
-        document.write('<script src="data/' + c.file + '"><\/script>');
+        // Append the same cache‑buster timestamp to every chunk file
+        document.write('<script src="data/' + c.file + '?v=' + window._cacheBust + '"><\/script>');
       });
     })();
   </script>
+  <!-- =============================================== -->
+
   <script>
     // Merge loaded chunks into window.dekmaData
     (function () {
