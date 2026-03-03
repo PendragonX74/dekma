@@ -617,7 +617,19 @@
     }
   })();
 </script>
-<script src="data/results_index.js"></script>
+
+<!-- ========== CACHE‑BUSTED DATA LOADING ========== -->
+<script>
+  // Generate a unique timestamp for this page load – used to bust the cache
+  // for all data files, so a refresh always fetches the latest from GitHub.
+  window._cacheBust = Date.now();
+</script>
+
+<script>
+  // Load results_index.js with cache busting
+  document.write('<script src="data/results_index.js?v=' + window._cacheBust + '"><\/script>');
+</script>
+
 <script>
   // Load all data chunks synchronously before admin boots
   // (runs before DOMContentLoaded — chunks are small so this is fast)
@@ -626,13 +638,13 @@
     const chunks = window.dekmaChunks || [];
     function slug(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,''); }
     chunks.forEach(function(c) {
-      const el = document.createElement('script');
-      el.src = 'data/' + c.file;
-      // Synchronous load trick: append and the browser blocks
-      document.write('<script src="data/' + c.file + '"><\/script>');
+      // Append the same cache‑buster timestamp to every chunk file
+      document.write('<script src="data/' + c.file + '?v=' + window._cacheBust + '"><\/script>');
     });
   })();
 </script>
+<!-- =============================================== -->
+
 <script>
   // Merge all loaded chunks into window.dekmaData
   (function() {
@@ -646,6 +658,7 @@
     });
   })();
 </script>
+
 <script>
   // ═══════════════════════════════════════════════
   //  GATE  —  password stored as SHA-256 hash only
