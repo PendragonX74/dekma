@@ -882,23 +882,21 @@
     const exam = (ADMIN_DATA[city][year].exams || []).find(e => e.id === examId);
     if (!exam) return resetTestSheet();
     _currentExam = exam;
-    renderTestSheet(exam, '');
+    renderTestSheet(exam);
   }
 
-  function renderTestSheet(exam, filterQ) {
-    let students = [...exam.students].sort((a,b) => b.marks - a.marks);
-    if (filterQ) students = students.filter(s => s.name.toLowerCase().includes(filterQ.toLowerCase().trim()));
-
+  function renderTestSheet(exam) {
     const area = document.getElementById('test-sheet-area');
+
+    // Build the shell once — search input lives here and is never destroyed
     area.innerHTML = `
       <div class="test-sheet-wrap">
         <div class="test-sheet-header">
           <div class="test-sheet-title">${esc(exam.label)}
             <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);margin-left:8px;text-transform:uppercase;letter-spacing:.5px">${exam.type} · ${exam.students.length} students</span>
           </div>
-          <input class="test-sheet-search" placeholder="Search student…"
-            oninput="renderTestSheet(_currentExam, this.value)"
-            value="${esc(filterQ || '')}">
+          <input class="test-sheet-search" id="test-search-inp" placeholder="Search student…"
+            oninput="filterTestSheet(this.value)">
         </div>
         <div class="test-table-wrap">
           <table class="test-tbl">
@@ -909,34 +907,49 @@
               <th style="width:60px">Gender</th>
               <th style="width:180px">Score</th>
             </tr></thead>
-            <tbody>
-              ${students.map(s => {
-                const gBadge = s.gender === 'B'
-                  ? `<span style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:3px;background:rgba(96,165,250,.12);color:#60a5fa">B</span>`
-                  : s.gender === 'G'
-                  ? `<span style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:3px;background:rgba(244,114,182,.12);color:#f472b6">G</span>`
-                  : '<span style="color:var(--text3)">—</span>';
-                return `<tr>
-                  <td class="tbl-rank">#${s.rank || '—'}</td>
-                  <td style="font-weight:600">${esc(s.name)}</td>
-                  <td class="tbl-school">${esc(s.school)}</td>
-                  <td>${gBadge}</td>
-                  <td>
-                    <div class="edit-score-cell">
-                      <input class="score-edit-input" type="number" min="0" max="100"
-                        value="${s.marks}" data-orig="${s.marks}"
-                        data-name="${esc(s.name)}" data-school="${esc(s.school)}"
-                        oninput="markScoreDirty(this)">
-                      <button class="score-save-btn" disabled onclick="saveScore(this)">Save</button>
-                      <span class="score-saved-badge">✓</span>
-                    </div>
-                  </td>
-                </tr>`;
-              }).join('')}
-            </tbody>
+            <tbody id="test-tbody"></tbody>
           </table>
         </div>
       </div>`;
+
+    filterTestSheet('');
+    // Focus the search box after sheet loads
+    setTimeout(() => {
+      const s = document.getElementById('test-search-inp');
+      if (s) s.focus();
+    }, 50);
+  }
+
+  function filterTestSheet(q) {
+    const tbody = document.getElementById('test-tbody');
+    if (!tbody || !_currentExam) return;
+
+    let students = [..._currentExam.students].sort((a,b) => b.marks - a.marks);
+    if (q) students = students.filter(s => s.name.toLowerCase().includes(q.toLowerCase().trim()));
+
+    tbody.innerHTML = students.map(s => {
+      const gBadge = s.gender === 'B'
+        ? `<span style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:3px;background:rgba(96,165,250,.12);color:#60a5fa">B</span>`
+        : s.gender === 'G'
+        ? `<span style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:3px;background:rgba(244,114,182,.12);color:#f472b6">G</span>`
+        : '<span style="color:var(--text3)">—</span>';
+      return `<tr>
+        <td class="tbl-rank">#${s.rank || '—'}</td>
+        <td style="font-weight:600">${esc(s.name)}</td>
+        <td class="tbl-school">${esc(s.school)}</td>
+        <td>${gBadge}</td>
+        <td>
+          <div class="edit-score-cell">
+            <input class="score-edit-input" type="number" min="0" max="100"
+              value="${s.marks}" data-orig="${s.marks}"
+              data-name="${esc(s.name)}" data-school="${esc(s.school)}"
+              oninput="markScoreDirty(this)">
+            <button class="score-save-btn" disabled onclick="saveScore(this)">Save</button>
+            <span class="score-saved-badge">✓ Saved</span>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
   }
 
   function markScoreDirty(inp) {
@@ -956,31 +969,42 @@
     const origName   = inp.dataset.name;
     const origSchool = inp.dataset.school;
 
-    // Find and update the student in the current exam
+    // Show saving state immediately — clear feedback before async work
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+    btn.style.color = 'var(--amber)';
+
     const student = _currentExam.students.find(s => s.name === origName && s.school === origSchool);
-    if (!student) return showToast('Student not found in exam data.', 'error');
+    if (!student) {
+      btn.textContent = 'Save'; btn.style.color = ''; btn.disabled = false;
+      return showToast('Student not found in exam data.', 'error');
+    }
 
+    const prevMarks = student.marks;
     student.marks = newVal;
-
-    // Recompute ranks for the whole exam (handles ties correctly)
     recomputeRanks(_currentExam);
 
-    // Write to disk
     const ok = await writeResultsFile();
-    if (!ok) return;
 
-    // Update the row's rank cell immediately without full re-render
+    if (!ok) {
+      // Revert on failure
+      student.marks = prevMarks;
+      recomputeRanks(_currentExam);
+      btn.textContent = 'Save'; btn.style.color = ''; btn.disabled = false;
+      return;
+    }
+
+    // Success
     inp.dataset.orig = newVal;
-    btn.disabled = true;
+    btn.textContent = 'Save';
+    btn.style.color = '';
     badge.classList.add('visible');
-    setTimeout(() => badge.classList.remove('visible'), 2000);
+    setTimeout(() => badge.classList.remove('visible'), 2400);
 
-    // Refresh rank column in the rendered table
-    const newRank = student.rank;
     const rankCell = inp.closest('tr').querySelector('.tbl-rank');
-    if (rankCell) rankCell.textContent = '#' + newRank;
+    if (rankCell) rankCell.textContent = '#' + student.rank;
 
-    showToast(`Saved — ${origName}: ${inp.dataset.orig} → ${newVal}, rank recalculated.`, 'success');
+    showToast(`Saved — ${origName}: ${prevMarks} → ${newVal}, ranks updated.`, 'success');
   }
 
   // ═══════════════════════════════════════════════
