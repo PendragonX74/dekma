@@ -1,0 +1,14 @@
+{
+  "scoreEdits": [
+    {
+      "examId": "R-2026-007",
+      "student": {
+        "name": "Nadula Nimnaka",
+        "school": "Richmond College"
+      },
+      "newMarks": 92,
+      "timestamp": 1772600771107
+    }
+  ],
+  "studentRenames": []
+}
