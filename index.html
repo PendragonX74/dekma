@@ -3316,9 +3316,7 @@
           <div class="filter-bar" id="stu-filter-bar">
             <input class="search-input stu-search-input" id="stu-search" placeholder="Type a student name…"
               oninput="searchStudents()" style="width:320px;max-width:100%">
-            <select class="filter-select" id="stu-school" onchange="searchStudents()">
-              <option value="">All Schools</option>
-            </select>
+            <div id="stu-school-wrap" class="tdd-wrap"></div>
             <div class="filter-btn active" id="stu-g-all" onclick="setStuGender('',this)">All</div>
             <div class="filter-btn" id="stu-g-b" onclick="setStuGender('B',this)">Boys</div>
             <div class="filter-btn" id="stu-g-g" onclick="setStuGender('G',this)">Girls</div>
@@ -3360,6 +3358,11 @@
 
         <!-- ANALYTICS -->
         <div class="page" id="page-analytics">
+          <div class="filter-bar" style="margin-bottom:20px">
+            <div class="filter-btn active" id="at-all" onclick="setAvgType('all',this)">All Tests</div>
+            <div class="filter-btn" id="at-thy" onclick="setAvgType('theory',this)">Theory Only</div>
+            <div class="filter-btn" id="at-rev" onclick="setAvgType('revision',this)">Revision Only</div>
+          </div>
           <div class="three-col">
             <div class="card">
               <div class="card-header">
@@ -3387,11 +3390,6 @@
           <div class="card" style="margin-bottom:24px">
             <div class="card-header">
               <div class="card-title">Average Score Per Test</div>
-              <div style="display:flex;gap:8px">
-                <div class="filter-btn active" id="at-all" onclick="setAvgType('all',this)">All</div>
-                <div class="filter-btn" id="at-thy" onclick="setAvgType('theory',this)">Theory</div>
-                <div class="filter-btn" id="at-rev" onclick="setAvgType('revision',this)">Revision</div>
-              </div>
             </div>
             <div class="card-body">
               <div class="chart-wrap tall"><canvas id="avg-chart"></canvas></div>
@@ -3606,7 +3604,7 @@
     // Dashboard
     let podiumTestSel = { mode: 'all' }, top10TestSel = { mode: 'all' }, top10SortField = 'rank', top10SortAsc = true, _schoolsExpanded = false;
     // Students
-    let stuGender = '';
+    let stuGender = '', stuSchool = '';
     // Schools
     let schoolSort = 'avg', schoolTestSel = { mode: 'all' }, schoolData = {};
     // Analytics
@@ -3761,20 +3759,21 @@
 
     function reloadForSelection() {
       // Update logo display
+      const dispCity = selectedCity ? selectedCity.charAt(0).toUpperCase() + selectedCity.slice(1) : '—';
       document.getElementById('logo-year').textContent = selectedYear || '—';
-      document.getElementById('logo-city').textContent = selectedCity || '—';
+      document.getElementById('logo-city').textContent = dispCity;
       document.getElementById('logo-sub').textContent = 'Applied Maths';
       const badge = document.getElementById('context-badge');
       const badgeText = document.getElementById('context-badge-text');
-      if (badgeText) badgeText.textContent = selectedCity + ' · ' + selectedYear;
-      else badge.textContent = selectedCity + ' · ' + selectedYear;
+      if (badgeText) badgeText.textContent = dispCity + ' · ' + selectedYear;
+      else badge.textContent = dispCity + ' · ' + selectedYear;
       badge.style.display = 'inline-flex';
-      document.title = `DEKMA ${selectedCity} ${selectedYear}`;
+      document.title = `DEKMA ${dispCity} ${selectedYear}`;
 
       // Reset all state
       lbPage = 1; lbGender = ''; lbTestSel = { mode: 'all' }; lbSortField = 'rating'; lbSortAsc = false; lbSchool = '';
       podiumTestSel = { mode: 'all' }; top10TestSel = { mode: 'all' }; top10SortField = 'rank'; top10SortAsc = true;
-      stuGender = ''; schoolSort = 'avg'; schoolTestSel = { mode: 'all' }; schoolData = {};
+      stuGender = ''; stuSchool = ''; schoolSort = 'avg'; schoolTestSel = { mode: 'all' }; schoolData = {};
       avgType = 'all'; _schoolsExpanded = false;
 
       // Destroy all charts
@@ -3938,6 +3937,8 @@
       const defaultExam = revExams.length ? revExams[revExams.length - 1]
         : thyExams.length ? thyExams[thyExams.length - 1] : null;
       if (defaultExam) lbTestSel = { mode: 'custom', ids: new Set([defaultExam.id]) };
+      // Non-leaderboard dropdowns default to All Tests with multi enabled
+      ['podium-sel', 'top10-sel', 'school-test-sel'].forEach(cid => { TDD_MULTI[cid] = true; });
       populateSelects();
       buildExamStats();
       buildStuRegistry();
@@ -4027,14 +4028,8 @@
     //  INIT UI (populates filters etc.)
     // ═══════════════════════════════════════════════════
     function populateSelects() {
-      ['stu-school'].forEach(id => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        const firstOpt = el.options[0] ? el.options[0].outerHTML : '';
-        el.innerHTML = firstOpt;
-        SCHOOLS.forEach(s => { el.innerHTML += `<option value="${esc(s)}">${s}</option>`; });
-      });
       buildSchoolDropdown();
+      buildStuSchoolDropdown();
     }
 
     // ═══════════════════════════════════════════════════
@@ -4135,12 +4130,12 @@
     function buildTestDropdowns() {
       Object.keys(TDD_CONFIGS).forEach(id => buildOneDropdown(id));
       document.addEventListener('click', ev => {
-        if (!ev.target.closest('.tdd-wrap') && !ev.target.closest('.tdd-panel') && !ev.target.closest('.school-dd-panel')) { closeAllDropdowns(); closeSchoolDrop(); }
+        if (!ev.target.closest('.tdd-wrap') && !ev.target.closest('.tdd-panel') && !ev.target.closest('.school-dd-panel')) { closeAllDropdowns(); closeSchoolDrop(); closeStuSchoolDrop(); }
         if (!ev.target.closest('.logo-selector') && !ev.target.closest('.logo-drop') && !ev.target.closest('.context-badge')) closeLogoDrop();
       });
       window.addEventListener('scroll', (ev) => {
         if (ev.target && typeof ev.target.closest === 'function' && (ev.target.closest('.tdd-panel') || ev.target.closest('.school-dd-panel'))) return;
-        closeAllDropdowns(); closeSchoolDrop();
+        closeAllDropdowns(); closeSchoolDrop(); closeStuSchoolDrop();
       }, true);
       window.addEventListener('resize', () => { closeAllDropdowns(); closeLogoDrop(); });
     }
@@ -4834,6 +4829,81 @@
       openModal();
     }
 
+    function buildStuSchoolDropdown() {
+      const wrap = document.getElementById('stu-school-wrap');
+      if (!wrap) return;
+      wrap.innerHTML = `<div class="tdd-btn" id="stu-school-btn" onclick="toggleStuSchoolDrop(event)">
+        <span class="tdd-label" id="stu-school-label" style="min-width:90px">${stuSchool || 'All Schools'}</span>
+        <span class="tdd-arrow">▾</span>
+      </div>`;
+      let panel = document.getElementById('stu-school-panel');
+      if (!panel) {
+        panel = document.createElement('div');
+        panel.id = 'stu-school-panel';
+        panel.className = 'school-dd-panel';
+        document.body.appendChild(panel);
+      }
+    }
+
+    function rebuildStuSchoolPanel(query) {
+      const panel = document.getElementById('stu-school-panel');
+      if (!panel) return;
+      const q = (query || '').toLowerCase();
+      const filtered = ['', ...SCHOOLS].filter(s => !q || (s || 'all schools').toLowerCase().includes(q));
+      const listHtml = filtered.map(s => `
+        <div class="school-dd-item ${stuSchool === s ? 'selected' : ''}" onclick="pickStuSchool('${esc(s)}')">
+          <span class="school-dd-item-name">${s || 'All Schools'}</span>
+          <span class="school-dd-check">✓</span>
+        </div>`).join('') || '<div style="padding:10px 12px;font-family:DM Mono,monospace;font-size:10px;color:var(--text3)">No match</div>';
+      let listEl = panel.querySelector('.school-dd-list');
+      if (listEl) { listEl.innerHTML = listHtml; return; }
+      panel.innerHTML = `
+        <div class="school-dd-search">
+          <div class="school-dd-search-wrap">
+            <input id="stu-school-search" placeholder="Search school…"
+              oninput="rebuildStuSchoolPanel(this.value)" autocomplete="off">
+          </div>
+        </div>
+        <div class="school-dd-list">${listHtml}</div>`;
+    }
+
+    function toggleStuSchoolDrop(ev) {
+      if (ev) ev.stopPropagation();
+      const btn = document.getElementById('stu-school-btn');
+      const panel = document.getElementById('stu-school-panel');
+      if (!btn || !panel) return;
+      const wasOpen = panel.classList.contains('open');
+      closeAllDropdowns(); closeStuSchoolDrop(); closeSchoolDrop();
+      if (!wasOpen) {
+        panel.innerHTML = '';
+        rebuildStuSchoolPanel('');
+        const rect = btn.getBoundingClientRect();
+        const W = 240;
+        const left = Math.max(8, Math.min(rect.left, window.innerWidth - W - 8));
+        const top = (window.innerHeight - rect.bottom - 8) >= 320 ? rect.bottom + 4 : Math.max(8, rect.top - 320 - 4);
+        panel.style.cssText = `top:${top}px;left:${left}px;width:${W}px`;
+        panel.classList.add('open');
+        btn.classList.add('open');
+        setTimeout(() => { document.getElementById('stu-school-search')?.focus(); }, 30);
+      }
+    }
+
+    function closeStuSchoolDrop() {
+      document.getElementById('stu-school-panel')?.classList.remove('open');
+      document.getElementById('stu-school-btn')?.classList.remove('open');
+    }
+
+    function pickStuSchool(school) {
+      stuSchool = school;
+      const label = document.getElementById('stu-school-label');
+      if (label) label.textContent = school || 'All Schools';
+      document.querySelectorAll('#stu-school-panel .school-dd-item').forEach(item => {
+        item.classList.toggle('selected', item.querySelector('.school-dd-item-name')?.textContent === (school || 'All Schools'));
+      });
+      searchStudents();
+      closeStuSchoolDrop();
+    }
+
     // ═══════════════════════════════════════════════════
     //  CUSTOM SCHOOL DROPDOWN (Leaderboard)
     // ═══════════════════════════════════════════════════
@@ -5075,10 +5145,7 @@
     //  STUDENTS
     // ═══════════════════════════════════════════════════
     function populateStudentFilters() {
-      const el = document.getElementById('stu-school');
-      // Clear existing options except first
-      while (el.options.length > 1) el.remove(1);
-      SCHOOLS.forEach(s => el.innerHTML += `<option value="${esc(s)}">${s}</option>`);
+      buildStuSchoolDropdown();
     }
 
     function setStuGender(g, btn) {
@@ -5105,7 +5172,7 @@
 
     function searchStudents() {
       const q = (document.getElementById('stu-search')?.value || '').toLowerCase().trim();
-      const sch = document.getElementById('stu-school')?.value || '';
+      const sch = stuSchool;
       document.getElementById('stu-grid').style.display = 'grid';
       document.getElementById('stu-profile').style.display = 'none';
       const fb = document.getElementById('stu-filter-bar');
@@ -5669,11 +5736,21 @@
     // ═══════════════════════════════════════════════════
     //  ANALYTICS
     // ═══════════════════════════════════════════════════
+    function filteredExams() {
+      return avgType === 'all' ? EXAMS : EXAMS.filter(e => e.type === avgType);
+    }
+    function filteredAll() {
+      return avgType === 'all' ? ALL : ALL.filter(r => {
+        const e = EXAMS.find(x => x.id === r.exam_id);
+        return e && e.type === avgType;
+      });
+    }
+
     function setAvgType(t, btn) {
       avgType = t;
       document.querySelectorAll('#at-all,#at-rev,#at-thy').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      renderAvgChart();
+      renderAnalytics();
     }
 
     function renderAnalytics() {
@@ -5687,9 +5764,10 @@
       const ctx = document.getElementById('gender-chart')?.getContext('2d');
       if (!ctx) return;
       if (CHARTS.gender) CHARTS.gender.destroy();
-      const m = ALL.filter(r => r.gender === GEN_MALE).length;
-      const f = ALL.filter(r => r.gender === GEN_FEMALE).length;
-      const u = ALL.filter(r => r.gender !== GEN_MALE && r.gender !== GEN_FEMALE).length;
+      const data = filteredAll();
+      const m = data.filter(r => r.gender === GEN_MALE).length;
+      const f = data.filter(r => r.gender === GEN_FEMALE).length;
+      const u = data.filter(r => r.gender !== GEN_MALE && r.gender !== GEN_FEMALE).length;
       const datasets = [{ data: [m, f], backgroundColor: ['rgba(96,165,250,.7)', 'rgba(244,114,182,.7)'], borderColor: ['#60a5fa', '#f472b6'], borderWidth: 1 }];
       const labels = ['Boys', 'Girls'];
       if (u > 0) { datasets[0].data.push(u); datasets[0].backgroundColor.push('rgba(90,90,120,.5)'); datasets[0].borderColor.push('#444'); labels.push('Unknown'); }
@@ -5701,7 +5779,7 @@
       if (!ctx) return;
       if (CHARTS.bands) CHARTS.bands.destroy();
       const bands = { '90–100': 0, '80–89': 0, '70–79': 0, '60–69': 0, '50–59': 0, '40–49': 0, '<40': 0 };
-      ALL.forEach(r => {
+      filteredAll().forEach(r => {
         if (r.marks >= 90) bands['90–100']++;
         else if (r.marks >= 80) bands['80–89']++;
         else if (r.marks >= 70) bands['70–79']++;
@@ -5714,7 +5792,7 @@
     }
 
     function renderTestSummaryList() {
-      document.getElementById('test-summary-list').innerHTML = EXAMS.map(e => {
+      document.getElementById('test-summary-list').innerHTML = filteredExams().map(e => {
         const m = e.students.map(s => s.marks);
         const avg = (m.reduce((a, b) => a + b) / m.length).toFixed(1);
         const col = e.type === 'theory' ? 'var(--teal)' : 'var(--amber)';
@@ -5726,7 +5804,7 @@
       const ctx = document.getElementById('avg-chart')?.getContext('2d');
       if (!ctx) return;
       if (CHARTS.avg) CHARTS.avg.destroy();
-      const filtered = avgType === 'all' ? EXAMS : EXAMS.filter(e => e.type === avgType);
+      const filtered = filteredExams();
       if (!filtered.length) return;
       CHARTS.avg = new Chart(ctx, {
         type: 'line', data: {
@@ -5743,7 +5821,7 @@
       const ctx = document.getElementById('school-avg-chart')?.getContext('2d');
       if (!ctx) return;
       if (CHARTS.schAvg) CHARTS.schAvg.destroy();
-      const stats = buildSchoolStats(ALL);
+      const stats = buildSchoolStats(filteredAll());
       const sorted = Object.entries(stats).map(([s, v]) => ({ s, avg: v.bayesAvg })).sort((a, b) => b.avg - a.avg).slice(0, 10);
       CHARTS.schAvg = new Chart(ctx, { type: 'bar', data: { labels: sorted.map(x => x.s.length > 20 ? x.s.slice(0, 18) + '…' : x.s), datasets: [{ label: 'Adj. Avg Score', data: sorted.map(x => x.avg.toFixed(1)), backgroundColor: 'rgba(232,160,32,.4)', borderColor: '#e8a020', borderWidth: 1, borderRadius: 4 }] }, options: { ...cOpts({ ylabel: 'Adj Avg' }), indexAxis: 'y', plugins: { legend: { display: false } } } });
     }
@@ -5752,11 +5830,12 @@
       const ctx = document.getElementById('participant-chart')?.getContext('2d');
       if (!ctx || !EXAMS.length) return;
       if (CHARTS.part) CHARTS.part.destroy();
+      const fe = filteredExams();
       CHARTS.part = new Chart(ctx, {
         type: 'bar', data: {
-          labels: EXAMS.map(e => e.label), datasets: [
-            { label: 'Boys', data: EXAMS.map(e => e.students.filter(s => s.gender === GEN_MALE).length), backgroundColor: 'rgba(96,165,250,.5)', borderRadius: 4 },
-            { label: 'Girls', data: EXAMS.map(e => e.students.filter(s => s.gender === GEN_FEMALE).length), backgroundColor: 'rgba(244,114,182,.5)', borderRadius: 4 },
+          labels: fe.map(e => e.label), datasets: [
+            { label: 'Boys', data: fe.map(e => e.students.filter(s => s.gender === GEN_MALE).length), backgroundColor: 'rgba(96,165,250,.5)', borderRadius: 4 },
+            { label: 'Girls', data: fe.map(e => e.students.filter(s => s.gender === GEN_FEMALE).length), backgroundColor: 'rgba(244,114,182,.5)', borderRadius: 4 },
           ]
         }, options: { ...cOpts({ ylabel: 'Students' }), plugins: { legend: { labels: { color: '#9090b0', font: { family: 'DM Mono', size: 11 } } } }, scales: { x: { stacked: true, ticks: { color: '#5a5a78', font: { family: 'DM Mono', size: 9 } }, grid: { color: 'rgba(255,255,255,.04)' } }, y: { stacked: true, ticks: { color: '#5a5a78', font: { family: 'DM Mono', size: 9 } }, grid: { color: 'rgba(255,255,255,.04)' } } } }
       });
@@ -5766,11 +5845,12 @@
       const ctx = document.getElementById('gender-trend-chart')?.getContext('2d');
       if (!ctx || !EXAMS.length) return;
       if (CHARTS.genTrend) CHARTS.genTrend.destroy();
+      const fe = filteredExams();
       CHARTS.genTrend = new Chart(ctx, {
         type: 'line', data: {
-          labels: EXAMS.map(e => e.label), datasets: [
-            { label: 'Boys Avg', data: EXAMS.map(e => { const b = e.students.filter(s => s.gender === GEN_MALE); return b.length ? (b.reduce((a, x) => a + x.marks, 0) / b.length).toFixed(1) : null; }), borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,.1)', fill: true, tension: .35, pointRadius: 4 },
-            { label: 'Girls Avg', data: EXAMS.map(e => { const g = e.students.filter(s => s.gender === GEN_FEMALE); return g.length ? (g.reduce((a, x) => a + x.marks, 0) / g.length).toFixed(1) : null; }), borderColor: '#f472b6', backgroundColor: 'rgba(244,114,182,.1)', fill: true, tension: .35, pointRadius: 4 }
+          labels: fe.map(e => e.label), datasets: [
+            { label: 'Boys Avg', data: fe.map(e => { const b = e.students.filter(s => s.gender === GEN_MALE); return b.length ? (b.reduce((a, x) => a + x.marks, 0) / b.length).toFixed(1) : null; }), borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,.1)', fill: true, tension: .35, pointRadius: 4 },
+            { label: 'Girls Avg', data: fe.map(e => { const g = e.students.filter(s => s.gender === GEN_FEMALE); return g.length ? (g.reduce((a, x) => a + x.marks, 0) / g.length).toFixed(1) : null; }), borderColor: '#f472b6', backgroundColor: 'rgba(244,114,182,.1)', fill: true, tension: .35, pointRadius: 4 }
           ]
         }, options: cOpts({ ylabel: 'Avg Score' })
       });
@@ -5780,12 +5860,13 @@
       const ctx = document.getElementById('spread-chart')?.getContext('2d');
       if (!ctx || !EXAMS.length) return;
       if (CHARTS.spread) CHARTS.spread.destroy();
+      const fe = filteredExams();
       CHARTS.spread = new Chart(ctx, {
         type: 'line', data: {
-          labels: EXAMS.map(e => e.label), datasets: [
-            { label: 'Max', data: EXAMS.map(e => Math.max(...e.students.map(s => s.marks))), borderColor: '#e8a020', fill: false, tension: .3, pointRadius: 3, borderDash: [5, 3] },
-            { label: 'Avg', data: EXAMS.map(e => (e.students.reduce((a, b) => a + b.marks, 0) / e.students.length).toFixed(1)), borderColor: '#2dd4bf', backgroundColor: 'rgba(45,212,191,.08)', fill: '+1', tension: .3, pointRadius: 3 },
-            { label: 'Min', data: EXAMS.map(e => Math.min(...e.students.map(s => s.marks))), borderColor: '#818cf8', fill: false, tension: .3, pointRadius: 3, borderDash: [5, 3] }
+          labels: fe.map(e => e.label), datasets: [
+            { label: 'Max', data: fe.map(e => Math.max(...e.students.map(s => s.marks))), borderColor: '#e8a020', fill: false, tension: .3, pointRadius: 3, borderDash: [5, 3] },
+            { label: 'Avg', data: fe.map(e => (e.students.reduce((a, b) => a + b.marks, 0) / e.students.length).toFixed(1)), borderColor: '#2dd4bf', backgroundColor: 'rgba(45,212,191,.08)', fill: '+1', tension: .3, pointRadius: 3 },
+            { label: 'Min', data: fe.map(e => Math.min(...e.students.map(s => s.marks))), borderColor: '#818cf8', fill: false, tension: .3, pointRadius: 3, borderDash: [5, 3] }
           ]
         }, options: cOpts({ ylabel: 'Score' })
       });
