@@ -935,7 +935,9 @@
       });
       if (!putRes.ok) {
         const err = await putRes.json().catch(()=>({}));
-        throw new Error(err.message || putRes.status);
+        const s = putRes.status;
+        if (s === 401 || s === 403) throw new Error('Invalid or expired token. Update your PAT in ⚙ GitHub config.');
+        throw new Error(err.message || s);
       }
       return true;
     } catch (e) {
@@ -967,15 +969,31 @@
     async function resolveRef() {
       let ref = branch;
       let refRes = await fetch(`${api}/git/ref/heads/${ref}`, { headers });
-      if (!refRes.ok && refRes.status === 404) {
-        const infoRes = await fetch(`${api}`, { headers });
-        if (infoRes.ok) {
-          const info = await infoRes.json();
-          ref = info.default_branch || ref;
-          refRes = await fetch(`${api}/git/ref/heads/${ref}`, { headers });
+      const status = refRes.status;
+      if (!refRes.ok) {
+        const e = await refRes.json().catch(()=>({}));
+        // 401/403 = bad token — give a clear message immediately
+        if (status === 401 || status === 403) {
+          throw new Error('Invalid or expired token. Please update your PAT in ⚙ GitHub config.');
+        }
+        // 404 = branch not found — try to auto-detect the real default branch
+        if (status === 404) {
+          const infoRes = await fetch(`${api}`, { headers });
+          if (infoRes.ok) {
+            const info = await infoRes.json();
+            ref = info.default_branch || ref;
+            refRes = await fetch(`${api}/git/ref/heads/${ref}`, { headers });
+            if (!refRes.ok) {
+              const e2 = await refRes.json().catch(()=>({}));
+              throw new Error(`Branch '${ref}' not found: ${e2.message || refRes.status}. Check ⚙ GitHub config.`);
+            }
+          } else {
+            throw new Error(`Branch '${ref}' not found and could not reach repo. Check owner/repo in ⚙ GitHub config.`);
+          }
+        } else {
+          throw new Error(`GitHub error ${status}: ${e.message || 'unknown error'}`);
         }
       }
-      if (!refRes.ok) { const e = await refRes.json().catch(()=>({})); throw new Error('Branch \''+ref+'\': '+(e.message||refRes.status)+'. Check your branch name in ⚙ GitHub config.'); }
       if (ref !== branch) {
         const saved = loadGhConfig();
         if (saved) { saved.branch = ref; localStorage.setItem(GH_SESSION_KEY, JSON.stringify(saved)); }
