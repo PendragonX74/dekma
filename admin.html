@@ -992,7 +992,10 @@
     }
   }
 
-  async function saveManualEdits(edits) {
+  // ── ATOMIC manual-edits append ──────────────────────────────────────────
+  // Loads the latest manual_edits.json, runs mutateFn(edits), then saves —
+  // all inside one ghEnqueue slot so concurrent saves never clobber each other.
+  async function appendManualEdit(mutateFn) {
     return ghEnqueue(async () => {
       const cfg = loadGhConfig();
       if (!cfg || !cfg.token || !cfg.owner || !cfg.repo) {
@@ -1003,25 +1006,43 @@
       const filePath = 'data/manual_edits.json';
       const api      = `https://api.github.com/repos/${owner}/${repo}`;
       const headers  = ghHeaders(token);
-      const raw      = JSON.stringify(edits, null, 2);
-      const contentB64 = btoa(unescape(encodeURIComponent(raw)));
+
+      // Always fetch fresh inside the queue — this is the whole point.
+      let sha = null;
+      let edits = { scoreEdits: [], studentRenames: [] };
       try {
-        // Use Contents API (simpler for small JSON files — handles SHA automatically)
-        let sha = null;
         const getRes = await fetch(`${api}/contents/${filePath}?ref=${branch}`, { headers });
         if (getRes.status === 200) {
-          sha = (await getRes.json()).sha;
+          const data = await getRes.json();
+          sha   = data.sha;
+          edits = JSON.parse(atob(data.content.replace(/\n/g, '')));
         } else if (getRes.status === 401 || getRes.status === 403) {
           throw new Error('Invalid or expired token. Update your PAT in ⚙ GitHub config.');
         } else if (getRes.status !== 404) {
-          throw new Error(`Failed to check file: ${getRes.status}`);
+          throw new Error(`Failed to fetch manual_edits.json: ${getRes.status}`);
         }
-        const body = {
-          message: `admin: update manual_edits.json [${new Date().toISOString().slice(0,16).replace('T',' ')}]`,
-          content: contentB64,
-          branch
-        };
-        if (sha) body.sha = sha;
+      } catch(e) {
+        if (!e.message.startsWith('Invalid') && !e.message.startsWith('Failed')) {
+          // parse error — start fresh rather than bail
+          edits = { scoreEdits: [], studentRenames: [] };
+        } else {
+          showToast('Failed to load manual edits: ' + e.message, 'error');
+          return false;
+        }
+      }
+
+      // Let the caller append whatever they need
+      mutateFn(edits);
+
+      const raw        = JSON.stringify(edits, null, 2);
+      const contentB64 = btoa(unescape(encodeURIComponent(raw)));
+      const body = {
+        message: `admin: update manual_edits.json [${new Date().toISOString().slice(0,16).replace('T',' ')}]`,
+        content: contentB64,
+        branch
+      };
+      if (sha) body.sha = sha;
+      try {
         const putRes = await fetch(`${api}/contents/${filePath}`, { method:'PUT', headers, body:JSON.stringify(body) });
         if (!putRes.ok) {
           const err = await putRes.json().catch(()=>({}));
@@ -1034,6 +1055,14 @@
         showToast('Failed to save manual edits: ' + e.message, 'error');
         return false;
       }
+    });
+  }
+
+  // Keep old signature for any future callers, but internally use appendManualEdit
+  async function saveManualEdits(edits) {
+    return appendManualEdit(existing => {
+      existing.scoreEdits    = edits.scoreEdits    ?? existing.scoreEdits;
+      existing.studentRenames = edits.studentRenames ?? existing.studentRenames;
     });
   }
 
@@ -1235,16 +1264,16 @@
     showToast(`Saving ${pairs.length} chunk${pairs.length > 1 ? 's' : ''}…`, '');
     const ok = await writeChunks(pairs);
     if (ok) {
-      // Record the rename in manual_edits.json
-      const edits = await loadManualEdits();
-      edits.studentRenames.push({
-        oldName: origName,
-        oldSchool: origSchool,
-        newName: newName,
-        newSchool: newSchool,
-        timestamp: Date.now()
+      // Record the rename in manual_edits.json — atomically
+      await appendManualEdit(edits => {
+        edits.studentRenames.push({
+          oldName:   origName,
+          oldSchool: origSchool,
+          newName:   newName,
+          newSchool: newSchool,
+          timestamp: Date.now()
+        });
       });
-      await saveManualEdits(edits);
       bumpVersion(); // fire-and-forget, queued
 
       showToast(`Saved — ${changed} record${changed > 1 ? 's' : ''} updated on GitHub.`, 'success');
@@ -1426,15 +1455,18 @@
       return;
     }
 
-    // Record the score edit in manual_edits.json
-    const edits = await loadManualEdits();
-    edits.scoreEdits.push({
-      examId: _currentExam.id,
-      student: { name: origName, school: origSchool },
-      newMarks: newVal,
-      timestamp: Date.now()
+    // Record the score edit in manual_edits.json — atomically (load+push+save
+    // happen inside one ghEnqueue slot, so concurrent saves can't clobber each other)
+    const editCity = document.getElementById('test-sel-city').value;
+    await appendManualEdit(edits => {
+      edits.scoreEdits.push({
+        examId:   _currentExam.id,
+        city:     editCity,
+        student:  { name: origName, school: origSchool },
+        newMarks: newVal,
+        timestamp: Date.now()
+      });
     });
-    await saveManualEdits(edits);
     bumpVersion(); // fire-and-forget, queued
 
     inp.dataset.orig = newVal;

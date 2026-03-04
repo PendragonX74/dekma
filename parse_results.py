@@ -102,20 +102,17 @@ def apply_edits(data_by_city_year, edits):
     # 2. Apply score edits (after renames, so we look for the student with possibly new name/school)
     for score_edit in edits.get("scoreEdits", []):
         exam_id = score_edit["examId"]
-        student_info = score_edit["student"]  # contains original name/school from when edit was made
+        edit_city = score_edit.get("city")   # present in edits made after the fix; None for older ones
+        student_info = score_edit["student"]
         new_marks = score_edit["newMarks"]
-        # Find the exam
         found = False
-        for exams in data_by_city_year.values():
+        for (city, year), exams in data_by_city_year.items():
+            # If the edit recorded which city it belongs to, skip non-matching cities.
+            # This prevents applying an edit for e.g. Galle's T-2026-001 to Matara's T-2026-001.
+            if edit_city and city != edit_city:
+                continue
             for exam in exams:
                 if exam["id"] == exam_id:
-                    # Find the student by (name, school) – note: they might have been renamed, so we should use the current name/school.
-                    # But we stored the original student info at edit time. However, after renames, the student's identity may have changed.
-                    # To keep it simple, we'll match by the original info (name, school) as it was when the edit was made.
-                    # This will work if the student was never renamed. If they were renamed later, this edit might miss.
-                    # A more robust approach would be to store a persistent ID, but we don't have one.
-                    # For now, we'll match by the current values; if the student was renamed, the old info won't match, so edit is lost.
-                    # That's acceptable because a rename is a separate edit.
                     for s in exam["students"]:
                         if s["name"] == student_info["name"] and s["school"] == student_info["school"]:
                             s["marks"] = new_marks
@@ -126,7 +123,8 @@ def apply_edits(data_by_city_year, edits):
             if found:
                 break
         if not found:
-            print(f"  [NOTE] Score edit for exam {exam_id} and student {student_info} could not be applied (exam or student missing).")
+            city_hint = f" (city={edit_city})" if edit_city else ""
+            print(f"  [NOTE] Score edit for exam {exam_id}{city_hint} and student {student_info} could not be applied (exam or student missing).")
 
 def write_chunk(city, year, exams):
     chunk_file = OUTPUT_DIR / f"results_{slug(city)}_{year}.js"
