@@ -5092,12 +5092,12 @@
              const revBooks = apps.filter(a => a.exam_type === 'revision' && a.rank <= 30).length;
              const total = thyBooks + revBooks;
              if (!total) return '';
-             const thyChip = thyBooks ? '<span style="display:inline-flex;flex-direction:column;align-items:center;background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.3);border-radius:5px;padding:3px 8px;gap:1px"><span style=\"font-family:\'DM Mono\',monospace;font-size:8px;color:var(--teal);letter-spacing:1px;opacity:.7\">THE</span><span style=\"font-family:\'Bebas Neue\',sans-serif;font-size:18px;color:var(--teal);line-height:1\">' + thyBooks + '</span></span>' : '';
-             const revChip = revBooks ? '<span style="display:inline-flex;flex-direction:column;align-items:center;background:rgba(232,160,32,.12);border:1px solid rgba(232,160,32,.3);border-radius:5px;padding:3px 8px;gap:1px"><span style=\"font-family:\'DM Mono\',monospace;font-size:8px;color:var(--amber);letter-spacing:1px;opacity:.7\">REV</span><span style=\"font-family:\'Bebas Neue\',sans-serif;font-size:18px;color:var(--amber);line-height:1\">' + revBooks + '</span></span>' : '';
+             const thyChip = thyBooks ? '<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(45,212,191,.1);border:1px solid rgba(45,212,191,.25);border-radius:3px;padding:1px 5px"><span style=\"font-family:\'DM Mono\',monospace;font-size:8px;color:var(--teal);opacity:.7;letter-spacing:.5px\">THE</span><span style=\"font-family:\'DM Mono\',monospace;font-size:9px;color:var(--teal);font-weight:500\">' + thyBooks + '</span></span>' : '';
+             const revChip = revBooks ? '<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(232,160,32,.1);border:1px solid rgba(232,160,32,.25);border-radius:3px;padding:1px 5px"><span style=\"font-family:\'DM Mono\',monospace;font-size:8px;color:var(--amber);opacity:.7;letter-spacing:.5px\">REV</span><span style=\"font-family:\'DM Mono\',monospace;font-size:9px;color:var(--amber);font-weight:500\">' + revBooks + '</span></span>' : '';
              return '<div class="insight-card" style="border-color:rgba(232,160,32,.55);background:linear-gradient(135deg,rgba(232,160,32,.09),rgba(245,192,96,.04));animation-delay:.35s">'
                + '<div class="insight-label" style="color:var(--amber2);letter-spacing:1.5px">BOOKS EARNED</div>'
-               + '<div style=\"font-family:\'Bebas Neue\',sans-serif;font-size:42px;color:var(--amber);line-height:1;margin:4px 0 2px\">' + total + '</div>'
-               + '<div style="display:flex;gap:6px;margin-top:4px">' + thyChip + revChip + '</div>'
+               + '<div style=\"font-family:\'Bebas Neue\',sans-serif;font-size:28px;color:var(--amber);line-height:1;margin-bottom:6px\">' + total + '</div>'
+               + '<div style="display:flex;gap:5px;flex-wrap:wrap">' + thyChip + revChip + '</div>'
                + '</div>';
            })()}
          </div>
