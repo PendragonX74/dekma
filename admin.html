@@ -589,7 +589,10 @@
     <div class="gh-two-col">
       <div class="field-group">
         <label class="field-label">Branch</label>
-        <input class="field-input" id="gh-branch" placeholder="main">
+        <div style="display:flex;gap:6px">
+          <input class="field-input" id="gh-branch" placeholder="main" style="flex:1">
+          <button class="btn btn-ghost" onclick="detectBranch()" id="detect-branch-btn" style="flex-shrink:0;padding:0 12px;font-size:11px" title="Auto-detect default branch from GitHub">Detect</button>
+        </div>
       </div>
       <div class="field-group">
         <label class="field-label">File path in repo</label>
@@ -737,6 +740,29 @@
     showToast('GitHub config saved.', 'success');
   }
 
+  // Auto-detect the default branch for the configured owner/repo/token
+  async function detectBranch() {
+    const token = document.getElementById('gh-token').value.trim();
+    const owner = document.getElementById('gh-owner').value.trim();
+    const repo  = document.getElementById('gh-repo').value.trim();
+    if (!token || !owner || !repo) { showToast('Fill in token, owner and repo first.', 'error'); return; }
+    const btn = document.getElementById('detect-branch-btn');
+    btn.textContent = '…'; btn.disabled = true;
+    try {
+      const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' }
+      });
+      if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || res.status); }
+      const { default_branch } = await res.json();
+      document.getElementById('gh-branch').value = default_branch;
+      showToast('Default branch: ' + default_branch, 'success');
+    } catch(e) {
+      showToast('Could not detect branch: ' + e.message, 'error');
+    } finally {
+      btn.textContent = 'Detect'; btn.disabled = false;
+    }
+  }
+
   // Close modal on backdrop click
   document.getElementById('gh-modal').addEventListener('click', e => {
     if (e.target === document.getElementById('gh-modal')) closeGhModal();
@@ -783,9 +809,28 @@
     const content    = `${varName}=${JSON.stringify(payload)};\n`;
     const contentB64 = btoa(unescape(encodeURIComponent(content)));
     try {
-      const refRes = await fetch(`${api}/git/ref/heads/${branch}`, { headers });
-      if (!refRes.ok) { const e = await refRes.json().catch(()=>({})); throw new Error('Branch: '+(e.message||refRes.status)); }
-      const { object: { sha: latestSha } } = await refRes.json();
+    // Resolve branch — auto-detect repo default if configured name is wrong
+    async function resolveRef() {
+      let ref = branch;
+      let refRes = await fetch(`${api}/git/ref/heads/${ref}`, { headers });
+      if (!refRes.ok && refRes.status === 404) {
+        // Try to get real default branch from repo info
+        const infoRes = await fetch(`${api}`, { headers });
+        if (infoRes.ok) {
+          const info = await infoRes.json();
+          ref = info.default_branch || ref;
+          refRes = await fetch(`${api}/git/ref/heads/${ref}`, { headers });
+        }
+      }
+      if (!refRes.ok) { const e = await refRes.json().catch(()=>({})); throw new Error('Branch \''+ref+'\': '+(e.message||refRes.status)+'. Check your branch name in ⚙ GitHub config.'); }
+      // Persist corrected branch back to config
+      if (ref !== branch) {
+        const saved = loadGhConfig();
+        if (saved) { saved.branch = ref; localStorage.setItem(GH_SESSION_KEY, JSON.stringify(saved)); }
+      }
+      return { sha: (await refRes.json()).object.sha, branch: ref };
+    }
+      const { sha: latestSha, branch: activeBranch } = await resolveRef();
       const comRes = await fetch(`${api}/git/commits/${latestSha}`, { headers });
       if (!comRes.ok) { const e = await comRes.json().catch(()=>({})); throw new Error('Commit: '+(e.message||comRes.status)); }
       const { tree: { sha: treeSha } } = await comRes.json();
@@ -799,7 +844,7 @@
       const newComRes = await fetch(`${api}/git/commits`, { method:'POST', headers, body:JSON.stringify({ message:`admin: update ${filePath} [${ts}]`, tree:newTreeSha, parents:[latestSha] }) });
       if (!newComRes.ok) { const e = await newComRes.json().catch(()=>({})); throw new Error('Commit: '+(e.message||newComRes.status)); }
       const { sha: newComSha } = await newComRes.json();
-      const patchRes = await fetch(`${api}/git/refs/heads/${branch}`, { method:'PATCH', headers, body:JSON.stringify({ sha:newComSha }) });
+      const patchRes = await fetch(`${api}/git/refs/heads/${activeBranch}`, { method:'PATCH', headers, body:JSON.stringify({ sha:newComSha }) });
       if (!patchRes.ok) { const e = await patchRes.json().catch(()=>({})); throw new Error('Ref: '+(e.message||patchRes.status)); }
       return true;
     } catch(e) {
@@ -918,10 +963,27 @@
     const content = 'window.dekmaData = ' + JSON.stringify(ADMIN_DATA) + ';\n';
 
     try {
-      // 1. Get latest commit SHA on branch
-      const refRes = await fetch(`${api}/git/ref/heads/${branch}`, { headers });
-      if (!refRes.ok) { const e = await refRes.json().catch(()=>({})); throw new Error('Branch: ' + (e.message||refRes.status)); }
-      const { object: { sha: latestSha } } = await refRes.json();
+    // Resolve branch — auto-detect repo default if configured name is wrong
+    async function resolveRef() {
+      let ref = branch;
+      let refRes = await fetch(`${api}/git/ref/heads/${ref}`, { headers });
+      if (!refRes.ok && refRes.status === 404) {
+        const infoRes = await fetch(`${api}`, { headers });
+        if (infoRes.ok) {
+          const info = await infoRes.json();
+          ref = info.default_branch || ref;
+          refRes = await fetch(`${api}/git/ref/heads/${ref}`, { headers });
+        }
+      }
+      if (!refRes.ok) { const e = await refRes.json().catch(()=>({})); throw new Error('Branch \''+ref+'\': '+(e.message||refRes.status)+'. Check your branch name in ⚙ GitHub config.'); }
+      if (ref !== branch) {
+        const saved = loadGhConfig();
+        if (saved) { saved.branch = ref; localStorage.setItem(GH_SESSION_KEY, JSON.stringify(saved)); }
+      }
+      return { sha: (await refRes.json()).object.sha, branch: ref };
+    }
+      // 1. Resolve branch (auto-detects default if configured name is wrong)
+      const { sha: latestSha, branch: activeBranch } = await resolveRef();
 
       // 2. Get tree SHA from that commit
       const comRes = await fetch(`${api}/git/commits/${latestSha}`, { headers });
@@ -955,7 +1017,7 @@
       const { sha: newComSha } = await newComRes.json();
 
       // 6. Move branch ref to new commit
-      const patchRes = await fetch(`${api}/git/refs/heads/${branch}`, {
+      const patchRes = await fetch(`${api}/git/refs/heads/${activeBranch}`, {
         method: 'PATCH', headers,
         body: JSON.stringify({ sha: newComSha })
       });
