@@ -701,7 +701,106 @@
   // Config persisted in localStorage — survives page refresh and new sessions
   const GH_SESSION_KEY = '__gh_cfg';
 
-  function loadGhConfig() {
+
+  // ═══════════════════════════════════════════════
+  //  GITHUB WRITE QUEUE  — serialises all pushes so
+  //  rapid back-to-back saves never race each other
+  // ═══════════════════════════════════════════════
+  let _ghQueue = Promise.resolve();
+  function ghEnqueue(fn) {
+    _ghQueue = _ghQueue.then(() => fn()).catch(() => fn());
+    return _ghQueue;
+  }
+
+  // Shared helper: builds GitHub API headers from config
+  function ghHeaders(token) {
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      'Content-Type': 'application/json'
+    };
+  }
+
+  // Shared helper: resolves the branch ref, auto-detecting default branch on 404,
+  // giving a clear message on 401/403, and retrying up to `retries` times on
+  // 422 "not a fast-forward" before giving up.
+  async function ghResolveRef(api, headers, branch, retries = 3) {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      let ref = branch;
+      let refRes = await fetch(`${api}/git/ref/heads/${ref}`, { headers });
+      const status = refRes.status;
+      if (!refRes.ok) {
+        const e = await refRes.json().catch(() => ({}));
+        if (status === 401 || status === 403)
+          throw new Error('Invalid or expired token. Update your PAT in ⚙ GitHub config.');
+        if (status === 404) {
+          // Try to auto-detect the repo's real default branch
+          const infoRes = await fetch(api, { headers });
+          if (infoRes.ok) {
+            const info = await infoRes.json();
+            ref = info.default_branch || ref;
+            refRes = await fetch(`${api}/git/ref/heads/${ref}`, { headers });
+            if (!refRes.ok) {
+              const e2 = await refRes.json().catch(() => ({}));
+              throw new Error(`Branch '${ref}' not found: ${e2.message || refRes.status}. Check ⚙ GitHub config.`);
+            }
+            // Persist corrected branch
+            const saved = loadGhConfig();
+            if (saved) { saved.branch = ref; localStorage.setItem(GH_SESSION_KEY, JSON.stringify(saved)); }
+          } else {
+            throw new Error(`Branch '${ref}' not found. Check owner/repo in ⚙ GitHub config.`);
+          }
+        } else {
+          throw new Error(`GitHub ${status}: ${e.message || 'unknown error'}`);
+        }
+      }
+      const sha = (await refRes.json()).object.sha;
+      return { sha, branch: ref };
+    }
+  }
+
+  // Core Git-Data-API push: creates blob → tree → commit → updates ref.
+  // Retries automatically on 422 "not a fast-forward" by re-fetching the
+  // latest SHA (happens when two saves land within seconds of each other).
+  async function ghPush(api, headers, branch, filePath, contentB64, commitMsg, retries = 3) {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const { sha: latestSha, branch: activeBranch } = await ghResolveRef(api, headers, branch);
+
+        const comRes = await fetch(`${api}/git/commits/${latestSha}`, { headers });
+        if (!comRes.ok) { const e = await comRes.json().catch(()=>({})); throw new Error('Commit: '+(e.message||comRes.status)); }
+        const { tree: { sha: treeSha } } = await comRes.json();
+
+        const blobRes = await fetch(`${api}/git/blobs`, { method:'POST', headers, body:JSON.stringify({ content: contentB64, encoding:'base64' }) });
+        if (!blobRes.ok) { const e = await blobRes.json().catch(()=>({})); throw new Error('Blob: '+(e.message||blobRes.status)); }
+        const { sha: blobSha } = await blobRes.json();
+
+        const newTreeRes = await fetch(`${api}/git/trees`, { method:'POST', headers, body:JSON.stringify({ base_tree:treeSha, tree:[{ path:filePath, mode:'100644', type:'blob', sha:blobSha }] }) });
+        if (!newTreeRes.ok) { const e = await newTreeRes.json().catch(()=>({})); throw new Error('Tree: '+(e.message||newTreeRes.status)); }
+        const { sha: newTreeSha } = await newTreeRes.json();
+
+        const newComRes = await fetch(`${api}/git/commits`, { method:'POST', headers, body:JSON.stringify({ message: commitMsg, tree: newTreeSha, parents:[latestSha] }) });
+        if (!newComRes.ok) { const e = await newComRes.json().catch(()=>({})); throw new Error('Commit create: '+(e.message||newComRes.status)); }
+        const { sha: newComSha } = await newComRes.json();
+
+        const patchRes = await fetch(`${api}/git/refs/heads/${activeBranch}`, { method:'PATCH', headers, body:JSON.stringify({ sha:newComSha }) });
+        if (!patchRes.ok) {
+          const e = await patchRes.json().catch(()=>({}));
+          // 422 = not a fast-forward — stale SHA, retry
+          if (patchRes.status === 422 && attempt < retries) continue;
+          throw new Error('Ref: '+(e.message||patchRes.status));
+        }
+        return true; // success
+      } catch(e) {
+        // Only retry on fast-forward failures (caught via 422 above), rethrow everything else
+        throw e;
+      }
+    }
+    throw new Error('Push failed after retries — not a fast-forward.');
+  }
+
+    function loadGhConfig() {
     try { return JSON.parse(localStorage.getItem(GH_SESSION_KEY) || 'null'); }
     catch { return null; }
   }
@@ -789,68 +888,30 @@
   function chunkSlug(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,''); }
 
   async function writeChunk(city, year) {
-    const cfg = loadGhConfig();
-    if (!cfg || !cfg.token || !cfg.owner || !cfg.repo) {
-      showToast('GitHub not configured. Click ⚙ GitHub in the toolbar.', 'error');
-      return false;
-    }
-    const { token, owner, repo, branch } = cfg;
-    const filePath = `data/results_${chunkSlug(city)}_${year}.js`;
-    const varName  = `window.dekmaChunk_${chunkSlug(city)}_${year}`;
-    const api      = `https://api.github.com/repos/${owner}/${repo}`;
-    const headers  = {
-      'Authorization': `Bearer ${token}`,
-      'Accept': 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-      'Content-Type': 'application/json'
-    };
-    const payload    = ADMIN_DATA[city]?.[year];
-    if (!payload) { showToast(`No data for ${city} ${year}.`, 'error'); return false; }
-    const content    = `${varName}=${JSON.stringify(payload)};\n`;
-    const contentB64 = btoa(unescape(encodeURIComponent(content)));
-    try {
-    // Resolve branch — auto-detect repo default if configured name is wrong
-    async function resolveRef() {
-      let ref = branch;
-      let refRes = await fetch(`${api}/git/ref/heads/${ref}`, { headers });
-      if (!refRes.ok && refRes.status === 404) {
-        // Try to get real default branch from repo info
-        const infoRes = await fetch(`${api}`, { headers });
-        if (infoRes.ok) {
-          const info = await infoRes.json();
-          ref = info.default_branch || ref;
-          refRes = await fetch(`${api}/git/ref/heads/${ref}`, { headers });
-        }
+    return ghEnqueue(async () => {
+      const cfg = loadGhConfig();
+      if (!cfg || !cfg.token || !cfg.owner || !cfg.repo) {
+        showToast('GitHub not configured. Click ⚙ GitHub in the toolbar.', 'error');
+        return false;
       }
-      if (!refRes.ok) { const e = await refRes.json().catch(()=>({})); throw new Error('Branch \''+ref+'\': '+(e.message||refRes.status)+'. Check your branch name in ⚙ GitHub config.'); }
-      // Persist corrected branch back to config
-      if (ref !== branch) {
-        const saved = loadGhConfig();
-        if (saved) { saved.branch = ref; localStorage.setItem(GH_SESSION_KEY, JSON.stringify(saved)); }
+      const { token, owner, repo, branch } = cfg;
+      const filePath = `data/results_${chunkSlug(city)}_${year}.js`;
+      const varName  = `window.dekmaChunk_${chunkSlug(city)}_${year}`;
+      const api      = `https://api.github.com/repos/${owner}/${repo}`;
+      const headers  = ghHeaders(token);
+      const payload  = ADMIN_DATA[city]?.[year];
+      if (!payload) { showToast(`No data for ${city} ${year}.`, 'error'); return false; }
+      const raw       = `${varName}=${JSON.stringify(payload)};\n`;
+      const contentB64 = btoa(unescape(encodeURIComponent(raw)));
+      const ts        = new Date().toISOString().slice(0,16).replace('T',' ');
+      try {
+        await ghPush(api, headers, branch, filePath, contentB64, `admin: update ${filePath} [${ts}]`);
+        return true;
+      } catch(e) {
+        showToast('GitHub error: ' + e.message, 'error');
+        return false;
       }
-      return { sha: (await refRes.json()).object.sha, branch: ref };
-    }
-      const { sha: latestSha, branch: activeBranch } = await resolveRef();
-      const comRes = await fetch(`${api}/git/commits/${latestSha}`, { headers });
-      if (!comRes.ok) { const e = await comRes.json().catch(()=>({})); throw new Error('Commit: '+(e.message||comRes.status)); }
-      const { tree: { sha: treeSha } } = await comRes.json();
-      const blobRes = await fetch(`${api}/git/blobs`, { method:'POST', headers, body:JSON.stringify({ content: contentB64, encoding:'base64' }) });
-      if (!blobRes.ok) { const e = await blobRes.json().catch(()=>({})); throw new Error('Blob: '+(e.message||blobRes.status)); }
-      const { sha: blobSha } = await blobRes.json();
-      const newTreeRes = await fetch(`${api}/git/trees`, { method:'POST', headers, body:JSON.stringify({ base_tree:treeSha, tree:[{ path:filePath, mode:'100644', type:'blob', sha:blobSha }] }) });
-      if (!newTreeRes.ok) { const e = await newTreeRes.json().catch(()=>({})); throw new Error('Tree: '+(e.message||newTreeRes.status)); }
-      const { sha: newTreeSha } = await newTreeRes.json();
-      const ts = new Date().toISOString().slice(0,16).replace('T',' ');
-      const newComRes = await fetch(`${api}/git/commits`, { method:'POST', headers, body:JSON.stringify({ message:`admin: update ${filePath} [${ts}]`, tree:newTreeSha, parents:[latestSha] }) });
-      if (!newComRes.ok) { const e = await newComRes.json().catch(()=>({})); throw new Error('Commit: '+(e.message||newComRes.status)); }
-      const { sha: newComSha } = await newComRes.json();
-      const patchRes = await fetch(`${api}/git/refs/heads/${activeBranch}`, { method:'PATCH', headers, body:JSON.stringify({ sha:newComSha }) });
-      if (!patchRes.ok) { const e = await patchRes.json().catch(()=>({})); throw new Error('Ref: '+(e.message||patchRes.status)); }
-      return true;
-    } catch(e) {
-      showToast('GitHub error: ' + e.message, 'error');
-      return false;
-    }
+    });
   }
 
   // Write multiple chunks sequentially (for student edits spanning city+years)
@@ -894,159 +955,72 @@
   }
 
   async function saveManualEdits(edits) {
-    const cfg = loadGhConfig();
-    if (!cfg || !cfg.token || !cfg.owner || !cfg.repo) {
-      showToast('GitHub not configured.', 'error');
-      return false;
-    }
-    const { token, owner, repo, branch } = cfg;
-    const filePath = 'data/manual_edits.json';
-    const api = `https://api.github.com/repos/${owner}/${repo}`;
-    const headers = {
-      'Authorization': `Bearer ${token}`,
-      'Accept': 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-      'Content-Type': 'application/json'
-    };
-    const content = JSON.stringify(edits, null, 2);
-    const contentB64 = btoa(unescape(encodeURIComponent(content)));
-    try {
-      // Get current file SHA (if exists)
-      let sha = null;
-      const getRes = await fetch(`${api}/contents/${filePath}?ref=${branch}`, { headers });
-      if (getRes.status === 200) {
-        const data = await getRes.json();
-        sha = data.sha;
-      } else if (getRes.status !== 404) {
-        throw new Error(`Failed to check file: ${getRes.status}`);
+    return ghEnqueue(async () => {
+      const cfg = loadGhConfig();
+      if (!cfg || !cfg.token || !cfg.owner || !cfg.repo) {
+        showToast('GitHub not configured.', 'error');
+        return false;
       }
-
-      const body = {
-        message: `admin: update manual_edits.json [${new Date().toISOString().slice(0,16).replace('T',' ')}]`,
-        content: contentB64,
-        branch: branch
-      };
-      if (sha) body.sha = sha;
-
-      const putRes = await fetch(`${api}/contents/${filePath}`, {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify(body)
-      });
-      if (!putRes.ok) {
-        const err = await putRes.json().catch(()=>({}));
-        const s = putRes.status;
-        if (s === 401 || s === 403) throw new Error('Invalid or expired token. Update your PAT in ⚙ GitHub config.');
-        throw new Error(err.message || s);
+      const { token, owner, repo, branch } = cfg;
+      const filePath = 'data/manual_edits.json';
+      const api      = `https://api.github.com/repos/${owner}/${repo}`;
+      const headers  = ghHeaders(token);
+      const raw      = JSON.stringify(edits, null, 2);
+      const contentB64 = btoa(unescape(encodeURIComponent(raw)));
+      try {
+        // Use Contents API (simpler for small JSON files — handles SHA automatically)
+        let sha = null;
+        const getRes = await fetch(`${api}/contents/${filePath}?ref=${branch}`, { headers });
+        if (getRes.status === 200) {
+          sha = (await getRes.json()).sha;
+        } else if (getRes.status === 401 || getRes.status === 403) {
+          throw new Error('Invalid or expired token. Update your PAT in ⚙ GitHub config.');
+        } else if (getRes.status !== 404) {
+          throw new Error(`Failed to check file: ${getRes.status}`);
+        }
+        const body = {
+          message: `admin: update manual_edits.json [${new Date().toISOString().slice(0,16).replace('T',' ')}]`,
+          content: contentB64,
+          branch
+        };
+        if (sha) body.sha = sha;
+        const putRes = await fetch(`${api}/contents/${filePath}`, { method:'PUT', headers, body:JSON.stringify(body) });
+        if (!putRes.ok) {
+          const err = await putRes.json().catch(()=>({}));
+          const s = putRes.status;
+          if (s === 401 || s === 403) throw new Error('Invalid or expired token. Update your PAT in ⚙ GitHub config.');
+          throw new Error(err.message || s);
+        }
+        return true;
+      } catch(e) {
+        showToast('Failed to save manual edits: ' + e.message, 'error');
+        return false;
       }
-      return true;
-    } catch (e) {
-      showToast('Failed to save manual edits: ' + e.message, 'error');
-      return false;
-    }
+    });
   }
 
   // Legacy alias so existing calls still work (used in saveStudentEdit/saveScore below)
   async function writeResultsFile() {
-    const cfg = loadGhConfig();
-    if (!cfg || !cfg.token || !cfg.owner || !cfg.repo) {
-      showToast('GitHub not configured. Click ⚙ GitHub in the toolbar first.', 'error');
-      return false;
-    }
-
-    const { token, owner, repo, branch, path } = cfg;
-    const api = `https://api.github.com/repos/${owner}/${repo}`;
-    const headers = {
-      'Authorization': `Bearer ${token}`,
-      'Accept': 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-      'Content-Type': 'application/json'
-    };
-    const content = 'window.dekmaData = ' + JSON.stringify(ADMIN_DATA) + ';\n';
-
-    try {
-    // Resolve branch — auto-detect repo default if configured name is wrong
-    async function resolveRef() {
-      let ref = branch;
-      let refRes = await fetch(`${api}/git/ref/heads/${ref}`, { headers });
-      const status = refRes.status;
-      if (!refRes.ok) {
-        const e = await refRes.json().catch(()=>({}));
-        // 401/403 = bad token — give a clear message immediately
-        if (status === 401 || status === 403) {
-          throw new Error('Invalid or expired token. Please update your PAT in ⚙ GitHub config.');
-        }
-        // 404 = branch not found — try to auto-detect the real default branch
-        if (status === 404) {
-          const infoRes = await fetch(`${api}`, { headers });
-          if (infoRes.ok) {
-            const info = await infoRes.json();
-            ref = info.default_branch || ref;
-            refRes = await fetch(`${api}/git/ref/heads/${ref}`, { headers });
-            if (!refRes.ok) {
-              const e2 = await refRes.json().catch(()=>({}));
-              throw new Error(`Branch '${ref}' not found: ${e2.message || refRes.status}. Check ⚙ GitHub config.`);
-            }
-          } else {
-            throw new Error(`Branch '${ref}' not found and could not reach repo. Check owner/repo in ⚙ GitHub config.`);
-          }
-        } else {
-          throw new Error(`GitHub error ${status}: ${e.message || 'unknown error'}`);
-        }
+    return ghEnqueue(async () => {
+      const cfg = loadGhConfig();
+      if (!cfg || !cfg.token || !cfg.owner || !cfg.repo) {
+        showToast('GitHub not configured. Click ⚙ GitHub in the toolbar first.', 'error');
+        return false;
       }
-      if (ref !== branch) {
-        const saved = loadGhConfig();
-        if (saved) { saved.branch = ref; localStorage.setItem(GH_SESSION_KEY, JSON.stringify(saved)); }
+      const { token, owner, repo, branch, path } = cfg;
+      const api     = `https://api.github.com/repos/${owner}/${repo}`;
+      const headers = ghHeaders(token);
+      const raw     = 'window.dekmaData = ' + JSON.stringify(ADMIN_DATA) + ';\n';
+      const contentB64 = btoa(unescape(encodeURIComponent(raw)));
+      const ts      = new Date().toISOString().slice(0,16).replace('T',' ');
+      try {
+        await ghPush(api, headers, branch, path, contentB64, `admin: update results.js [${ts}]`);
+        return true;
+      } catch(e) {
+        showToast('GitHub error: ' + e.message, 'error');
+        return false;
       }
-      return { sha: (await refRes.json()).object.sha, branch: ref };
-    }
-      // 1. Resolve branch (auto-detects default if configured name is wrong)
-      const { sha: latestSha, branch: activeBranch } = await resolveRef();
-
-      // 2. Get tree SHA from that commit
-      const comRes = await fetch(`${api}/git/commits/${latestSha}`, { headers });
-      if (!comRes.ok) { const e = await comRes.json().catch(()=>({})); throw new Error('Commit: ' + (e.message||comRes.status)); }
-      const { tree: { sha: treeSha } } = await comRes.json();
-
-      // 3. Create blob — base64 encoded (GitHub requires this for large files)
-      const contentB64 = btoa(unescape(encodeURIComponent(content)));
-      const blobRes = await fetch(`${api}/git/blobs`, {
-        method: 'POST', headers,
-        body: JSON.stringify({ content: contentB64, encoding: 'base64' })
-      });
-      if (!blobRes.ok) { const e = await blobRes.json().catch(()=>({})); throw new Error('Blob: ' + (e.message||blobRes.status)); }
-      const { sha: blobSha } = await blobRes.json();
-
-      // 4. Create new tree
-      const newTreeRes = await fetch(`${api}/git/trees`, {
-        method: 'POST', headers,
-        body: JSON.stringify({ base_tree: treeSha, tree: [{ path, mode: '100644', type: 'blob', sha: blobSha }] })
-      });
-      if (!newTreeRes.ok) { const e = await newTreeRes.json().catch(()=>({})); throw new Error('Tree: ' + (e.message||newTreeRes.status)); }
-      const { sha: newTreeSha } = await newTreeRes.json();
-
-      // 5. Create new commit
-      const ts = new Date().toISOString().slice(0,16).replace('T',' ');
-      const newComRes = await fetch(`${api}/git/commits`, {
-        method: 'POST', headers,
-        body: JSON.stringify({ message: `admin: update results.js [${ts}]`, tree: newTreeSha, parents: [latestSha] })
-      });
-      if (!newComRes.ok) { const e = await newComRes.json().catch(()=>({})); throw new Error('Commit: ' + (e.message||newComRes.status)); }
-      const { sha: newComSha } = await newComRes.json();
-
-      // 6. Move branch ref to new commit
-      const patchRes = await fetch(`${api}/git/refs/heads/${activeBranch}`, {
-        method: 'PATCH', headers,
-        body: JSON.stringify({ sha: newComSha })
-      });
-      if (!patchRes.ok) { const e = await patchRes.json().catch(()=>({})); throw new Error('Ref update: ' + (e.message||patchRes.status)); }
-
-      return true;
-
-    } catch(e) {
-      showToast('GitHub error: ' + e.message, 'error');
-      return false;
-    }
+    });
   }
   // ═══════════════════════════════════════════════
   //  BOOT
