@@ -5068,41 +5068,38 @@
             </div>
           </div>
         </div>
-        <div class="insight-grid">
-          <div class="insight-card amber" style="animation-delay:.05s">
-            <div class="insight-label">Consistency</div>
-            <div class="insight-value amber">${consistency}<span style="font-size:14px">%</span></div>
-            <div class="insight-sub">Std dev: ${stdDev.toFixed(1)} marks</div>
-          </div>
-          ${(() => {
-            const books = apps.filter(a => (a.exam_type === 'theory' && a.rank <= 50) || (a.exam_type === 'revision' && a.rank <= 30)).length;
-            if (!books) return '';
-            return `<div class="insight-card" style="border-color:rgba(232,160,32,.6);background:linear-gradient(135deg,rgba(232,160,32,.1),rgba(245,192,96,.05));animation-delay:.1s;position:relative;overflow:hidden">
-              <div style="position:absolute;top:4px;right:8px;font-size:26px;opacity:.2">🎁</div>
-              <div class="insight-label" style="color:var(--amber2);letter-spacing:1.5px">BOOKS EARNED</div>
-              <div style="display:flex;align-items:center;gap:8px;margin:4px 0 4px">
-                <span style="font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--amber);line-height:1">${books}</span>
-                <span style="font-size:20px;line-height:1">${'📚'.repeat(Math.min(books, 5))}</span>
-              </div>
-              <div class="insight-sub" style="color:var(--amber2);opacity:.75">Top 50 theory · Top 30 revision</div>
-            </div>`;
-          })()}
-          <div class="insight-card teal" style="animation-delay:.15s">
-            <div class="insight-label">Trend</div>
-            <div class="insight-value" style="color:${trendColor};font-size:22px">${trendLabel}</div>
-            <div class="insight-sub">Slope: ${trend >= 0 ? '+' : ''}${trend.toFixed(2)}/test</div>
-          </div>
-          <div class="insight-card blue" style="animation-delay:.2s">
-            <div class="insight-label">Above Class Avg</div>
-            <div class="insight-value blue">${aboveAvgPct}<span style="font-size:14px">%</span></div>
-            <div class="insight-sub">${aboveAvgCount} of ${apps.length} tests</div>
-          </div>
-          ${classPercentile !== null ? `<div class="insight-card pink" style="animation-delay:.25s"><div class="insight-label">Best Percentile</div><div class="insight-value pink">${classPercentile}<span style="font-size:14px">th</span></div><div class="insight-sub">In ${bestExamEntry?.exam_label || ''}</div></div>` : ''}
-          ${revAvg !== null ? `<div class="insight-card amber" style="animation-delay:.3s"><div class="insight-label">Revision Avg</div><div class="insight-value amber">${revAvg.toFixed(1)}</div><div class="insight-sub">${revApps.length} test${revApps.length > 1 ? 's' : ''}</div></div>` : ''}
-          ${thyAvg !== null ? `<div class="insight-card teal" style="animation-delay:.35s"><div class="insight-label">Theory Avg</div><div class="insight-value teal">${thyAvg.toFixed(1)}</div><div class="insight-sub">${thyApps.length} test${thyApps.length > 1 ? 's' : ''}</div></div>` : ''}
-
-        </div>
-
+         <div class="insight-grid">
+           <div class="insight-card amber" style="animation-delay:.05s">
+             <div class="insight-label">Consistency</div>
+             <div class="insight-value amber">${consistency}<span style="font-size:14px">%</span></div>
+             <div class="insight-sub">Std dev: ${stdDev.toFixed(1)} marks</div>
+           </div>
+           <div class="insight-card teal" style="animation-delay:.1s">
+             <div class="insight-label">Trend</div>
+             <div class="insight-value" style="color:${trendColor};font-size:22px">${trendLabel}</div>
+             <div class="insight-sub">Slope: ${trend >= 0 ? '+' : ''}${trend.toFixed(2)}/test</div>
+           </div>
+           <div class="insight-card blue" style="animation-delay:.15s">
+             <div class="insight-label">Above Class Avg</div>
+             <div class="insight-value blue">${aboveAvgPct}<span style="font-size:14px">%</span></div>
+             <div class="insight-sub">${aboveAvgCount} of ${apps.length} tests</div>
+           </div>
+           ${classPercentile !== null ? `<div class="insight-card pink" style="animation-delay:.2s"><div class="insight-label">Best Percentile</div><div class="insight-value pink">${classPercentile}<span style="font-size:14px">th</span></div><div class="insight-sub">In ${bestExamEntry?.exam_label || ''}</div></div>` : ''}
+           ${revAvg !== null ? `<div class="insight-card amber" style="animation-delay:.25s"><div class="insight-label">Revision Avg</div><div class="insight-value amber">${revAvg.toFixed(1)}</div><div class="insight-sub">${revApps.length} test${revApps.length > 1 ? 's' : ''}</div></div>` : ''}
+           ${thyAvg !== null ? `<div class="insight-card teal" style="animation-delay:.3s"><div class="insight-label">Theory Avg</div><div class="insight-value teal">${thyAvg.toFixed(1)}</div><div class="insight-sub">${thyApps.length} test${thyApps.length > 1 ? 's' : ''}</div></div>` : ''}
+           ${(() => {
+             const thyBooks = apps.filter(a => a.exam_type === 'theory' && a.rank <= 50).length;
+             const revBooks = apps.filter(a => a.exam_type === 'revision' && a.rank <= 30).length;
+             const total = thyBooks + revBooks;
+             if (!total) return '';
+             const parts = [thyBooks ? 'THE ' + thyBooks : '', revBooks ? 'REV ' + revBooks : ''].filter(Boolean).join('  ');
+             return '<div class="insight-card" style="border-color:rgba(232,160,32,.55);background:linear-gradient(135deg,rgba(232,160,32,.09),rgba(245,192,96,.04));animation-delay:.35s">'
+               + '<div class="insight-label" style="color:var(--amber2);letter-spacing:1.5px">BOOKS EARNED</div>'
+               + '<div style="font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--amber);line-height:1;margin:4px 0 4px">' + total + '</div>'
+               + '<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber2);letter-spacing:1px;opacity:.8">' + parts + '</div>'
+               + '</div>';
+           })()}
+         </div>
         <div class="card" style="margin-bottom:20px">
           <div class="card-header">
             <div class="card-title">📈 Performance Timeline</div>

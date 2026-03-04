@@ -617,19 +617,7 @@
     }
   })();
 </script>
-
-<!-- ========== CACHE‑BUSTED DATA LOADING ========== -->
-<script>
-  // Generate a unique timestamp for this page load – used to bust the cache
-  // for all data files, so a refresh always fetches the latest from GitHub.
-  window._cacheBust = Date.now();
-</script>
-
-<script>
-  // Load results_index.js with cache busting
-  document.write('<script src="data/results_index.js?v=' + window._cacheBust + '"><\/script>');
-</script>
-
+<script src="data/results_index.js"></script>
 <script>
   // Load all data chunks synchronously before admin boots
   // (runs before DOMContentLoaded — chunks are small so this is fast)
@@ -638,13 +626,13 @@
     const chunks = window.dekmaChunks || [];
     function slug(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,''); }
     chunks.forEach(function(c) {
-      // Append the same cache‑buster timestamp to every chunk file
-      document.write('<script src="data/' + c.file + '?v=' + window._cacheBust + '"><\/script>');
+      const el = document.createElement('script');
+      el.src = 'data/' + c.file;
+      // Synchronous load trick: append and the browser blocks
+      document.write('<script src="data/' + c.file + '"><\/script>');
     });
   })();
 </script>
-<!-- =============================================== -->
-
 <script>
   // Merge all loaded chunks into window.dekmaData
   (function() {
@@ -658,7 +646,6 @@
     });
   })();
 </script>
-
 <script>
   // ═══════════════════════════════════════════════
   //  GATE  —  password stored as SHA-256 hash only
@@ -828,6 +815,88 @@
       if (!ok) return false;
     }
     return true;
+  }
+
+  // ═══════════════════════════════════════════════
+  //  MANUAL EDITS LOG FUNCTIONS
+  // ═══════════════════════════════════════════════
+  async function loadManualEdits() {
+    const cfg = loadGhConfig();
+    if (!cfg) return { scoreEdits: [], studentRenames: [] };
+    const { token, owner, repo, branch } = cfg;
+    const filePath = 'data/manual_edits.json';
+    const api = `https://api.github.com/repos/${owner}/${repo}`;
+    const headers = {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+    };
+    try {
+      const url = `${api}/contents/${filePath}?ref=${branch}`;
+      const res = await fetch(url, { headers });
+      if (res.status === 404) {
+        // File doesn't exist – return empty edits
+        return { scoreEdits: [], studentRenames: [] };
+      }
+      if (!res.ok) throw new Error(`Failed to fetch manual_edits.json: ${res.status}`);
+      const data = await res.json();
+      const content = atob(data.content);
+      return JSON.parse(content);
+    } catch (e) {
+      showToast('Could not load manual edits: ' + e.message, 'error');
+      return { scoreEdits: [], studentRenames: [] };
+    }
+  }
+
+  async function saveManualEdits(edits) {
+    const cfg = loadGhConfig();
+    if (!cfg || !cfg.token || !cfg.owner || !cfg.repo) {
+      showToast('GitHub not configured.', 'error');
+      return false;
+    }
+    const { token, owner, repo, branch } = cfg;
+    const filePath = 'data/manual_edits.json';
+    const api = `https://api.github.com/repos/${owner}/${repo}`;
+    const headers = {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      'Content-Type': 'application/json'
+    };
+    const content = JSON.stringify(edits, null, 2);
+    const contentB64 = btoa(unescape(encodeURIComponent(content)));
+    try {
+      // Get current file SHA (if exists)
+      let sha = null;
+      const getRes = await fetch(`${api}/contents/${filePath}?ref=${branch}`, { headers });
+      if (getRes.status === 200) {
+        const data = await getRes.json();
+        sha = data.sha;
+      } else if (getRes.status !== 404) {
+        throw new Error(`Failed to check file: ${getRes.status}`);
+      }
+
+      const body = {
+        message: `admin: update manual_edits.json [${new Date().toISOString().slice(0,16).replace('T',' ')}]`,
+        content: contentB64,
+        branch: branch
+      };
+      if (sha) body.sha = sha;
+
+      const putRes = await fetch(`${api}/contents/${filePath}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(body)
+      });
+      if (!putRes.ok) {
+        const err = await putRes.json().catch(()=>({}));
+        throw new Error(err.message || putRes.status);
+      }
+      return true;
+    } catch (e) {
+      showToast('Failed to save manual edits: ' + e.message, 'error');
+      return false;
+    }
   }
 
   // Legacy alias so existing calls still work (used in saveStudentEdit/saveScore below)
@@ -1074,6 +1143,17 @@
     showToast(`Saving ${pairs.length} chunk${pairs.length > 1 ? 's' : ''}…`, '');
     const ok = await writeChunks(pairs);
     if (ok) {
+      // Record the rename in manual_edits.json
+      const edits = await loadManualEdits();
+      edits.studentRenames.push({
+        oldName: origName,
+        oldSchool: origSchool,
+        newName: newName,
+        newSchool: newSchool,
+        timestamp: Date.now()
+      });
+      await saveManualEdits(edits);
+
       showToast(`Saved — ${changed} record${changed > 1 ? 's' : ''} updated on GitHub.`, 'success');
       editingStudent = { name: newName, school: newSchool, gender: newGender };
       document.getElementById('sef-display-name').textContent   = newName;
@@ -1252,6 +1332,16 @@
       btn.textContent = 'Save'; btn.style.color = ''; btn.disabled = false;
       return;
     }
+
+    // Record the score edit in manual_edits.json
+    const edits = await loadManualEdits();
+    edits.scoreEdits.push({
+      examId: _currentExam.id,
+      student: { name: origName, school: origSchool },
+      newMarks: newVal,
+      timestamp: Date.now()
+    });
+    await saveManualEdits(edits);
 
     inp.dataset.orig = newVal;
     btn.textContent = 'Save';
