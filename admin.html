@@ -914,7 +914,45 @@
     });
   }
 
-  // Write multiple chunks sequentially (for student edits spanning city+years)
+  // ═══════════════════════════════════════════════
+  //  VERSION BUMP — increments data/version.txt so
+  //  index.html cache-busts all data files on next load
+  // ═══════════════════════════════════════════════
+  async function bumpVersion() {
+    return ghEnqueue(async () => {
+      const cfg = loadGhConfig();
+      if (!cfg || !cfg.token || !cfg.owner || !cfg.repo) return;
+      const { token, owner, repo, branch } = cfg;
+      const api      = `https://api.github.com/repos/${owner}/${repo}`;
+      const headers  = ghHeaders(token);
+      const filePath = 'data/version.txt';
+      try {
+        // Read current version (or start at 1 if missing)
+        let sha = null, current = 0;
+        const getRes = await fetch(`${api}/contents/${filePath}?ref=${branch}`, { headers });
+        if (getRes.ok) {
+          const data = await getRes.json();
+          sha = data.sha;
+          current = parseInt(atob(data.content).trim(), 10) || 0;
+        } else if (getRes.status !== 404) {
+          return; // silently skip on unexpected errors
+        }
+        const next = current + 1;
+        const body = {
+          message: `admin: bump version to ${next}`,
+          content: btoa(String(next)),
+          branch
+        };
+        if (sha) body.sha = sha;
+        await fetch(`${api}/contents/${filePath}`, { method:'PUT', headers, body:JSON.stringify(body) });
+        // No toast — this is a silent background operation
+      } catch(e) {
+        console.warn('Version bump failed (non-critical):', e.message);
+      }
+    });
+  }
+
+    // Write multiple chunks sequentially (for student edits spanning city+years)
   async function writeChunks(pairs) {
     for (const { city, year } of pairs) {
       const ok = await writeChunk(city, year);
@@ -1207,6 +1245,7 @@
         timestamp: Date.now()
       });
       await saveManualEdits(edits);
+      bumpVersion(); // fire-and-forget, queued
 
       showToast(`Saved — ${changed} record${changed > 1 ? 's' : ''} updated on GitHub.`, 'success');
       editingStudent = { name: newName, school: newSchool, gender: newGender };
@@ -1396,6 +1435,7 @@
       timestamp: Date.now()
     });
     await saveManualEdits(edits);
+    bumpVersion(); // fire-and-forget, queued
 
     inp.dataset.orig = newVal;
     btn.textContent = 'Save';
