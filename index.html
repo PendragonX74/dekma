@@ -4214,14 +4214,13 @@
       const opt = (e, col) => {
         const on = checked.has(e.id);
         if (!multi) {
-          // Single-select mode: plain row, tap solos and closes
-          return `<div class="tdd-option single-mode ${on ? 'selected' : ''}" onclick="soloExam('${cid}','${esc(e.id)}',event,true)">
+          return `<div class="tdd-option single-mode ${on ? 'selected' : ''}" onclick="event.stopPropagation();soloExam('${cid}','${esc(e.id)}',event,true)">
             <div class="tdd-checkbox ${on ? 'checked' : ''}"></div>
             <div class="tdd-option-dot" style="background:${col}"></div>
             <div class="tdd-option-text"><div class="tdd-option-name">${e.label}</div><div class="tdd-option-sub">${sub(e)}</div></div>
           </div>`;
         }
-        return `<div class="tdd-option tdd-cb-row ${on ? 'selected' : ''}" onclick="toggleExamInSel('${cid}','${esc(e.id)}',event)">
+        return `<div class="tdd-option tdd-cb-row ${on ? 'selected' : ''}" onclick="event.stopPropagation();toggleExamInSel('${cid}','${esc(e.id)}',event)">
           <div class="tdd-checkbox ${on ? 'checked' : ''}"></div>
           <div class="tdd-option-dot" style="background:${col}"></div>
           <div class="tdd-option-text"><div class="tdd-option-name">${e.label}</div><div class="tdd-option-sub">${sub(e)}</div></div>
@@ -4231,7 +4230,7 @@
       const colToggle = (type, exams) => {
         if (!multi) return '';
         const allOn = exams.every(e => checked.has(e.id));
-        return allOn ? '' : `<span class="tdd-col-toggle" onclick="toggleTypeInSel('${cid}','${type}',event)">Select all</span>`;
+        return allOn ? '' : `<span class="tdd-col-toggle" onclick="event.stopPropagation();toggleTypeInSel('${cid}','${type}',event)">Select all</span>`;
       };
 
       const footerText = multi
@@ -4240,10 +4239,10 @@
 
       panel.innerHTML = `
         <div class="tdd-presets">
-          <button class="tdd-preset ${allActive}" onclick="applyPreset('${cid}','all')">All</button>
-          <button class="tdd-preset ${presetActive('theory')}" onclick="applyPreset('${cid}','theory')">Theory</button>
-          <button class="tdd-preset ${presetActive('revision')}" onclick="applyPreset('${cid}','revision')">Revision</button>
-          <button class="tdd-preset-multi ${multi ? 'active' : ''}" onclick="setMultiMode('${cid}',${!multi})">
+          <button class="tdd-preset ${allActive}" onclick="event.stopPropagation();applyPreset('${cid}','all')">All</button>
+          <button class="tdd-preset ${presetActive('theory')}" onclick="event.stopPropagation();applyPreset('${cid}','theory')">Theory</button>
+          <button class="tdd-preset ${presetActive('revision')}" onclick="event.stopPropagation();applyPreset('${cid}','revision')">Revision</button>
+          <button class="tdd-preset-multi ${multi ? 'active' : ''}" onclick="event.stopPropagation();setMultiMode('${cid}',${!multi})">
             <span>${multi ? '☑' : '☐'}</span> Multi
           </button>
         </div>
@@ -4272,8 +4271,8 @@
     }
 
     function applyPreset(cid, mode) {
-      // All resets to single mode; Theory/Revision imply multi
-      TDD_MULTI[cid] = (mode !== 'all');
+      // All presets enable multi mode — only the Multi toggle button disables it
+      TDD_MULTI[cid] = true;
       TDD_CONFIGS[cid].set({ mode });
       buildOneDropdown(cid);
     }
