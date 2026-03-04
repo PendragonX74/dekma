@@ -3141,10 +3141,6 @@
               <div class="card-title" id="lb-title">Leaderboard</div>
               <div class="chip" id="lb-count">—</div>
             </div>
-            <div id="lb-agg-note" class="agg-note" style="display:none">
-              <strong>Rating</strong> is a difficulty-adjusted skill score (0–100). Each result is z-score normalised
-              per exam, then a Bayesian confidence penalty pulls low-test-count students toward average.
-            </div>
             <div class="table-wrap" id="lb-table"></div>
             <div style="padding:0 20px 16px" id="lb-pager"></div>
           </div>
@@ -4347,7 +4343,6 @@
         { label: 'Unique Students', value: unique, color: 'teal', sub: 'name + school', fmt: true },
         { label: 'Schools', value: SCHOOLS.length, color: 'pink', sub: 'participating' },
         { label: 'Average Score', value: avg, color: 'amber', sub: 'all tests combined' },
-        { label: 'Top Score', value: top, color: 'blue', sub: 'highest recorded' },
       ];
       document.getElementById('overview-stats').innerHTML = cards.map((c, i) => `
         <div class="stat-card">
@@ -4654,13 +4649,6 @@
       if (schF) raw = raw.filter(r => r.school === schF);
       if (lbGender) raw = raw.filter(r => r.gender === lbGender);
       if (nameF) raw = raw.filter(r => r.name.toLowerCase().includes(nameF));
-
-      document.getElementById('lb-agg-note').style.display = isAll ? 'block' : 'none';
-      // Update lb-agg-note text when a subset is selected
-      if (isAll && sel.mode !== 'all') {
-        const noteEl = document.getElementById('lb-agg-note');
-        if (noteEl) noteEl.textContent = `Showing aggregated results for: ${selLabel(sel)}`;
-      }
 
       let data;
       if (isAll) {
@@ -5086,10 +5074,10 @@
             <div class="insight-value amber">${consistency}<span style="font-size:14px">%</span></div>
             <div class="insight-sub">Std dev: ${stdDev.toFixed(1)} marks</div>
           </div>
-          <div class="insight-card" style="border-color:rgba(74,222,128,.3);animation-delay:.1s">
-            <div class="insight-label">Skill Rating</div>
-            <div class="insight-value" style="color:#4ade80">${rating}</div>
-            <div class="insight-sub">50 = avg · difficulty-adj</div>
+          <div class="insight-card" style="border-color:rgba(232,160,32,.3);animation-delay:.1s">
+            <div class="insight-label">📚 Books Received</div>
+            <div class="insight-value" style="color:var(--amber)">${apps.filter(a => (a.exam_type === 'theory' && a.rank <= 50) || (a.exam_type === 'revision' && a.rank <= 20)).length}</div>
+            <div class="insight-sub">Top 50 theory · Top 20 revision</div>
           </div>
           <div class="insight-card teal" style="animation-delay:.15s">
             <div class="insight-label">Trend</div>
