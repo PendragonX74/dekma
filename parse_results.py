@@ -18,6 +18,7 @@ import xml.etree.ElementTree as ET
 ROOT_FOLDER = Path("DEKMA RESULTS")
 OUTPUT_DIR = Path("data")
 MANUAL_EDITS_FILE = OUTPUT_DIR / "manual_edits.json"
+VERSION_FILE = OUTPUT_DIR / "version.txt"
 
 CENTERS = ["Galle", "Matara", "Hambanthota"]
 NS = "http://schemas.datacontract.org/2004/07/DTO"
@@ -155,6 +156,17 @@ def build_index():
     chunks.sort(key=lambda c: (c['city'], -c['year']))
     return chunks
 
+def bump_version():
+    """Increment data/version.txt so index.html cache-busts data files on next load."""
+    try:
+        current = int(VERSION_FILE.read_text(encoding="utf-8").strip()) if VERSION_FILE.exists() else 0
+        next_ver = current + 1
+        VERSION_FILE.write_text(str(next_ver), encoding="utf-8")
+        print(f"Bumped version.txt: {current} → {next_ver}")
+    except Exception as e:
+        print(f"[WARN] Could not bump version.txt: {e}")
+
+
 def main():
     print(f"Reading: {ROOT_FOLDER.resolve()}")
     print(f"Writing chunks to: {OUTPUT_DIR.resolve()}\n")
@@ -228,6 +240,8 @@ def main():
     total_exams = sum(len(yd) for yd in city_year_exams.values())
     total_students = sum(len(e["students"]) for exams in city_year_exams.values() for e in exams)
     print(f"\n{len(city_year_exams)} city‑year folders | {total_exams} exams | {total_students} student records")
+    # Bump version.txt so browsers cache-bust data files on next load
+    bump_version()
     print("Done.")
 
 if __name__ == "__main__":
