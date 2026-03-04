@@ -4197,8 +4197,9 @@
       const sel = TDD_CONFIGS[cid].get();
       const multi = isMultiMode(cid);
       const checked = new Set(resolveExamIds(sel));
-      const thy = EXAMS.filter(e => e.type === 'theory');
-      const rev = EXAMS.filter(e => e.type === 'revision');
+      // Display order in dropdown: newest first (descending number)
+      const thy = EXAMS.filter(e => e.type === 'theory').slice().sort((a, b) => (b.number || 0) - (a.number || 0));
+      const rev = EXAMS.filter(e => e.type === 'revision').slice().sort((a, b) => (b.number || 0) - (a.number || 0));
       const allCount = EXAMS.length;
       const thyCount = thy.length, revCount = rev.length;
       const selCount = resolveExamIds(sel).length;
@@ -4767,7 +4768,11 @@
     function renderTestsGrid() {
       const grid = document.getElementById('tests-grid');
       if (!EXAMS.length) { grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📂</div>Run parse_results.py first</div>'; return; }
-      const list = testsFilter === 'all' ? EXAMS : EXAMS.filter(e => e.type === testsFilter);
+      const baseList = testsFilter === 'all' ? EXAMS : EXAMS.filter(e => e.type === testsFilter);
+      const list = baseList.slice().sort((a, b) => {
+        if (a.type !== b.type) return a.type === 'revision' ? -1 : 1;
+        return (b.number || 0) - (a.number || 0);
+      });
       grid.innerHTML = list.map(exam => {
         const m = exam.students.map(s => s.marks);
         const avg = m.length ? (m.reduce((a, b) => a + b) / m.length).toFixed(1) : 0;
