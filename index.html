@@ -5074,11 +5074,19 @@
             <div class="insight-value amber">${consistency}<span style="font-size:14px">%</span></div>
             <div class="insight-sub">Std dev: ${stdDev.toFixed(1)} marks</div>
           </div>
-          <div class="insight-card" style="border-color:rgba(232,160,32,.3);animation-delay:.1s">
-            <div class="insight-label">📚 Books Received</div>
-            <div class="insight-value" style="color:var(--amber)">${apps.filter(a => (a.exam_type === 'theory' && a.rank <= 50) || (a.exam_type === 'revision' && a.rank <= 20)).length}</div>
-            <div class="insight-sub">Top 50 theory · Top 20 revision</div>
-          </div>
+          ${(() => {
+            const books = apps.filter(a => (a.exam_type === 'theory' && a.rank <= 50) || (a.exam_type === 'revision' && a.rank <= 30)).length;
+            if (!books) return '';
+            return `<div class="insight-card" style="border-color:rgba(232,160,32,.6);background:linear-gradient(135deg,rgba(232,160,32,.1),rgba(245,192,96,.05));animation-delay:.1s;position:relative;overflow:hidden">
+              <div style="position:absolute;top:4px;right:8px;font-size:26px;opacity:.2">🎁</div>
+              <div class="insight-label" style="color:var(--amber2);letter-spacing:1.5px">BOOKS EARNED</div>
+              <div style="display:flex;align-items:center;gap:8px;margin:4px 0 4px">
+                <span style="font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--amber);line-height:1">${books}</span>
+                <span style="font-size:20px;line-height:1">${'📚'.repeat(Math.min(books, 5))}</span>
+              </div>
+              <div class="insight-sub" style="color:var(--amber2);opacity:.75">Top 50 theory · Top 30 revision</div>
+            </div>`;
+          })()}
           <div class="insight-card teal" style="animation-delay:.15s">
             <div class="insight-label">Trend</div>
             <div class="insight-value" style="color:${trendColor};font-size:22px">${trendLabel}</div>
