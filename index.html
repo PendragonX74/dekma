@@ -1573,6 +1573,125 @@
       font-size: 14px
     }
 
+    /* Custom searchable school dropdown */
+    .school-dd-panel {
+      position: fixed;
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius2);
+      z-index: 9000;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, .75);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      width: 240px
+    }
+
+    .school-dd-panel.open {
+      display: flex
+    }
+
+    .school-dd-search {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      background: var(--bg3)
+    }
+
+    .school-dd-search input {
+      width: 100%;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 5px 10px 5px 28px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text);
+      outline: none;
+      transition: border-color .15s
+    }
+
+    .school-dd-search input:focus {
+      border-color: var(--amber)
+    }
+
+    .school-dd-search-wrap {
+      position: relative
+    }
+
+    .school-dd-search-wrap::before {
+      content: '⌕';
+      position: absolute;
+      left: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text3);
+      font-size: 13px;
+      pointer-events: none
+    }
+
+    .school-dd-list {
+      overflow-y: auto;
+      overflow-x: hidden;
+      max-height: 260px;
+      overscroll-behavior: contain
+    }
+
+    .school-dd-list::-webkit-scrollbar {
+      width: 3px
+    }
+
+    .school-dd-list::-webkit-scrollbar-thumb {
+      background: var(--border2);
+      border-radius: 2px
+    }
+
+    .school-dd-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 12px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text2);
+      cursor: pointer;
+      border-bottom: 1px solid rgba(42, 42, 56, .5);
+      transition: background .1s;
+      gap: 8px
+    }
+
+    .school-dd-item:last-child {
+      border-bottom: none
+    }
+
+    .school-dd-item:hover {
+      background: var(--bg3);
+      color: var(--text)
+    }
+
+    .school-dd-item.selected {
+      color: var(--amber);
+      background: rgba(232, 160, 32, .07)
+    }
+
+    .school-dd-item-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .school-dd-check {
+      font-size: 10px;
+      color: var(--amber);
+      opacity: 0;
+      flex-shrink: 0
+    }
+
+    .school-dd-item.selected .school-dd-check {
+      opacity: 1
+    }
+
     /* Filter bar */
     .filter-bar {
       display: flex;
@@ -3127,9 +3246,7 @@
             <div id="lb-sel" class="tdd-wrap"></div>
           </div>
           <div class="filter-bar">
-            <select class="filter-select" id="lb-school" onchange="lbPage=1;renderLeaderboard()">
-              <option value="">All Schools</option>
-            </select>
+            <div id="lb-school-wrap" class="tdd-wrap"></div>
             <div class="filter-btn active" id="lb-g-all" onclick="setLbGender('',this)">All Genders</div>
             <div class="filter-btn" id="lb-g-b" onclick="setLbGender('B',this)">Boys</div>
             <div class="filter-btn" id="lb-g-g" onclick="setLbGender('G',this)">Girls</div>
@@ -3437,7 +3554,7 @@
     let _globalMean = 70;
 
     // Leaderboard
-    let lbPage = 1, lbGender = '', lbTestSel = { mode: 'all' }, lbSortField = 'rating', lbSortAsc = false;
+    let lbPage = 1, lbGender = '', lbSchool = '', lbTestSel = { mode: 'all' }, lbSortField = 'rating', lbSortAsc = false;
     // Dashboard
     let podiumTestSel = { mode: 'all' }, top10TestSel = { mode: 'all' }, top10SortField = 'rank', top10SortAsc = true, _schoolsExpanded = false;
     // Students
@@ -3607,7 +3724,7 @@
       document.title = `DEKMA ${selectedCity} ${selectedYear}`;
 
       // Reset all state
-      lbPage = 1; lbGender = ''; lbTestSel = { mode: 'all' }; lbSortField = 'rating'; lbSortAsc = false;
+      lbPage = 1; lbGender = ''; lbTestSel = { mode: 'all' }; lbSortField = 'rating'; lbSortAsc = false; lbSchool = '';
       podiumTestSel = { mode: 'all' }; top10TestSel = { mode: 'all' }; top10SortField = 'rank'; top10SortAsc = true;
       stuGender = ''; schoolSort = 'avg'; schoolTestSel = { mode: 'all' }; schoolData = {};
       avgType = 'all'; _schoolsExpanded = false;
@@ -3767,6 +3884,12 @@
     }
 
     function initUIShell() {
+      // Default leaderboard to the most recent revision test (highest number)
+      const revExams = EXAMS.filter(e => e.type === 'revision');
+      if (revExams.length) {
+        const latest = revExams[revExams.length - 1];
+        lbTestSel = { mode: 'custom', ids: new Set([latest.id]) };
+      }
       populateSelects();
       buildExamStats();
       buildStuRegistry();
@@ -3856,13 +3979,14 @@
     //  INIT UI (populates filters etc.)
     // ═══════════════════════════════════════════════════
     function populateSelects() {
-      ['lb-school', 'stu-school'].forEach(id => {
+      ['stu-school'].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
         const firstOpt = el.options[0] ? el.options[0].outerHTML : '';
         el.innerHTML = firstOpt;
         SCHOOLS.forEach(s => { el.innerHTML += `<option value="${esc(s)}">${s}</option>`; });
       });
+      buildSchoolDropdown();
     }
 
     // ═══════════════════════════════════════════════════
@@ -3963,12 +4087,12 @@
     function buildTestDropdowns() {
       Object.keys(TDD_CONFIGS).forEach(id => buildOneDropdown(id));
       document.addEventListener('click', ev => {
-        if (!ev.target.closest('.tdd-wrap') && !ev.target.closest('.tdd-panel')) closeAllDropdowns();
+        if (!ev.target.closest('.tdd-wrap') && !ev.target.closest('.tdd-panel') && !ev.target.closest('.school-dd-panel')) { closeAllDropdowns(); closeSchoolDrop(); }
         if (!ev.target.closest('.logo-selector') && !ev.target.closest('.logo-drop') && !ev.target.closest('.context-badge')) closeLogoDrop();
       });
       window.addEventListener('scroll', (ev) => {
-        if (ev.target && typeof ev.target.closest === 'function' && ev.target.closest('.tdd-panel')) return;
-        closeAllDropdowns();
+        if (ev.target && typeof ev.target.closest === 'function' && (ev.target.closest('.tdd-panel') || ev.target.closest('.school-dd-panel'))) return;
+        closeAllDropdowns(); closeSchoolDrop();
       }, true);
       window.addEventListener('resize', () => { closeAllDropdowns(); closeLogoDrop(); });
     }
@@ -3990,6 +4114,8 @@
     function rebuildPanelHTML(cid) {
       const panel = document.getElementById(cid + '-panel');
       if (!panel) return;
+      // Save scroll positions before rebuilding
+      const prevScrolls = Array.from(panel.querySelectorAll('.tdd-col-scroll')).map(el => el.scrollTop);
       const sel = TDD_CONFIGS[cid].get();
       const checked = new Set(resolveExamIds(sel));
       const thy = EXAMS.filter(e => e.type === 'theory');
@@ -4041,6 +4167,9 @@
           <span class="tdd-footer-count">${selCount === allCount ? 'All ' + allCount : selCount} test${selCount !== 1 ? 's' : ''} selected</span>
           <button class="tdd-footer-clear" onclick="applyPreset('${cid}','all')">Reset</button>
         </div>`;
+      // Restore scroll positions after rebuild
+      const newScrollEls = panel.querySelectorAll('.tdd-col-scroll');
+      prevScrolls.forEach((pos, i) => { if (newScrollEls[i]) newScrollEls[i].scrollTop = pos; });
     }
 
     function applyPreset(cid, mode) {
@@ -4390,7 +4519,6 @@
       const medals = ['🥈', '🥇', '🥉'];
       const ini = n => (n || '').split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
       wrap.innerHTML = `
-        ${isAvg ? '<div style="text-align:center;font-family:DM Mono,monospace;font-size:10px;color:var(--teal);padding:8px 0 0;letter-spacing:1px">RANKED BY SKILL RATING · SPOTLIGHT ON AVERAGE SCORE</div>' : ''}
         <div class="podium">
           ${order.map((s, i) => `
             <div class="podium-slot" onclick="navToStudent('${_ns(s.name)}','${_ns(s.school)}')">
@@ -4608,6 +4736,91 @@
     }
 
     // ═══════════════════════════════════════════════════
+    //  CUSTOM SCHOOL DROPDOWN (Leaderboard)
+    // ═══════════════════════════════════════════════════
+    function buildSchoolDropdown() {
+      const wrap = document.getElementById('lb-school-wrap');
+      if (!wrap) return;
+      wrap.innerHTML = `<div class="tdd-btn" id="lb-school-btn" onclick="toggleSchoolDrop(event)">
+        <span class="tdd-label" id="lb-school-label" style="min-width:90px">${lbSchool || 'All Schools'}</span>
+        <span class="tdd-arrow">▾</span>
+      </div>`;
+      let panel = document.getElementById('lb-school-panel');
+      if (!panel) {
+        panel = document.createElement('div');
+        panel.id = 'lb-school-panel';
+        panel.className = 'school-dd-panel';
+        document.body.appendChild(panel);
+      }
+    }
+
+    function rebuildSchoolPanel(query) {
+      const panel = document.getElementById('lb-school-panel');
+      if (!panel) return;
+      const q = (query || '').toLowerCase();
+      const allSchools = ['', ...SCHOOLS];
+      const filtered = allSchools.filter(s => !q || (s || 'all schools').toLowerCase().includes(q));
+      panel.innerHTML = `
+        <div class="school-dd-search">
+          <div class="school-dd-search-wrap">
+            <input id="lb-school-search" placeholder="Search school…" value="${esc(query || '')}"
+              oninput="rebuildSchoolPanel(this.value)" autocomplete="off">
+          </div>
+        </div>
+        <div class="school-dd-list">
+          ${filtered.map(s => `
+            <div class="school-dd-item ${lbSchool === s ? 'selected' : ''}" onclick="pickSchool('${esc(s)}')">
+              <span class="school-dd-item-name">${s || 'All Schools'}</span>
+              <span class="school-dd-check">✓</span>
+            </div>`).join('') || '<div style="padding:10px 12px;font-family:DM Mono,monospace;font-size:10px;color:var(--text3)">No match</div>'}
+        </div>`;
+    }
+
+    function toggleSchoolDrop(ev) {
+      if (ev) ev.stopPropagation();
+      const btn = document.getElementById('lb-school-btn');
+      const panel = document.getElementById('lb-school-panel');
+      if (!btn || !panel) return;
+      const wasOpen = panel.classList.contains('open');
+      closeAllDropdowns();
+      closeSchoolDrop();
+      if (!wasOpen) {
+        rebuildSchoolPanel('');
+        const rect = btn.getBoundingClientRect();
+        const W = 240;
+        const left = Math.max(8, Math.min(rect.left, window.innerWidth - W - 8));
+        const spaceB = window.innerHeight - rect.bottom - 8;
+        const top = spaceB >= 320 ? rect.bottom + 4 : Math.max(8, rect.top - 320 - 4);
+        panel.style.cssText = `top:${top}px;left:${left}px;width:${W}px`;
+        panel.classList.add('open');
+        btn.classList.add('open');
+        setTimeout(() => { const inp = document.getElementById('lb-school-search'); if (inp) inp.focus(); }, 30);
+      }
+    }
+
+    function closeSchoolDrop() {
+      const panel = document.getElementById('lb-school-panel');
+      const btn = document.getElementById('lb-school-btn');
+      if (panel) panel.classList.remove('open');
+      if (btn) btn.classList.remove('open');
+    }
+
+    function pickSchool(school) {
+      lbSchool = school;
+      const label = document.getElementById('lb-school-label');
+      if (label) label.textContent = school || 'All Schools';
+      // Update selected state in panel without closing
+      const items = document.querySelectorAll('#lb-school-panel .school-dd-item');
+      items.forEach(item => {
+        const isSelected = item.querySelector('.school-dd-item-name')?.textContent === (school || 'All Schools');
+        item.classList.toggle('selected', isSelected);
+      });
+      lbPage = 1;
+      renderLeaderboard();
+      closeSchoolDrop();
+    }
+
+    // ═══════════════════════════════════════════════════
     //  LEADERBOARD
     // ═══════════════════════════════════════════════════
     const PER_PAGE = 40;
@@ -4626,7 +4839,7 @@
     }
 
     function renderLeaderboard() {
-      const schF = document.getElementById('lb-school')?.value || '';
+      const schF = lbSchool;
       const nameF = (document.getElementById('lb-name')?.value || '').toLowerCase();
       const sel = lbTestSel;
       const isAll = isAgg(sel);
