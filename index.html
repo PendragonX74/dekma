@@ -4149,11 +4149,21 @@
       const el = document.getElementById(cid);
       if (!el) return;
       const sel = TDD_CONFIGS[cid].get();
-      el.innerHTML = `<div class="tdd-btn" id="${cid}-btn" onclick="toggleDropdown('${cid}',event)">
-        <div class="tdd-dot" style="background:${selDotColor(sel)}"></div>
-        <span class="tdd-label">${selLabel(sel)}</span>
-        <span class="tdd-arrow">▾</span>
-      </div>`;
+      // Only create the button if it doesn't exist yet
+      let btn = document.getElementById(cid + '-btn');
+      if (!btn) {
+        el.innerHTML = `<div class="tdd-btn" id="${cid}-btn" onclick="toggleDropdown('${cid}',event)">
+          <div class="tdd-dot" id="${cid}-dot" style="background:${selDotColor(sel)}"></div>
+          <span class="tdd-label" id="${cid}-label">${selLabel(sel)}</span>
+          <span class="tdd-arrow">▾</span>
+        </div>`;
+      } else {
+        // Just update the label and dot, preserving open state
+        const dot = document.getElementById(cid + '-dot');
+        const label = document.getElementById(cid + '-label');
+        if (dot) dot.style.background = selDotColor(sel);
+        if (label) label.textContent = selLabel(sel);
+      }
       let panel = document.getElementById(cid + '-panel');
       if (!panel) { panel = document.createElement('div'); panel.id = cid + '-panel'; panel.className = 'tdd-panel tdd-panel-multi'; document.body.appendChild(panel); }
       rebuildPanelHTML(cid);
@@ -4165,12 +4175,18 @@
     function isMultiMode(cid) { return !!TDD_MULTI[cid]; }
 
     function setMultiMode(cid, val) {
+      // Turning multi OFF while a group/all is active → fall back to latest revision test
+      if (!val) {
+        const sel = TDD_CONFIGS[cid].get();
+        if (sel.mode !== 'custom' || resolveExamIds(sel).length !== 1) {
+          const revExams = EXAMS.filter(e => e.type === 'revision');
+          const fallback = revExams.length ? revExams[revExams.length - 1]
+            : EXAMS[EXAMS.length - 1];
+          if (fallback) TDD_CONFIGS[cid].set({ mode: 'custom', ids: new Set([fallback.id]) });
+        }
+      }
       TDD_MULTI[cid] = val;
-      rebuildPanelHTML(cid);
-      const panel = document.getElementById(cid + '-panel');
-      if (panel) panel.classList.add('open');
-      const btn = document.getElementById(cid + '-btn');
-      if (btn) btn.classList.add('open');
+      buildOneDropdown(cid);
     }
 
     function rebuildPanelHTML(cid) {
@@ -4215,7 +4231,7 @@
       const colToggle = (type, exams) => {
         if (!multi) return '';
         const allOn = exams.every(e => checked.has(e.id));
-        return `<span class="tdd-col-toggle" onclick="toggleTypeInSel('${cid}','${type}',event)">${allOn ? 'Deselect all' : 'Select all'}</span>`;
+        return allOn ? '' : `<span class="tdd-col-toggle" onclick="toggleTypeInSel('${cid}','${type}',event)">Select all</span>`;
       };
 
       const footerText = multi
@@ -4224,7 +4240,7 @@
 
       panel.innerHTML = `
         <div class="tdd-presets">
-          <button class="tdd-preset ${allActive}" onclick="applyPreset('${cid}','all')"">All</button>
+          <button class="tdd-preset ${allActive}" onclick="applyPreset('${cid}','all')">All</button>
           <button class="tdd-preset ${presetActive('theory')}" onclick="applyPreset('${cid}','theory')">Theory</button>
           <button class="tdd-preset ${presetActive('revision')}" onclick="applyPreset('${cid}','revision')">Revision</button>
           <button class="tdd-preset-multi ${multi ? 'active' : ''}" onclick="setMultiMode('${cid}',${!multi})">
@@ -4257,27 +4273,17 @@
 
     function applyPreset(cid, mode) {
       // All resets to single mode; Theory/Revision imply multi
-      if (mode === 'all') TDD_MULTI[cid] = false;
-      else TDD_MULTI[cid] = true;
+      TDD_MULTI[cid] = (mode !== 'all');
       TDD_CONFIGS[cid].set({ mode });
       buildOneDropdown(cid);
-      // Keep panel open, just refresh it
-      const panel = document.getElementById(cid + '-panel');
-      if (panel) panel.classList.add('open');
-      const btn = document.getElementById(cid + '-btn');
-      if (btn) btn.classList.add('open');
     }
 
     function soloExam(cid, examId, ev, closeAfter) {
       if (ev) ev.stopPropagation();
-      TDD_MULTI[cid] = false; // exit multi mode when soloing
+      TDD_MULTI[cid] = false;
       TDD_CONFIGS[cid].set({ mode: 'custom', ids: new Set([examId]) });
       buildOneDropdown(cid);
-      if (closeAfter) { closeAllDropdowns(); return; }
-      const panel = document.getElementById(cid + '-panel');
-      if (panel) panel.classList.add('open');
-      const btn = document.getElementById(cid + '-btn');
-      if (btn) btn.classList.add('open');
+      if (closeAfter) closeAllDropdowns();
     }
 
     function toggleExamInSel(cid, examId, ev) {
@@ -4302,11 +4308,6 @@
         newSel = { mode: 'custom', ids };
       TDD_CONFIGS[cid].set(newSel);
       buildOneDropdown(cid);
-      // Keep panel open
-      const panel = document.getElementById(cid + '-panel');
-      if (panel) panel.classList.add('open');
-      const btn = document.getElementById(cid + '-btn');
-      if (btn) btn.classList.add('open');
     }
 
     function toggleTypeInSel(cid, type, ev) {
@@ -4331,10 +4332,6 @@
         newSel = { mode: 'custom', ids };
       TDD_CONFIGS[cid].set(newSel);
       buildOneDropdown(cid);
-      const panel = document.getElementById(cid + '-panel');
-      if (panel) panel.classList.add('open');
-      const btn = document.getElementById(cid + '-btn');
-      if (btn) btn.classList.add('open');
     }
 
     function toggleDropdown(cid, ev) {
