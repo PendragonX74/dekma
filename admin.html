@@ -657,6 +657,15 @@
   //     .then(b => console.log([...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')))
   const PASS_HASH = '9e1779aad19fe80324cb6d070f47eede2490eb0416921255ed207d852499797c';
 
+  // ─── HARDCODED GITHUB CONFIG (⚠️ VISIBLE IN SOURCE) ───────────────────────
+  const HARDCODED_GITHUB = {
+    token:  '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',
+    owner:  'your-username',        // Replace with your GitHub username
+    repo:   'your-repo',             // Replace with your repository name
+    branch: 'main',
+    path:   'data/results.js'
+  };
+
   let unlocked = false;
   const gateEl  = document.getElementById('gate');
   const appEl   = document.getElementById('app');
@@ -695,21 +704,25 @@
   // ═══════════════════════════════════════════════
   //  GITHUB CONFIG — persisted in localStorage
   // ═══════════════════════════════════════════════
-  // Config persisted in localStorage — survives page refresh and new sessions
   const GH_SESSION_KEY = '__gh_cfg';
 
   function loadGhConfig() {
-    try { return JSON.parse(localStorage.getItem(GH_SESSION_KEY) || 'null'); }
+    try {
+      const saved = localStorage.getItem(GH_SESSION_KEY);
+      if (saved) return JSON.parse(saved);
+      // If nothing saved, return hardcoded defaults
+      return { ...HARDCODED_GITHUB };
+    }
     catch { return null; }
   }
 
   function openGhModal() {
-    const cfg = loadGhConfig() || {};
-    document.getElementById('gh-token').value  = cfg.token  || '';
-    document.getElementById('gh-owner').value  = cfg.owner  || 'PendragonX74';
-    document.getElementById('gh-repo').value   = cfg.repo   || 'dekma';
-    document.getElementById('gh-branch').value = cfg.branch || 'main';
-    document.getElementById('gh-path').value   = cfg.path   || 'data/results.js';
+    const cfg = loadGhConfig() || HARDCODED_GITHUB;
+    document.getElementById('gh-token').value  = cfg.token  || HARDCODED_GITHUB.token;
+    document.getElementById('gh-owner').value  = cfg.owner  || HARDCODED_GITHUB.owner;
+    document.getElementById('gh-repo').value   = cfg.repo   || HARDCODED_GITHUB.repo;
+    document.getElementById('gh-branch').value = cfg.branch || HARDCODED_GITHUB.branch;
+    document.getElementById('gh-path').value   = cfg.path   || HARDCODED_GITHUB.path;
     document.getElementById('gh-modal').classList.add('open');
     setTimeout(() => document.getElementById('gh-token').focus(), 80);
   }

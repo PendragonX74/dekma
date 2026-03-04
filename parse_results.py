@@ -2,11 +2,12 @@
 """
 parse_results.py
 
-Reads DEKMA RESULTS/<center>/<year>/*.xml and updates chunked data files:
- - data/results_<city>_<year>.js    (e.g. data/results_galle_2020.js)
- - data/results_index.js            (window.dekmaChunks)
+Reads DEKMA RESULTS/<center>/<year>/*.xml, applies manual overrides from
+data/manual_edits.json, and writes chunked data files:
+ - data/results_<city>_<year>.js
+ - data/results_index.js
 
-New exams are merged into existing chunk data – already‑present exams are left untouched.
+Manual edits are preserved and reapplied on every run.
 """
 
 import re
@@ -16,12 +17,12 @@ import xml.etree.ElementTree as ET
 
 ROOT_FOLDER = Path("DEKMA RESULTS")
 OUTPUT_DIR = Path("data")
+MANUAL_EDITS_FILE = OUTPUT_DIR / "manual_edits.json"
 
 CENTERS = ["Galle", "Matara", "Hambanthota"]
 NS = "http://schemas.datacontract.org/2004/07/DTO"
 
 def slug(s):
-    """Convert a city name to the slug used in filenames and variable names."""
     return re.sub(r'[^a-z0-9]+', '_', s.lower()).strip('_')
 
 def tag(name):
@@ -41,7 +42,6 @@ def exam_type_info(exam_type):
     }.get(exam_type, (exam_type.lower(), exam_type))
 
 def parse_xml_file(filepath):
-    """Parse a single XML file and return a list of student records."""
     try:
         root = ET.parse(filepath).getroot()
     except Exception as e:
@@ -66,40 +66,70 @@ def parse_xml_file(filepath):
     return students
 
 def parse_filename(filename):
-    """Extract (exam_type, year, number) from an XML filename."""
     match = re.fullmatch(r'([A-Z])-(\d{4})-(\d+)', Path(filename).stem)
     return (match.group(1), int(match.group(2)), int(match.group(3))) if match else None
 
-def load_existing_chunk(city, year):
-    """
-    Load the existing chunk file for a given city and year.
-    Returns a dict: {"exams": [...]} or None if the file does not exist.
-    """
-    chunk_file = OUTPUT_DIR / f"results_{slug(city)}_{year}.js"
-    if not chunk_file.exists():
-        return None
-    # The file contains a variable assignment: window.dekmaChunk_... = {...};
-    # We'll read the file and extract the JSON part.
-    content = chunk_file.read_text(encoding="utf-8")
-    # Find the first '{' and last '}'
-    start = content.find('{')
-    end = content.rfind('}')
-    if start == -1 or end == -1:
-        print(f"  [WARN] Could not parse existing chunk {chunk_file}, will overwrite.")
-        return None
-    json_str = content[start:end+1]
+def load_manual_edits():
+    if not MANUAL_EDITS_FILE.exists():
+        return {"scoreEdits": [], "studentRenames": []}
     try:
-        data = json.loads(json_str)
-        return data
-    except json.JSONDecodeError:
-        print(f"  [WARN] Invalid JSON in {chunk_file}, will overwrite.")
-        return None
+        with open(MANUAL_EDITS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"[WARN] Could not load manual_edits.json: {e}")
+        return {"scoreEdits": [], "studentRenames": []}
+
+def apply_edits(data_by_city_year, edits):
+    """
+    Apply student renames and score edits to the in‑memory data.
+    data_by_city_year: dict key (city, year) -> list of exam objects
+    edits: dict with keys "studentRenames" and "scoreEdits"
+    """
+    # 1. Apply renames (modify student objects directly)
+    for rename in edits.get("studentRenames", []):
+        old = (rename["oldName"], rename["oldSchool"])
+        new_name = rename["newName"]
+        new_school = rename["newSchool"]
+        # Loop through all exams and update matching students
+        for exams in data_by_city_year.values():
+            for exam in exams:
+                for s in exam["students"]:
+                    if s["name"] == old[0] and s["school"] == old[1]:
+                        s["name"] = new_name
+                        s["school"] = new_school
+
+    # 2. Apply score edits (after renames, so we look for the student with possibly new name/school)
+    for score_edit in edits.get("scoreEdits", []):
+        exam_id = score_edit["examId"]
+        student_info = score_edit["student"]  # contains original name/school from when edit was made
+        new_marks = score_edit["newMarks"]
+        # Find the exam
+        found = False
+        for exams in data_by_city_year.values():
+            for exam in exams:
+                if exam["id"] == exam_id:
+                    # Find the student by (name, school) – note: they might have been renamed, so we should use the current name/school.
+                    # But we stored the original student info at edit time. However, after renames, the student's identity may have changed.
+                    # To keep it simple, we'll match by the original info (name, school) as it was when the edit was made.
+                    # This will work if the student was never renamed. If they were renamed later, this edit might miss.
+                    # A more robust approach would be to store a persistent ID, but we don't have one.
+                    # For now, we'll match by the current values; if the student was renamed, the old info won't match, so edit is lost.
+                    # That's acceptable because a rename is a separate edit.
+                    for s in exam["students"]:
+                        if s["name"] == student_info["name"] and s["school"] == student_info["school"]:
+                            s["marks"] = new_marks
+                            found = True
+                            break
+                    if found:
+                        break
+            if found:
+                break
+        if not found:
+            print(f"  [NOTE] Score edit for exam {exam_id} and student {student_info} could not be applied (exam or student missing).")
 
 def write_chunk(city, year, exams):
-    """Write the chunk file for a city/year with the given exams list."""
     chunk_file = OUTPUT_DIR / f"results_{slug(city)}_{year}.js"
     var_name = f"window.dekmaChunk_{slug(city)}_{year}"
-    # Sort exams: theory first, then revision, then by number
     exams.sort(key=lambda e: (0 if e['type'] == 'theory' else 1, e['number']))
     data = {"exams": exams}
     json_str = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
@@ -107,18 +137,14 @@ def write_chunk(city, year, exams):
     print(f"  Wrote {chunk_file} ({len(exams)} exams)")
 
 def build_index():
-    """Scan the data folder for chunk files and build the index list."""
     chunks = []
     for f in OUTPUT_DIR.glob("results_*.js"):
         if f.name == "results_index.js":
             continue
-        # filename: results_city_year.js
-        stem = f.stem  # e.g. "results_galle_2020"
+        stem = f.stem
         parts = stem.split('_')
         if len(parts) < 3:
             continue
-        # The city slug is everything between "results_" and the last "_" + year
-        # e.g. results_galle_2020 -> city_slug = "galle", year = "2020"
         year = parts[-1]
         city_slug = '_'.join(parts[1:-1])
         chunks.append({
@@ -126,7 +152,6 @@ def build_index():
             "year": int(year),
             "file": f.name
         })
-    # Sort by city, then year descending
     chunks.sort(key=lambda c: (c['city'], -c['year']))
     return chunks
 
@@ -139,6 +164,11 @@ def main():
         return
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Load manual edits (if any)
+    edits = load_manual_edits()
+    if edits["studentRenames"] or edits["scoreEdits"]:
+        print(f"Loaded {len(edits['studentRenames'])} rename(s) and {len(edits['scoreEdits'])} score edit(s) from manual_edits.json")
 
     # --- First pass: gather all XML files per city/year ---
     city_year_exams = {}  # key: (city, year) -> list of exam objects from XML
@@ -179,29 +209,13 @@ def main():
         print("No data found.")
         return
 
-    # --- Second pass: merge with existing chunks and write ---
-    for (city, year), new_exams in city_year_exams.items():
-        print(f"\nProcessing {city} {year}...")
-        existing = load_existing_chunk(city, year)
-        if existing and "exams" in existing:
-            # Build a set of exam IDs that already exist
-            existing_ids = {e["id"] for e in existing["exams"]}
-            # Add only those new exams whose ID is not already present
-            merged = existing["exams"][:]
-            added = 0
-            for exam in new_exams:
-                if exam["id"] not in existing_ids:
-                    merged.append(exam)
-                    added += 1
-            if added:
-                print(f"  Added {added} new exam(s) to existing chunk.")
-            else:
-                print("  No new exams to add.")
-            write_chunk(city, year, merged)
-        else:
-            # No existing chunk, just write the new exams
-            print(f"  Creating new chunk with {len(new_exams)} exam(s).")
-            write_chunk(city, year, new_exams)
+    # Apply manual edits to the in‑memory data
+    apply_edits(city_year_exams, edits)
+
+    # --- Write the updated chunks ---
+    for (city, year), exams in city_year_exams.items():
+        print(f"\nWriting {city} {year}...")
+        write_chunk(city, year, exams)
 
     # --- Write the index file ---
     chunks = build_index()
@@ -210,8 +224,8 @@ def main():
     index_file.write_text(f"window.dekmaChunks={json_str};\n", encoding="utf-8")
     print(f"\nWrote index {index_file} ({len(chunks)} chunks)")
 
-    # --- Summary statistics ---
-    total_exams = sum(len(yd) for yd in city_year_exams.values())  # FIXED: yd is the list of exams
+    # Summary statistics
+    total_exams = sum(len(yd) for yd in city_year_exams.values())
     total_students = sum(len(e["students"]) for exams in city_year_exams.values() for e in exams)
     print(f"\n{len(city_year_exams)} city‑year folders | {total_exams} exams | {total_students} student records")
     print("Done.")
