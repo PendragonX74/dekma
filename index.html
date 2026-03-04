@@ -5092,11 +5092,12 @@
              const revBooks = apps.filter(a => a.exam_type === 'revision' && a.rank <= 30).length;
              const total = thyBooks + revBooks;
              if (!total) return '';
-             const parts = [thyBooks ? 'THE ' + thyBooks : '', revBooks ? 'REV ' + revBooks : ''].filter(Boolean).join('  ');
+             const thyChip = thyBooks ? '<span style="display:inline-flex;flex-direction:column;align-items:center;background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.3);border-radius:5px;padding:3px 8px;gap:1px"><span style=\"font-family:\'DM Mono\',monospace;font-size:8px;color:var(--teal);letter-spacing:1px;opacity:.7\">THE</span><span style=\"font-family:\'Bebas Neue\',sans-serif;font-size:18px;color:var(--teal);line-height:1\">' + thyBooks + '</span></span>' : '';
+             const revChip = revBooks ? '<span style="display:inline-flex;flex-direction:column;align-items:center;background:rgba(232,160,32,.12);border:1px solid rgba(232,160,32,.3);border-radius:5px;padding:3px 8px;gap:1px"><span style=\"font-family:\'DM Mono\',monospace;font-size:8px;color:var(--amber);letter-spacing:1px;opacity:.7\">REV</span><span style=\"font-family:\'Bebas Neue\',sans-serif;font-size:18px;color:var(--amber);line-height:1\">' + revBooks + '</span></span>' : '';
              return '<div class="insight-card" style="border-color:rgba(232,160,32,.55);background:linear-gradient(135deg,rgba(232,160,32,.09),rgba(245,192,96,.04));animation-delay:.35s">'
                + '<div class="insight-label" style="color:var(--amber2);letter-spacing:1.5px">BOOKS EARNED</div>'
-               + '<div style=\"font-family:\'Bebas Neue\',sans-serif;font-size:42px;color:var(--amber);line-height:1;margin:4px 0 4px\">' + total + '</div>'
-               + '<div style=\"font-family:\'DM Mono\',monospace;font-size:10px;color:var(--amber2);letter-spacing:1px;opacity:.8\">' + parts + '</div>'
+               + '<div style=\"font-family:\'Bebas Neue\',sans-serif;font-size:42px;color:var(--amber);line-height:1;margin:4px 0 2px\">' + total + '</div>'
+               + '<div style="display:flex;gap:6px;margin-top:4px">' + thyChip + revChip + '</div>'
                + '</div>';
            })()}
          </div>
