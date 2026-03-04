@@ -1043,6 +1043,54 @@
       margin-top: 1px
     }
 
+    .tdd-preset-multi {
+      margin-left: auto;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+      cursor: pointer;
+      transition: all .15s;
+      letter-spacing: .5px;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 5px
+    }
+
+    .tdd-preset-multi:hover {
+      border-color: var(--border2);
+      color: var(--text2)
+    }
+
+    .tdd-preset-multi.active {
+      border-color: var(--amber);
+      color: var(--amber);
+      background: rgba(232, 160, 32, .1)
+    }
+
+    /* In single mode, options look like plain rows — no checkbox space */
+    .tdd-option.single-mode {
+      padding-left: 14px
+    }
+
+    .tdd-option.single-mode .tdd-checkbox {
+      display: none
+    }
+
+    .tdd-option.single-mode.selected {
+      background: rgba(232, 160, 32, .12)
+    }
+
+    .tdd-col-head-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
     .tdd-check {
       font-size: 10px;
       color: var(--amber);
@@ -4111,12 +4159,27 @@
       rebuildPanelHTML(cid);
     }
 
+    // Per-dropdown multi-select mode state
+    const TDD_MULTI = {};
+
+    function isMultiMode(cid) { return !!TDD_MULTI[cid]; }
+
+    function setMultiMode(cid, val) {
+      TDD_MULTI[cid] = val;
+      rebuildPanelHTML(cid);
+      const panel = document.getElementById(cid + '-panel');
+      if (panel) panel.classList.add('open');
+      const btn = document.getElementById(cid + '-btn');
+      if (btn) btn.classList.add('open');
+    }
+
     function rebuildPanelHTML(cid) {
       const panel = document.getElementById(cid + '-panel');
       if (!panel) return;
       // Save scroll positions before rebuilding
       const prevScrolls = Array.from(panel.querySelectorAll('.tdd-col-scroll')).map(el => el.scrollTop);
       const sel = TDD_CONFIGS[cid].get();
+      const multi = isMultiMode(cid);
       const checked = new Set(resolveExamIds(sel));
       const thy = EXAMS.filter(e => e.type === 'theory');
       const rev = EXAMS.filter(e => e.type === 'revision');
@@ -4134,6 +4197,14 @@
 
       const opt = (e, col) => {
         const on = checked.has(e.id);
+        if (!multi) {
+          // Single-select mode: plain row, tap solos and closes
+          return `<div class="tdd-option single-mode ${on ? 'selected' : ''}" onclick="soloExam('${cid}','${esc(e.id)}',event,true)">
+            <div class="tdd-checkbox ${on ? 'checked' : ''}"></div>
+            <div class="tdd-option-dot" style="background:${col}"></div>
+            <div class="tdd-option-text"><div class="tdd-option-name">${e.label}</div><div class="tdd-option-sub">${sub(e)}</div></div>
+          </div>`;
+        }
         return `<div class="tdd-option tdd-cb-row ${on ? 'selected' : ''}" onclick="toggleExamInSel('${cid}','${esc(e.id)}',event)">
           <div class="tdd-checkbox ${on ? 'checked' : ''}"></div>
           <div class="tdd-option-dot" style="background:${col}"></div>
@@ -4141,31 +4212,43 @@
         </div>`;
       };
 
+      const colToggle = (type, exams) => {
+        if (!multi) return '';
+        const allOn = exams.every(e => checked.has(e.id));
+        return `<span class="tdd-col-toggle" onclick="toggleTypeInSel('${cid}','${type}',event)">${allOn ? 'Deselect all' : 'Select all'}</span>`;
+      };
+
+      const footerText = multi
+        ? `${selCount === allCount ? 'All ' + allCount : selCount} of ${allCount} test${allCount !== 1 ? 's' : ''} selected`
+        : `Tap a test to select · ${allCount} tests`;
+
       panel.innerHTML = `
         <div class="tdd-presets">
-          <button class="tdd-preset ${allActive}" onclick="applyPreset('${cid}','all')">All</button>
+          <button class="tdd-preset ${allActive}" onclick="applyPreset('${cid}','all')"">All</button>
           <button class="tdd-preset ${presetActive('theory')}" onclick="applyPreset('${cid}','theory')">Theory</button>
           <button class="tdd-preset ${presetActive('revision')}" onclick="applyPreset('${cid}','revision')">Revision</button>
+          <button class="tdd-preset-multi ${multi ? 'active' : ''}" onclick="setMultiMode('${cid}',${!multi})">
+            <span>${multi ? '☑' : '☐'}</span> Multi
+          </button>
         </div>
         <div class="tdd-cols-wrap">
           <div class="tdd-col">
             <div class="tdd-col-head" style="color:var(--teal)">
               <span>Theory (${thyCount})</span>
-              <span class="tdd-col-toggle" onclick="toggleTypeInSel('${cid}','theory',event)">${thy.every(e => checked.has(e.id)) ? 'Deselect all' : 'Select all'}</span>
+              ${colToggle('theory', thy)}
             </div>
             <div class="tdd-col-scroll">${thy.length ? thy.map(e => opt(e, 'var(--teal)')).join('') : '<div class="tdd-empty">None loaded</div>'}</div>
           </div>
           <div class="tdd-col">
             <div class="tdd-col-head" style="color:var(--amber)">
               <span>Revision (${revCount})</span>
-              <span class="tdd-col-toggle" onclick="toggleTypeInSel('${cid}','revision',event)">${rev.every(e => checked.has(e.id)) ? 'Deselect all' : 'Select all'}</span>
+              ${colToggle('revision', rev)}
             </div>
             <div class="tdd-col-scroll">${rev.length ? rev.map(e => opt(e, 'var(--amber)')).join('') : '<div class="tdd-empty">None loaded</div>'}</div>
           </div>
         </div>
         <div class="tdd-footer">
-          <span class="tdd-footer-count">${selCount === allCount ? 'All ' + allCount : selCount} test${selCount !== 1 ? 's' : ''} selected</span>
-          <button class="tdd-footer-clear" onclick="applyPreset('${cid}','all')">Reset</button>
+          <span class="tdd-footer-count">${footerText}</span>
         </div>`;
       // Restore scroll positions after rebuild
       const newScrollEls = panel.querySelectorAll('.tdd-col-scroll');
@@ -4173,9 +4256,24 @@
     }
 
     function applyPreset(cid, mode) {
+      // All resets to single mode; Theory/Revision imply multi
+      if (mode === 'all') TDD_MULTI[cid] = false;
+      else TDD_MULTI[cid] = true;
       TDD_CONFIGS[cid].set({ mode });
       buildOneDropdown(cid);
       // Keep panel open, just refresh it
+      const panel = document.getElementById(cid + '-panel');
+      if (panel) panel.classList.add('open');
+      const btn = document.getElementById(cid + '-btn');
+      if (btn) btn.classList.add('open');
+    }
+
+    function soloExam(cid, examId, ev, closeAfter) {
+      if (ev) ev.stopPropagation();
+      TDD_MULTI[cid] = false; // exit multi mode when soloing
+      TDD_CONFIGS[cid].set({ mode: 'custom', ids: new Set([examId]) });
+      buildOneDropdown(cid);
+      if (closeAfter) { closeAllDropdowns(); return; }
       const panel = document.getElementById(cid + '-panel');
       if (panel) panel.classList.add('open');
       const btn = document.getElementById(cid + '-btn');
@@ -4760,20 +4858,27 @@
       const q = (query || '').toLowerCase();
       const allSchools = ['', ...SCHOOLS];
       const filtered = allSchools.filter(s => !q || (s || 'all schools').toLowerCase().includes(q));
+      const listHtml = filtered.map(s => `
+        <div class="school-dd-item ${lbSchool === s ? 'selected' : ''}" onclick="pickSchool('${esc(s)}')">
+          <span class="school-dd-item-name">${s || 'All Schools'}</span>
+          <span class="school-dd-check">✓</span>
+        </div>`).join('') || '<div style="padding:10px 12px;font-family:DM Mono,monospace;font-size:10px;color:var(--text3)">No match</div>';
+
+      // If the panel already has its structure, just update the list — don't touch the input
+      let listEl = panel.querySelector('.school-dd-list');
+      if (listEl) {
+        listEl.innerHTML = listHtml;
+        return;
+      }
+      // First build: create full panel structure
       panel.innerHTML = `
         <div class="school-dd-search">
           <div class="school-dd-search-wrap">
-            <input id="lb-school-search" placeholder="Search school…" value="${esc(query || '')}"
+            <input id="lb-school-search" placeholder="Search school…"
               oninput="rebuildSchoolPanel(this.value)" autocomplete="off">
           </div>
         </div>
-        <div class="school-dd-list">
-          ${filtered.map(s => `
-            <div class="school-dd-item ${lbSchool === s ? 'selected' : ''}" onclick="pickSchool('${esc(s)}')">
-              <span class="school-dd-item-name">${s || 'All Schools'}</span>
-              <span class="school-dd-check">✓</span>
-            </div>`).join('') || '<div style="padding:10px 12px;font-family:DM Mono,monospace;font-size:10px;color:var(--text3)">No match</div>'}
-        </div>`;
+        <div class="school-dd-list">${listHtml}</div>`;
     }
 
     function toggleSchoolDrop(ev) {
@@ -4785,6 +4890,7 @@
       closeAllDropdowns();
       closeSchoolDrop();
       if (!wasOpen) {
+        panel.innerHTML = ''; // clear so rebuildSchoolPanel creates fresh structure
         rebuildSchoolPanel('');
         const rect = btn.getBoundingClientRect();
         const W = 240;
@@ -4930,7 +5036,6 @@
       };
       let h = `<table><thead><tr>
         <th class="sorted-rank"># Rank</th>
-        ${!isAgg ? sh('rank', 'Exam Rank') : ''}
         ${sh('name', 'Name')}
         ${isAgg ? sh('rating', 'Rating ⬡') : (isAvg ? sh('marks', 'Avg') : sh('marks', 'Marks'))}
         ${isAgg ? sh('marks', 'Raw Avg') + sh('best', 'Best') + '<th>Tests</th>' : ''}
@@ -4950,7 +5055,6 @@
         const ratingCol = (r.rating || 0) >= 60 ? '#4ade80' : (r.rating || 0) >= 45 ? 'var(--amber)' : 'var(--pink)';
         h += `<tr ${gold}>
           <td class="td-rank" style="color:${isTop3 ? 'var(--amber)' : 'var(--text3)'};font-weight:${isTop3 ? 'bold' : 'normal'}">${medal || '#' + gRankVal}</td>
-          ${!isAgg ? `<td class="td-rank">${r.rank || ''}</td>` : ''}
           <td class="td-name" onclick="navToStudent('${_ns(r.name)}','${_ns(r.school)}')">${r.name}</td>
           ${isAgg
             ? `<td><span style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:${ratingCol}">${r.rating}</span><span style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text3);margin-left:3px">pts</span></td>
