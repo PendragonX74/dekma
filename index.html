@@ -3932,12 +3932,12 @@
     }
 
     function initUIShell() {
-      // Default leaderboard to the most recent revision test (highest number)
+      // Default to most recent revision, or most recent theory if no revisions exist
       const revExams = EXAMS.filter(e => e.type === 'revision');
-      if (revExams.length) {
-        const latest = revExams[revExams.length - 1];
-        lbTestSel = { mode: 'custom', ids: new Set([latest.id]) };
-      }
+      const thyExams = EXAMS.filter(e => e.type === 'theory');
+      const defaultExam = revExams.length ? revExams[revExams.length - 1]
+        : thyExams.length ? thyExams[thyExams.length - 1] : null;
+      if (defaultExam) lbTestSel = { mode: 'custom', ids: new Set([defaultExam.id]) };
       populateSelects();
       buildExamStats();
       buildStuRegistry();
@@ -4180,7 +4180,9 @@
         const sel = TDD_CONFIGS[cid].get();
         if (sel.mode !== 'custom' || resolveExamIds(sel).length !== 1) {
           const revExams = EXAMS.filter(e => e.type === 'revision');
+          const thyExams = EXAMS.filter(e => e.type === 'theory');
           const fallback = revExams.length ? revExams[revExams.length - 1]
+            : thyExams.length ? thyExams[thyExams.length - 1]
             : EXAMS[EXAMS.length - 1];
           if (fallback) TDD_CONFIGS[cid].set({ mode: 'custom', ids: new Set([fallback.id]) });
         }
@@ -4243,9 +4245,7 @@
           <button class="tdd-preset ${allActive}" onclick="event.stopPropagation();applyPreset('${cid}','all')">All</button>
           <button class="tdd-preset ${presetActive('theory')}" onclick="event.stopPropagation();applyPreset('${cid}','theory')">Theory</button>
           <button class="tdd-preset ${presetActive('revision')}" onclick="event.stopPropagation();applyPreset('${cid}','revision')">Revision</button>
-          <button class="tdd-preset-multi ${multi ? 'active' : ''}" onclick="event.stopPropagation();setMultiMode('${cid}',${!multi})">
-            <span>${multi ? '☑' : '☐'}</span> Multi
-          </button>
+          <button class="tdd-preset-multi ${multi ? 'active' : ''}" onclick="event.stopPropagation();setMultiMode('${cid}',${!multi})">Multi</button>
         </div>
         <div class="tdd-cols-wrap">
           <div class="tdd-col">
