@@ -64,53 +64,25 @@
   </script>
   <style>
     :root {
-      --bg: #06060b;
-      --bg2: #0c0c14;
-      --bg3: #11111c;
-      --border: #1c1c2e;
-      --border2: #2a2a40;
-      --amber: #f0a020;
-      --amber2: #fbbf4a;
-      --teal: #0fd6be;
-      --teal2: #7ef5e2;
-      --pink: #f06fa0;
-      --blue: #5ba8ff;
-      --text: #ededf5;
-      --text2: #8888a8;
-      --text3: #484868;
-      --male: #5ba8ff;
-      --female: #f06fa0;
+      --bg: #0a0a0f;
+      --bg2: #111118;
+      --bg3: #18181f;
+      --border: #2a2a38;
+      --border2: #3a3a50;
+      --amber: #e8a020;
+      --amber2: #f5c060;
+      --teal: #2dd4bf;
+      --teal2: #99f6e4;
+      --pink: #f472b6;
+      --blue: #60a5fa;
+      --text: #e8e8f0;
+      --text2: #9090b0;
+      --text3: #5a5a78;
+      --male: #60a5fa;
+      --female: #f472b6;
       --radius: 8px;
       --radius2: 14px;
-      --sidebar-w: 228px;
-      --accent-glow: rgba(240,160,32,.12);
-      --card-shine: linear-gradient(135deg, rgba(255,255,255,.025) 0%, transparent 60%);
-      --shadow-lg: 0 20px 60px rgba(0,0,0,.6);
-      --bottom-nav-h: 0px;
-    }
-    [data-theme="light"] {
-      --bg: #f0ece4;
-      --bg2: #f8f5ef;
-      --bg3: #e8e4da;
-      --border: #d4cfc4;
-      --border2: #bab49f;
-      --amber: #8a4e00;
-      --amber2: #b06800;
-      --teal: #136e5e;
-      --teal2: #1a9078;
-      --pink: #882050;
-      --blue: #1c45a0;
-      --text: #1a1612;
-      --text2: #48422e;
-      --text3: #8a826a;
-      --male: #1c45a0;
-      --female: #882050;
-      --accent-glow: rgba(138,78,0,.06);
-      --card-shine: linear-gradient(135deg, rgba(255,255,255,.5) 0%, transparent 60%);
-      --shadow-lg: 0 20px 60px rgba(0,0,0,.08);
-    }
-    @media(max-width:768px) {
-      :root { --bottom-nav-h: 68px; }
+      --sidebar-w: 220px
     }
 
     * {
@@ -135,13 +107,11 @@
       content: '';
       position: fixed;
       inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
       pointer-events: none;
       z-index: 9999;
-      opacity: .5
+      opacity: .6
     }
-    [data-theme="light"] body::before { opacity: .12 }
-    [data-theme="light"] body { background: var(--bg) }
 
     ::-webkit-scrollbar {
       width: 6px;
@@ -174,16 +144,7 @@
       left: 0;
       bottom: 0;
       z-index: 100;
-      transition: transform .35s cubic-bezier(.4,0,.2,1);
-      box-shadow: 4px 0 32px rgba(0,0,0,.35)
-    }
-    .sidebar::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, var(--amber), var(--teal), var(--pink));
-      z-index: 1
+      transition: transform .3s
     }
 
     /* ── LOGO / SELECTOR AREA ── */
@@ -341,26 +302,24 @@
     .nav-item {
       display: flex;
       align-items: center;
-      gap: 11px;
-      padding: 10px 14px 10px 20px;
+      gap: 10px;
+      padding: 10px 20px;
       font-size: 14px;
       color: var(--text2);
       cursor: pointer;
-      transition: all .18s;
-      border-left: 2px solid transparent;
-      margin: 1px 8px;
-      border-radius: 0 var(--radius) var(--radius) 0;
-      border-left-width: 2px
+      transition: all .15s;
+      border-left: 2px solid transparent
     }
+
     .nav-item:hover {
       color: var(--text);
       background: var(--bg3)
     }
+
     .nav-item.active {
       color: var(--amber);
       border-left-color: var(--amber);
-      background: rgba(240,160,32,.09);
-      font-weight: 500
+      background: rgba(232, 160, 32, .07)
     }
 
     .nav-icon {
@@ -390,28 +349,21 @@
       position: sticky;
       top: 0;
       z-index: 50;
-      background: rgba(6, 6, 11, .82);
-      backdrop-filter: blur(24px) saturate(1.3);
-      -webkit-backdrop-filter: blur(24px) saturate(1.3);
+      background: rgba(10, 10, 15, .85);
+      backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
-      padding: 13px 28px;
+      padding: 14px 32px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      box-shadow: 0 1px 0 var(--border), 0 4px 24px rgba(0,0,0,.3)
-    }
-    [data-theme="light"] .topbar {
-      background: rgba(240,236,228,.92);
-      border-bottom-color: var(--border2)
+      gap: 12px
     }
 
     .page-title {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 26px;
-      letter-spacing: 4px;
-      color: var(--text);
-      white-space: nowrap
+      font-size: 28px;
+      letter-spacing: 3px;
+      color: var(--text)
     }
 
     .search-wrap {
@@ -532,39 +484,20 @@
     }
 
     .page.active {
-      display: block
+      display: block;
+      animation: fadeIn .3s ease-out
     }
-    .page.slide-in-right {
-      animation: slideInFromRight .32s cubic-bezier(.4,0,.2,1) both
-    }
-    .page.slide-in-left {
-      animation: slideInFromLeft .32s cubic-bezier(.4,0,.2,1) both
-    }
-    .page.slide-out-left {
-      animation: slideOutLeft .2s cubic-bezier(.4,0,.2,1) both
-    }
-    .page.slide-out-right {
-      animation: slideOutRight .2s cubic-bezier(.4,0,.2,1) both
-    }
-    @keyframes slideInFromRight {
-      from { opacity: 0; transform: translateX(32px) }
-      to   { opacity: 1; transform: translateX(0) }
-    }
-    @keyframes slideInFromLeft {
-      from { opacity: 0; transform: translateX(-32px) }
-      to   { opacity: 1; transform: translateX(0) }
-    }
-    @keyframes slideOutLeft {
-      from { opacity: 1; transform: translateX(0) }
-      to   { opacity: 0; transform: translateX(-20px) }
-    }
-    @keyframes slideOutRight {
-      from { opacity: 1; transform: translateX(0) }
-      to   { opacity: 0; transform: translateX(20px) }
-    }
+
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(16px) }
-      to   { opacity: 1; transform: translateY(0) }
+      from {
+        opacity: 0;
+        transform: translateY(16px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
     }
 
     @keyframes cardIn {
@@ -789,36 +722,24 @@
 
     .stat-card {
       background: var(--bg2);
-      background-image: var(--card-shine);
       border: 1px solid var(--border);
-      border-top: 1px solid var(--border2);
       border-radius: var(--radius2);
-      padding: 22px 20px 18px;
+      padding: 20px;
       position: relative;
       overflow: hidden;
-      transition: border-color .25s, transform .25s, box-shadow .25s;
-      box-shadow: 0 2px 12px rgba(0,0,0,.2)
+      transition: border-color .2s, transform .2s
     }
+
     .stat-card:hover {
       border-color: var(--border2);
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-lg)
+      transform: translateY(-3px)
     }
-    .stat-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--amber), transparent);
-      opacity: 0;
-      transition: opacity .3s
-    }
-    .stat-card:hover::before { opacity: .6 }
+
     .stat-card::after {
       content: '';
       position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse at 80% 10%, var(--accent-glow), transparent 65%);
+      inset: -40px;
+      background: radial-gradient(circle at 70% 30%, rgba(232, 160, 32, .06), transparent 60%);
       pointer-events: none
     }
 
@@ -833,7 +754,7 @@
 
     .stat-value {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 46px;
+      font-size: 42px;
       line-height: 1;
       color: var(--text);
       letter-spacing: 1px
@@ -871,19 +792,9 @@
 
     .section-title {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 22px;
-      letter-spacing: 3px;
-      color: var(--text);
-      position: relative;
-      padding-bottom: 8px
-    }
-    .section-title::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0;
-      width: 32px; height: 2px;
-      background: var(--amber);
-      border-radius: 2px
+      font-size: 20px;
+      letter-spacing: 2px;
+      color: var(--text)
     }
 
     .two-col {
@@ -910,16 +821,14 @@
 
     .card {
       background: var(--bg2);
-      background-image: var(--card-shine);
       border: 1px solid var(--border);
       border-radius: var(--radius2);
       overflow: hidden;
-      transition: border-color .25s, box-shadow .25s;
-      box-shadow: 0 2px 8px rgba(0,0,0,.18)
+      transition: border-color .2s
     }
+
     .card:hover {
-      border-color: var(--border2);
-      box-shadow: 0 6px 24px rgba(0,0,0,.28)
+      border-color: var(--border2)
     }
 
     .card-header {
@@ -1876,10 +1785,9 @@
     }
 
     .filter-btn.active {
-      background: rgba(240,160,32,.12);
+      background: rgba(232, 160, 32, .1);
       border-color: var(--amber);
-      color: var(--amber);
-      box-shadow: 0 0 0 1px rgba(240,160,32,.2) inset
+      color: var(--amber)
     }
 
     /* Student profile */
@@ -2284,174 +2192,267 @@
     }
 
     /* Loading */
+    /* ══ LOADING SCREEN ════════════════════════════════════════════════════ */
     #loading {
       position: fixed;
       inset: 0;
-      background: var(--bg);
+      background: #000;
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 1000;
-      flex-direction: column;
-      gap: 16px
+      z-index: 2000;
     }
 
-    /* loader replaced */
+    .loading-pulse {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--amber);
+      animation: ldPulse 1.1s ease-in-out infinite;
+      box-shadow: 0 0 0 0 rgba(232,160,32,.6)
+    }
+
+    @keyframes ldPulse {
+      0%   { transform: scale(1);   box-shadow: 0 0 0 0 rgba(232,160,32,.5) }
+      50%  { transform: scale(1.5); box-shadow: 0 0 0 14px rgba(232,160,32,0) }
+      100% { transform: scale(1);   box-shadow: 0 0 0 0 rgba(232,160,32,0) }
+    }
 
     /* ══ SPLASH SCREEN ══════════════════════════════════════════════════════ */
     #splash {
       position: fixed;
       inset: 0;
-      background: var(--bg);
+      background: #000;
       z-index: 900;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow-y: auto;
-      animation: fadeIn .4s ease-out
+      overflow: hidden;
     }
 
-    .splash-bg-glow {
-      position: fixed;
-      width: 600px;
-      height: 600px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(232, 160, 32, .06) 0%, transparent 70%);
-      pointer-events: none;
-      top: 50%;
+    #splash-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+    }
+
+    /* ── CSS wordmark — hidden until canvas fades it in ── */
+    .splash-text-reveal {
+      position: absolute;
       left: 50%;
+      top: 38%;
       transform: translate(-50%, -50%);
-      z-index: 0
-    }
-
-    .splash-inner {
-      position: relative;
-      z-index: 1;
       text-align: center;
-      max-width: 520px;
-      width: 100%;
-      padding: 48px 24px;
-      box-sizing: border-box
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .8s ease;
+      white-space: nowrap;
     }
 
-    .splash-badge {
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      letter-spacing: 4px;
-      color: var(--amber);
-      text-transform: uppercase;
-      margin-bottom: 12px;
-      opacity: .7
-    }
-
-    .splash-title {
+    .splash-wordmark-css {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 72px;
-      letter-spacing: 8px;
-      color: var(--text);
+      font-size: clamp(72px, 14vw, 140px);
+      letter-spacing: 0.12em;
       line-height: 1;
-      margin-bottom: 6px
+      color: transparent;
+      background: linear-gradient(175deg, #f0f0f8 20%, #e8a020 55%, #f5c060 70%, #f0f0f8 90%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      text-shadow: none;
+      display: block;
     }
 
-    .splash-subtitle {
+    .splash-wordmark-sub {
       font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      color: var(--text3);
-      letter-spacing: 2px;
-      margin-bottom: 48px
+      font-size: clamp(8px, 1.2vw, 11px);
+      letter-spacing: 4px;
+      color: rgba(144,144,176,.55);
+      text-transform: uppercase;
+      margin-top: 10px;
+      display: block;
+    }
+
+    /* ── Bottom UI panel ── */
+    .splash-ui-panel {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(48px);
+      width: 100%;
+      max-width: 540px;
+      padding: 0 24px 52px;
+      box-sizing: border-box;
+      opacity: 0;
+      transition: opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1);
+      pointer-events: none;
+    }
+
+    .splash-ui-panel.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: all;
+    }
+
+    .splash-selector-grid {
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr;
+      background: rgba(17,17,24,.85);
+      border: 1px solid rgba(58,58,80,.7);
+      border-radius: 18px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      backdrop-filter: blur(20px);
+    }
+
+    .splash-col {
+      padding: 20px 18px;
+    }
+
+    .splash-col-divider {
+      background: rgba(58,58,80,.7);
+      width: 1px;
     }
 
     .splash-step-label {
       font-family: 'DM Mono', monospace;
       font-size: 9px;
-      letter-spacing: 2px;
+      letter-spacing: 2.5px;
       text-transform: uppercase;
       color: var(--text3);
-      margin-bottom: 10px
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .splash-step-label::before {
+      content: '';
+      width: 3px; height: 3px;
+      border-radius: 50%;
+      background: var(--amber);
+      flex-shrink: 0;
     }
 
     .splash-options {
       display: flex;
-      gap: 10px;
-      justify-content: center;
+      gap: 7px;
       flex-wrap: wrap;
-      margin-bottom: 32px
     }
 
     .splash-opt {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius2);
-      padding: 14px 24px;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 22px;
-      letter-spacing: 2px;
+      background: transparent;
+      border: 1px solid rgba(42,42,56,.9);
+      border-radius: 7px;
+      padding: 7px 13px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
       color: var(--text2);
       cursor: pointer;
-      transition: all .18s;
-      min-width: 90px
+      transition: all .16s;
     }
 
     .splash-opt:hover {
       border-color: var(--border2);
       color: var(--text);
-      transform: translateY(-2px)
+      background: rgba(255,255,255,.04);
     }
 
     .splash-opt.selected {
-      background: rgba(232, 160, 32, .1);
-      border-color: var(--amber);
+      background: rgba(232,160,32,.12);
+      border-color: rgba(232,160,32,.6);
       color: var(--amber);
-      transform: translateY(-2px);
-      box-shadow: 0 0 20px rgba(232, 160, 32, .15)
     }
 
-    .splash-opt.city-opt {
-      font-size: 18px;
-      min-width: 130px
-    }
-
-    .splash-divider {
-      width: 1px;
-      height: 40px;
-      background: var(--border);
-      margin: 0 auto 32px
+    .splash-opt.disabled {
+      opacity: .2;
+      pointer-events: none;
     }
 
     .splash-go-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
       background: var(--amber);
-      color: #000;
+      color: #06060a;
       border: none;
-      border-radius: var(--radius2);
-      padding: 14px 48px;
+      border-radius: 12px;
+      padding: 14px 32px;
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 22px;
-      letter-spacing: 3px;
+      font-size: 20px;
+      letter-spacing: 3.5px;
       cursor: pointer;
-      transition: all .18s;
+      transition: all .22s cubic-bezier(.22,1,.36,1);
       opacity: 0;
       pointer-events: none;
-      transform: translateY(10px)
+      transform: translateY(6px);
+    }
+
+    .splash-go-btn .go-arrow {
+      display: inline-block;
+      transition: transform .2s cubic-bezier(.22,1,.36,1);
     }
 
     .splash-go-btn.ready {
       opacity: 1;
       pointer-events: all;
-      transform: translateY(0)
+      transform: translateY(0);
     }
 
     .splash-go-btn:hover {
       background: var(--amber2);
+      box-shadow: 0 0 40px rgba(232,160,32,.35), 0 12px 40px rgba(0,0,0,.5);
       transform: translateY(-2px);
-      box-shadow: 0 8px 32px rgba(232, 160, 32, .3)
     }
+
+    .splash-go-btn:hover .go-arrow { transform: translateX(6px) }
 
     .splash-no-data {
       font-family: 'DM Mono', monospace;
-      font-size: 11px;
+      font-size: 10px;
       color: var(--pink);
-      margin-top: 12px;
-      display: none
+      margin-top: 10px;
+      text-align: center;
+      letter-spacing: 1px;
+      display: none;
+    }
+
+    /* ── Skip button ── */
+    .splash-skip {
+      position: absolute;
+      bottom: 20px;
+      right: 24px;
+      background: none;
+      border: 1px solid rgba(90,90,120,.4);
+      border-radius: 6px;
+      color: rgba(90,90,120,.7);
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 5px 10px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity .3s, color .2s, border-color .2s;
+      pointer-events: none;
+    }
+
+    .splash-skip.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .splash-skip:hover {
+      color: rgba(144,144,176,.9);
+      border-color: rgba(144,144,176,.5);
+    }
+
+    /* splash exit */
+    #splash.exiting {
+      animation: splashExit .6s cubic-bezier(.4,0,1,1) forwards;
+    }
+
+    @keyframes splashExit {
+      0%   { opacity: 1; filter: brightness(1) }
+      40%  { opacity: 1; filter: brightness(1.8) }
+      100% { opacity: 0; filter: brightness(.5) }
     }
 
     /* ══ CONTEXT BADGE in topbar ══════════════════════════════════════════ */
@@ -2799,11 +2800,6 @@
         padding: 12px;
         min-width: 0
       }
-      /* On mobile, sidebar is overlay only — nav items hidden by default */
-      .sidebar nav .nav-section,
-      .sidebar nav .nav-item {
-        /* Keep visible when sidebar is explicitly opened */
-      }
 
       .topbar {
         padding: 10px 14px
@@ -2819,10 +2815,8 @@
       }
 
       .hamburger {
-        display: none
+        display: flex
       }
-      /* On mobile, topbar left side shows only page title + context chip */
-      .topbar-left-desktop { display: none }
 
       .stats-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -3040,49 +3034,18 @@
         max-width: 100%
       }
 
-      /* Splash: compress vertical spacing so all content fits without scrolling */
-      .splash-title {
-        font-size: 52px;
-        letter-spacing: 5px
+      /* Splash mobile tweaks */
+      .splash-selector-grid {
+        grid-template-columns: 1fr;
       }
-
-      .splash-subtitle {
-        font-size: 10px;
-        letter-spacing: 1.5px;
-        margin-bottom: 24px
+      .splash-col-divider {
+        width: 100%; height: 1px;
       }
-
-      .splash-options {
-        margin-bottom: 16px
+      .splash-wordmark-css {
+        font-size: 72px;
       }
-
-      .splash-divider {
-        margin-bottom: 16px;
-        height: 28px
-      }
-
-      .splash-step-label {
-        margin-bottom: 8px
-      }
-
-      .splash-opt {
-        font-size: 18px;
-        padding: 10px 18px;
-        min-width: 80px
-      }
-
-      .splash-opt.city-opt {
-        font-size: 15px;
-        min-width: 110px
-      }
-
-      .splash-go-btn {
-        padding: 12px 36px;
-        font-size: 18px
-      }
-
-      .splash-inner {
-        padding: 36px 20px
+      .splash-ui-panel {
+        padding: 0 16px 36px;
       }
     }
 
@@ -3150,614 +3113,15 @@
         font-size: 10px
       }
 
-      /* Splash: even tighter on small phones */
-      .splash-title {
-        font-size: 44px;
-        letter-spacing: 4px
-      }
-
-      .splash-badge {
-        font-size: 9px;
-        letter-spacing: 2px;
-        margin-bottom: 8px
-      }
-
-      .splash-subtitle {
-        font-size: 9px;
-        margin-bottom: 20px
-      }
-
-      .splash-opt {
-        font-size: 16px;
-        padding: 9px 14px;
-        min-width: 72px
-      }
-
-      .splash-opt.city-opt {
-        font-size: 13px;
-        min-width: 100px
-      }
-
-      .splash-inner {
-        padding: 28px 16px
-      }
+      .splash-wordmark-css { font-size: 56px; }
+      .splash-wordmark-sub { font-size: 8px; letter-spacing: 2.5px; }
+      .splash-col { padding: 16px 14px; }
+      .splash-opt { font-size: 10px; padding: 6px 11px; }
     }
 
     @media(max-width:360px) {
-      .splash-title {
-        font-size: 38px;
-        letter-spacing: 3px
-      }
-
-      .splash-opt {
-        font-size: 14px;
-        padding: 8px 12px;
-        min-width: 64px
-      }
-
-      .splash-opt.city-opt {
-        font-size: 12px;
-        min-width: 88px
-      }
-    }
-
-
-    /* ══ EXPORT DROPDOWN ══ */
-    .export-wrap { position: relative; display: inline-block }
-    .export-dropdown {
-      position: absolute; top: calc(100% + 6px); right: 0;
-      background: var(--bg2); border: 1px solid var(--border2);
-      border-radius: var(--radius); box-shadow: var(--shadow-lg);
-      min-width: 160px; z-index: 9100;
-      display: none; flex-direction: column; overflow: hidden
-    }
-    .export-dropdown.open { display: flex }
-    .export-dd-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 14px;
-      font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text2);
-      cursor: pointer; transition: background .1s; border-bottom: 1px solid var(--border)
-    }
-    .export-dd-item:last-child { border-bottom: none }
-    .export-dd-item:hover { background: var(--bg3); color: var(--text) }
-    .export-dd-item svg { width: 14px; height: 14px; flex-shrink: 0; opacity: .7 }
-    .export-dd-label { flex: 1 }
-    .export-dd-sub { font-size: 9px; color: var(--text3); letter-spacing: .5px }
-
-    /* ══ THEME TOGGLE ══ */
-    .theme-toggle {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      cursor: pointer;
-      transition: all .2s;
-      font-size: 16px;
-      color: var(--text2);
-      flex-shrink: 0
-    }
-    .theme-toggle:hover {
-      border-color: var(--border2);
-      color: var(--amber);
-      background: var(--accent-glow)
-    }
-
-    /* ══ EXPORT BUTTON ══ */
-    .export-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 7px 13px;
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      letter-spacing: .5px;
-      color: var(--text3);
-      cursor: pointer;
-      transition: all .2s;
-      text-transform: uppercase
-    }
-    .export-btn:hover {
-      border-color: var(--teal);
-      color: var(--teal);
-      background: rgba(15,214,190,.08)
-    }
-    .export-btn svg { width: 12px; height: 12px; flex-shrink: 0 }
-
-    /* ══ COMPARE BUTTON ══ */
-    .compare-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      background: none;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 5px 10px;
-      font-family: 'DM Mono', monospace;
-      font-size: 9px;
-      letter-spacing: .5px;
-      color: var(--text3);
-      cursor: pointer;
-      transition: all .18s;
-      text-transform: uppercase
-    }
-    .compare-btn:hover, .compare-btn.in-compare {
-      border-color: var(--pink);
-      color: var(--pink);
-      background: rgba(240,111,160,.08)
-    }
-    .compare-btn.in-compare { font-weight: 600 }
-
-    /* ══ COMPARE DOCK ══ */
-    #compare-dock {
-      position: fixed;
-      bottom: calc(var(--bottom-nav-h) + 16px);
-      left: 50%; transform: translateX(-50%);
-      z-index: 400;
-      background: var(--bg2);
-      border: 1px solid var(--border2);
-      border-radius: 40px;
-      padding: 10px 20px;
-      display: none;
-      align-items: center;
-      gap: 14px;
-      box-shadow: var(--shadow-lg);
-      backdrop-filter: blur(12px);
-      animation: slideUp .3s ease-out both
-    }
-    #compare-dock.visible { display: flex }
-    @keyframes slideUp {
-      from { opacity:0; transform: translateX(-50%) translateY(20px) }
-      to   { opacity:1; transform: translateX(-50%) translateY(0) }
-    }
-    .compare-dock-slot {
-      display: flex; align-items: center; gap: 8px;
-      font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text2)
-    }
-    .compare-dock-avatar {
-      width: 30px; height: 30px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Bebas Neue', sans-serif; font-size: 13px; flex-shrink: 0
-    }
-    .compare-dock-name { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
-    .compare-dock-vs { font-family: 'Bebas Neue', sans-serif; font-size: 16px; color: var(--text3); letter-spacing: 1px }
-    .compare-dock-go {
-      background: var(--amber); border: none; border-radius: 20px;
-      padding: 7px 18px; font-family: 'Bebas Neue', sans-serif; font-size: 14px;
-      letter-spacing: 1px; color: var(--bg); cursor: pointer; transition: opacity .15s
-    }
-    .compare-dock-go:hover { opacity: .85 }
-    .compare-dock-clear {
-      background: none; border: 1px solid var(--border); border-radius: 50%;
-      width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
-      color: var(--text3); cursor: pointer; font-size: 12px; transition: all .15s
-    }
-    .compare-dock-clear:hover { border-color: var(--pink); color: var(--pink) }
-
-    /* ══ COMPARE MODAL CONTENT ══ */
-    .cmp-grid {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      gap: 0; margin-bottom: 24px
-    }
-    .cmp-col { padding: 0 16px }
-    .cmp-divider { width: 1px; background: var(--border); align-self: stretch }
-    .cmp-name { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 2px; margin-bottom: 4px }
-    .cmp-school { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); margin-bottom: 16px }
-    .cmp-stat { margin-bottom: 12px }
-    .cmp-stat-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 3px }
-    .cmp-stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 36px; line-height: 1 }
-    .cmp-stat-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); margin-top: 2px }
-    .cmp-winner { color: var(--amber) }
-    .cmp-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px }
-    .cmp-bar-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text2); width: 90px; flex-shrink: 0 }
-    .cmp-bar-wrap { flex: 1; height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden }
-    .cmp-bar-fill { height: 100%; border-radius: 3px; transition: width .8s cubic-bezier(.34,1.56,.64,1) }
-    .cmp-bar-val { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); width: 36px; text-align: right; flex-shrink: 0 }
-    @media(max-width:640px) {
-      .cmp-grid { grid-template-columns: 1fr; }
-      .cmp-divider { width: auto; height: 1px; margin: 16px 0 }
-    }
-
-    /* ══ PERCENTILE BAR ══ */
-    .pct-bar-wrap {
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: var(--radius2);
-      padding: 16px 20px;
-      margin-bottom: 20px;
-      position: relative; overflow: hidden
-    }
-    .pct-bar-wrap::after {
-      content: '';
-      position: absolute; inset: 0;
-      background: var(--card-shine);
-      pointer-events: none
-    }
-    .pct-bar-label {
-      font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3);
-      letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px
-    }
-    .pct-track {
-      height: 8px; background: var(--bg); border-radius: 4px; position: relative; overflow: visible;
-      margin-bottom: 8px
-    }
-    .pct-fill {
-      height: 100%; border-radius: 4px;
-      background: linear-gradient(90deg, var(--blue), var(--teal), var(--amber));
-      transition: width 1s cubic-bezier(.34,1.56,.64,1)
-    }
-    .pct-marker {
-      position: absolute; top: 50%; transform: translate(-50%,-50%);
-      width: 16px; height: 16px; border-radius: 50%;
-      background: var(--amber); border: 2px solid var(--bg2);
-      box-shadow: 0 0 0 3px rgba(240,160,32,.3)
-    }
-    .pct-labels {
-      display: flex; justify-content: space-between;
-      font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3)
-    }
-    .pct-val-label {
-      font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--amber); line-height: 1;
-      margin-bottom: 4px
-    }
-    .pct-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3) }
-
-    /* ══ BOTTOM NAV ══ */
-    .bottom-nav {
-      display: none;
-      position: fixed; bottom: 0; left: 0; right: 0;
-      height: 68px; z-index: 300
-    }
-    .bottom-nav-blur {
-      position: absolute; inset: 0;
-      background: rgba(12,12,20,.96);
-      border-top: 1px solid var(--border);
-      backdrop-filter: blur(24px) saturate(1.4);
-      -webkit-backdrop-filter: blur(24px) saturate(1.4);
-      box-shadow: 0 -2px 24px rgba(0,0,0,.5)
-    }
-    [data-theme="light"] .bottom-nav-blur {
-      background: rgba(30,28,23,.97); border-top-color: var(--border2)
-    }
-    .bottom-nav-inner {
-      position: relative; display: flex; height: 100%; align-items: stretch
-    }
-    /* Sliding box indicator — plain, just a subtle highlight behind the active item */
-    .bnav-pill {
-      position: absolute;
-      top: 8px; bottom: 8px;
-      width: 20%;
-      border-radius: 10px;
-      background: rgba(240,160,32,.1);
-      border: 1px solid rgba(240,160,32,.18);
-      pointer-events: none;
-      will-change: transform;
-      transition: transform .32s cubic-bezier(.4,0,.2,1)
-    }
-    .bnav-item {
-      flex: 1; display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 3px; cursor: pointer;
-      color: var(--text3);
-      transition: color .22s ease;
-      position: relative; z-index: 1;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none
-    }
-    .bnav-item.active { color: var(--amber) }
-    .bnav-icon {
-      width: 24px; height: 24px;
-      display: flex; align-items: center; justify-content: center;
-      transition: transform .3s cubic-bezier(.34,1.4,.64,1)
-    }
-    .bnav-icon svg {
-      width: 20px; height: 20px;
-      stroke: currentColor; fill: none;
-      stroke-width: 1.6;
-      transition: stroke-width .22s
-    }
-    .bnav-item.active .bnav-icon {
-      transform: translateY(-2px) scale(1.12)
-    }
-    .bnav-item.active .bnav-icon svg { stroke-width: 2.2 }
-    .bnav-label {
-      font-family: 'DM Mono', monospace; font-size: 8px;
-      letter-spacing: .5px; text-transform: uppercase;
-      opacity: .45; transition: opacity .22s, letter-spacing .22s
-    }
-    .bnav-item.active .bnav-label { opacity: 1; letter-spacing: .8px }
-
-    @media(max-width:768px) {
-      .bottom-nav { display: block }
-      .main { padding-bottom: var(--bottom-nav-h) }
-      .content { padding-bottom: calc(var(--bottom-nav-h) + 12px) }
-    }
-
-    /* ══ GLOBAL RANK BADGE — bigger/bolder ══ */
-    .global-rank-badge {
-      display: inline-flex;
-      align-items: center; gap: 12px;
-      background: linear-gradient(135deg, rgba(240,160,32,.12), rgba(240,160,32,.04));
-      border: 1px solid rgba(240,160,32,.4);
-      border-radius: var(--radius2);
-      padding: 12px 18px;
-      margin-bottom: 20px;
-      position: relative; overflow: hidden
-    }
-    .global-rank-badge::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: var(--card-shine);
-      pointer-events: none
-    }
-    .global-rank-badge .rank-icon { font-size: 28px; line-height: 1; filter: drop-shadow(0 0 8px rgba(240,160,32,.4)) }
-    .global-rank-badge .rank-num { font-family: 'Bebas Neue', sans-serif; font-size: 40px; color: var(--amber); line-height: 1; letter-spacing: 1px }
-    .global-rank-badge .rank-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3); letter-spacing: 2px; text-transform: uppercase }
-    .global-rank-badge .rank-of { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text2) }
-
-
-
-    /* ══ TOPBAR ACTIONS GROUP ══ */
-    .topbar-actions {
-      display: flex; align-items: center; gap: 8px
-    }
-    @media(max-width:480px) {
-      .topbar-actions .export-btn { display: none }
-    }
-
-    /* ══ SPLASH PREMIUM UPGRADE ══ */
-    .splash-bg-glow {
-      position: absolute; inset: 0; overflow: hidden; pointer-events: none;
-      background: radial-gradient(ellipse at 20% 80%, rgba(240,160,32,.08) 0%, transparent 50%),
-                  radial-gradient(ellipse at 80% 20%, rgba(15,214,190,.06) 0%, transparent 50%),
-                  radial-gradient(ellipse at 50% 50%, rgba(91,168,255,.04) 0%, transparent 70%)
-    }
-    .splash-inner {
-      position: relative; z-index: 1;
-      max-width: 600px; margin: 0 auto;
-      padding: 60px 32px; text-align: center
-    }
-    .splash-badge {
-      font-family: 'DM Mono', monospace; font-size: 10px;
-      letter-spacing: 4px; text-transform: uppercase; color: var(--amber);
-      margin-bottom: 16px; display: block;
-      border: 1px solid rgba(240,160,32,.25); border-radius: 20px;
-      padding: 5px 16px; display: inline-block
-    }
-    .splash-title {
-      font-family: 'Bebas Neue', sans-serif; font-size: 96px;
-      letter-spacing: 12px; line-height: .9; color: var(--text);
-      text-shadow: 0 0 80px rgba(240,160,32,.15);
-      margin-bottom: 12px
-    }
-    .splash-subtitle {
-      font-family: 'DM Mono', monospace; font-size: 11px;
-      letter-spacing: 3px; color: var(--text3);
-      text-transform: uppercase; margin-bottom: 40px
-    }
-    .splash-step-label {
-      font-family: 'DM Mono', monospace; font-size: 9px;
-      letter-spacing: 3px; color: var(--text3); text-transform: uppercase;
-      margin-bottom: 12px
-    }
-    .splash-options {
-      display: flex; flex-wrap: wrap; gap: 10px;
-      justify-content: center; margin-bottom: 24px
-    }
-    .splash-opt {
-      font-family: 'Bebas Neue', sans-serif; font-size: 22px;
-      letter-spacing: 2px; padding: 12px 24px;
-      border: 1px solid var(--border2); border-radius: var(--radius);
-      background: var(--bg2); color: var(--text2); cursor: pointer;
-      transition: all .18s; min-width: 88px
-    }
-    .splash-opt:hover { border-color: var(--border2); color: var(--text) }
-    .splash-opt.active {
-      background: rgba(240,160,32,.1); border-color: var(--amber);
-      color: var(--amber); box-shadow: 0 0 16px rgba(240,160,32,.15)
-    }
-    .splash-opt.city-opt { font-size: 17px; min-width: 120px }
-    .splash-divider {
-      width: 1px; height: 40px; background: var(--border);
-      margin: 0 auto 24px
-    }
-    .splash-go-btn {
-      font-family: 'Bebas Neue', sans-serif; font-size: 22px;
-      letter-spacing: 3px; padding: 14px 48px;
-      background: linear-gradient(135deg, var(--amber), var(--amber2));
-      color: #06060b; border: none; border-radius: var(--radius);
-      cursor: pointer; transition: all .2s;
-      box-shadow: 0 4px 24px rgba(240,160,32,.3)
-    }
-    .splash-go-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(240,160,32,.4) }
-    .splash-no-data {
-      font-family: 'DM Mono', monospace; font-size: 11px; color: var(--pink);
-      margin-top: 14px; display: none
-    }
-    .splash-no-data.visible { display: block }
-    #splash {
-      position: fixed; inset: 0;
-      background: var(--bg); z-index: 9000;
-      overflow-y: auto
-    }
-
-    /* ══ SCORE TYPE RANK CHIPS ══ */
-    .type-rank-chip {
-      display: inline-flex; align-items: center; gap: 7px;
-      padding: 8px 14px; border-radius: var(--radius);
-      font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .5px
-    }
-    .type-rank-chip.theory { background: rgba(15,214,190,.09); border: 1px solid rgba(15,214,190,.25) }
-    .type-rank-chip.revision { background: rgba(240,160,32,.09); border: 1px solid rgba(240,160,32,.25) }
-
-    /* ══ PRINT STYLES ══ */
-
-    /* ══ COOL ANIMATIONS ════════════════════════════════════ */
-
-    /* A) Ripple on bottom nav tap */
-    .bnav-ripple {
-      position: absolute; border-radius: 50%;
-      background: rgba(240,160,32,.35);
-      transform: scale(0); animation: bnavRipple .5s ease-out forwards;
-      pointer-events: none
-    }
-    @keyframes bnavRipple {
-      to { transform: scale(4); opacity: 0 }
-    }
-
-    /* B) Stat card 3D tilt (desktop) */
-    .stat-card {
-      transform-style: preserve-3d;
-      perspective: 600px;
-      transition: transform .15s ease, box-shadow .15s ease
-    }
-
-    /* C) Text scramble chars */
-    .scramble-char {
-      display: inline-block;
-      animation: charFlip .06s steps(1) forwards;
-      color: var(--amber)
-    }
-    @keyframes charFlip {
-      0%  { opacity: 1 }
-      50% { opacity: .5; transform: scaleY(.6) }
-      100%{ opacity: 1; transform: scaleY(1); color: inherit }
-    }
-
-    /* D) Page wipe transition (clip-path reveal) */
-    .page.active.wipe-in {
-      animation: wipeIn .3s cubic-bezier(.4,0,.2,1) both
-    }
-    @keyframes wipeIn {
-      from { clip-path: inset(0 100% 0 0); opacity: 1 }
-      to   { clip-path: inset(0 0% 0 0);   opacity: 1 }
-    }
-    .page.active.wipe-in-left {
-      animation: wipeInLeft .3s cubic-bezier(.4,0,.2,1) both
-    }
-    @keyframes wipeInLeft {
-      from { clip-path: inset(0 0 0 100%); opacity: 1 }
-      to   { clip-path: inset(0 0 0 0%);   opacity: 1 }
-    }
-
-    /* E) Card shimmer on hover — travelling light streak */
-    .card {
-      overflow: hidden
-    }
-    .card::after {
-      content: '';
-      position: absolute; top: 0; left: -70%;
-      width: 40%; height: 100%;
-      background: linear-gradient(100deg, transparent 20%, rgba(255,255,255,.045) 50%, transparent 80%);
-      transform: skewX(-20deg);
-      transition: left 0s;
-      pointer-events: none
-    }
-    .card:hover::after {
-      left: 130%;
-      transition: left .55s ease
-    }
-
-    /* F) Stat value count-up shimmer */
-    .stat-value.counting {
-      color: var(--amber);
-      transition: color .4s
-    }
-
-    /* G) Sidebar nav item — slide-in dot */
-    .nav-item.active::after {
-      content: '';
-      position: absolute; right: 0; top: 50%;
-      transform: translateY(-50%);
-      width: 3px; height: 18px;
-      background: var(--amber);
-      border-radius: 3px 0 0 3px;
-      box-shadow: 0 0 8px rgba(240,160,32,.6);
-      animation: navDotIn .25s cubic-bezier(.34,1.56,.64,1) both
-    }
-    @keyframes navDotIn {
-      from { height: 0; opacity: 0 }
-      to   { height: 18px; opacity: 1 }
-    }
-
-    /* H) Score bars grow in with springy ease */
-    .score-bar-fill {
-      transition: width .6s cubic-bezier(.34,1.2,.64,1) !important
-    }
-
-    /* I) Page title morphing underline */
-    .page-title::after {
-      content: '';
-      display: block; height: 2px;
-      background: linear-gradient(90deg, var(--amber), transparent);
-      transform-origin: left;
-      transform: scaleX(0);
-      transition: transform .4s cubic-bezier(.34,1.2,.64,1);
-      margin-top: 2px
-    }
-    .page-title.loaded::after { transform: scaleX(1) }
-
-    @media print {
-      .sidebar, .topbar, .bottom-nav, #compare-dock, .hamburger, .theme-toggle { display: none !important }
-      .main { margin-left: 0 !important }
-      .content { padding: 16px !important }
-      .card, .stat-card { break-inside: avoid; box-shadow: none !important }
-    }
-
-
-    /* ══ LOADING SCREEN ══════════════════════════════════════════════════ */
-    #loading {
-      position: fixed; inset: 0;
-      background: var(--bg);
-      display: flex; align-items: center; justify-content: center;
-      flex-direction: column; z-index: 10000;
-      transition: opacity .5s ease;
-    }
-    #loading.fade-out { opacity: 0; pointer-events: none }
-    #ld-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 64px;
-      letter-spacing: 16px;
-      color: var(--amber);
-      line-height: 1;
-      opacity: 0;
-      animation: ld-up .6s ease-out .5s forwards;
-    }
-    #ld-subtitle {
-      font-family: 'DM Mono', monospace;
-      font-size: 9px; letter-spacing: 5px;
-      color: var(--text3);
-      text-transform: uppercase;
-      opacity: 0;
-      animation: ld-up .5s ease-out .7s forwards;
-      margin-top: 10px;
-    }
-    #ld-dots {
-      display: flex; gap: 8px; margin-top: 24px;
-      opacity: 0;
-      animation: ld-up .4s ease .9s forwards;
-    }
-    .ld-dot {
-      width: 3px; height: 3px;
-      border-radius: 50%;
-      background: var(--amber);
-      animation: ld-dot-pulse 1.4s ease-in-out infinite;
-    }
-    .ld-dot:nth-child(2) { animation-delay: .22s }
-    .ld-dot:nth-child(3) { animation-delay: .44s }
-    @keyframes ld-up {
-      from { opacity: 0; transform: translateY(10px) }
-      to   { opacity: 1; transform: translateY(0) }
-    }
-    @keyframes ld-dot-pulse {
-      0%, 100% { opacity: .2 }
-      50%       { opacity: 1 }
+      .splash-wordmark-css { font-size: 46px; }
+      .splash-opt { font-size: 9px; padding: 5px 9px; }
     }
   </style>
 </head>
@@ -3765,36 +3129,39 @@
 <body>
 
   <div id="loading">
-    <div id="ld-title">DEKMA</div>
-    <div id="ld-subtitle">Results Portal</div>
-    <div id="ld-dots">
-      <div class="ld-dot"></div>
-      <div class="ld-dot"></div>
-      <div class="ld-dot"></div>
-    </div>
+    <div class="loading-pulse"></div>
   </div>
 
-  <!-- ══ SPLASH SCREEN (first visit / no selection) ══ -->
+  <!-- ══ SPLASH SCREEN ══ -->
   <div id="splash" style="display:none">
-    <div class="splash-bg-glow"></div>
-    <div class="splash-inner">
-      <div class="splash-badge">Applied Mathematics · Results Portal</div>
-      <div class="splash-title">DEKMA</div>
-      <div class="splash-subtitle">DISTRICT EXAMINATION &amp; KNOWLEDGE METRICS ARCHIVE</div>
+    <canvas id="splash-canvas"></canvas>
 
-      <div class="splash-step-label">Select City</div>
-      <div class="splash-options" id="splash-cities"></div>
+    <!-- CSS wordmark — revealed by JS when particles converge -->
+    <div class="splash-text-reveal" id="splash-text-reveal">
+      <span class="splash-wordmark-css">DEKMA</span>
+      <span class="splash-wordmark-sub">District Examination &amp; Knowledge Metrics Archive</span>
+    </div>
 
-      <div class="splash-divider"></div>
-
-      <div class="splash-step-label">Select Year</div>
-      <div class="splash-options" id="splash-years"></div>
-
+    <!-- Bottom UI panel — slides up after animation -->
+    <div class="splash-ui-panel" id="splash-ui-panel">
+      <div class="splash-selector-grid">
+        <div class="splash-col">
+          <div class="splash-step-label">City</div>
+          <div class="splash-options" id="splash-cities"></div>
+        </div>
+        <div class="splash-col-divider"></div>
+        <div class="splash-col">
+          <div class="splash-step-label">Year</div>
+          <div class="splash-options" id="splash-years"></div>
+        </div>
+      </div>
       <button class="splash-go-btn" id="splash-go-btn" onclick="splashGo()">
-        View Results →
+        View Results <span class="go-arrow">→</span>
       </button>
       <div class="splash-no-data" id="splash-no-data">⚠ No data for this combination</div>
     </div>
+
+    <button class="splash-skip" id="splash-skip" onclick="skipSplashAnim()">skip</button>
   </div>
 
   <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
@@ -3802,7 +3169,6 @@
   <div class="shell" id="app" style="display:none">
     <aside class="sidebar" id="sidebar">
       <div class="logo">
-        <div id="sidebar-logo" style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:6px;color:var(--amber);line-height:1;margin-bottom:14px;cursor:default;text-shadow:0 0 24px rgba(240,160,32,.3)">DEKMA</div>
         <!-- Year selector -->
         <div class="logo-selector-row">
           <div class="logo-selector" id="year-sel-btn" onclick="toggleLogoDrop('year')">
@@ -3836,10 +3202,7 @@
         <div class="nav-item" onclick="location.hash='analytics';closeSidebar()"><span class="nav-icon">▲</span>
           Analytics</div>
       </nav>
-      <div class="sidebar-footer" id="sidebar-footer" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center" onclick="toggleShortcutsModal()">
-        <span id="sidebar-footer-text">—</span>
-        <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--border2);letter-spacing:1px" title="Keyboard shortcuts">? help</span>
-      </div>
+      <div class="sidebar-footer" id="sidebar-footer">—</div>
     </aside>
 
     <main class="main">
@@ -3853,28 +3216,9 @@
             role="button" aria-label="Change year and city"><span id="context-badge-text"></span><span
               class="context-badge-arrow">▾</span></div>
         </div>
-        <div class="topbar-actions">
-          <div class="search-wrap">
-            <input class="search-input" id="global-search" placeholder="Search… (/ to focus)" autocomplete="off">
-            <div class="search-results" id="search-results"></div>
-          </div>
-          <div class="export-wrap" id="topbar-export-wrap">
-            <button class="export-btn" id="topbar-export-btn" onclick="toggleExportDrop('topbar-export-dd',this)" title="Export data">
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v8m0 0l-3-3m3 3 3-3M3 12h10"/></svg>
-              Export ▾
-            </button>
-            <div class="export-dropdown" id="topbar-export-dd">
-              <div class="export-dd-item" onclick="exportCurrentView('csv');closeExportDrop()">
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 2h7l3 3v9H3V2z"/><path d="M10 2v3h3"/></svg>
-                <div><div class="export-dd-label">CSV</div><div class="export-dd-sub">Spreadsheet data</div></div>
-              </div>
-              <div class="export-dd-item" onclick="exportCurrentView('pdf');closeExportDrop()">
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 2h7l3 3v9H3V2z"/><path d="M10 2v3h3"/><path d="M6 9h4M6 11h2"/></svg>
-                <div><div class="export-dd-label">PDF</div><div class="export-dd-sub">Print-ready report</div></div>
-              </div>
-            </div>
-          </div>
-          <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme">☀︎</button>
+        <div class="search-wrap">
+          <input class="search-input" id="global-search" placeholder="Search… (/ to focus)" autocomplete="off">
+          <div class="search-results" id="search-results"></div>
         </div>
       </header>
 
@@ -3891,14 +3235,14 @@
           <div class="two-col">
             <div class="card">
               <div class="card-header">
-                <div class="card-title">Top Performers</div>
+                <div class="card-title">🏆 Top Performers</div>
                 <div id="podium-sel" class="tdd-wrap"></div>
               </div>
               <div id="podium-wrap"></div>
             </div>
             <div class="card card-dist">
               <div class="card-header">
-                <div class="card-title">Score Distribution</div>
+                <div class="card-title">📊 Score Distribution</div>
                 <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)" id="dist-label"></div>
               </div>
               <div class="card-body">
@@ -3914,7 +3258,7 @@
           </div>
           <div class="card" style="margin-bottom:24px">
             <div class="card-header">
-              <div class="card-title">Top 10</div>
+              <div class="card-title">⭐ Top 10</div>
               <div style="display:flex;align-items:center;gap:8px">
                 <div id="top10-sel" class="tdd-wrap"></div>
                 <button class="t10-sort-btn active" id="t10-rank-btn" onclick="setTop10Sort('rank',this)">By
@@ -3927,7 +3271,7 @@
           <div class="two-col">
             <div class="card">
               <div class="card-header">
-                <div class="card-title">Tests Overview</div>
+                <div class="card-title">📈 Tests Overview</div>
               </div>
               <div class="card-body">
                 <div class="chart-wrap"><canvas id="tests-chart"></canvas></div>
@@ -3935,7 +3279,7 @@
             </div>
             <div class="card">
               <div class="card-header">
-                <div class="card-title">Top Schools</div>
+                <div class="card-title">🏫 Top Schools (by entries)</div>
                 <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">All Tests</div>
               </div>
               <div id="top-schools-bar-wrap">
@@ -3975,10 +3319,7 @@
           <div class="card">
             <div class="card-header">
               <div class="card-title" id="lb-title">Leaderboard</div>
-              <div style="display:flex;align-items:center;gap:8px">
-                <div class="chip" id="lb-count">—</div>
-
-              </div>
+              <div class="chip" id="lb-count">—</div>
             </div>
             <div class="table-wrap" id="lb-table"></div>
             <div style="padding:0 20px 16px" id="lb-pager"></div>
@@ -4023,7 +3364,7 @@
               </div>
               <div class="card-body" id="school-detail">
                 <div class="empty">
-                  Click a school to explore
+                  <div class="empty-icon">🏫</div>Click a school to explore
                 </div>
               </div>
             </div>
@@ -4119,18 +3460,6 @@
         <button class="modal-close" onclick="closeModal()">✕</button>
       </div>
       <div class="modal-body" id="modal-body"></div>
-    </div>
-  </div>
-
-  <!-- Compare Modal -->
-  <div class="modal-overlay" id="compare-overlay" onclick="closeCompareModal(event)">
-    <div class="modal" id="compare-modal">
-      <div class="modal-header">
-        <div class="modal-title">HEAD-TO-HEAD COMPARISON</div>
-        <button class="modal-close" onclick="closeCompareModal()">✕</button>
-      </div>
-      <div class="modal-body" id="compare-body">
-      </div>
     </div>
   </div>
 
@@ -4477,22 +3806,28 @@
     //  SPLASH SCREEN
     // ═══════════════════════════════════════════════════
     function showSplash() {
-      (function(){ const l=document.getElementById('loading'); if(l){ l.classList.add('fade-out'); setTimeout(()=>{ l.style.display='none'; },650); } })();
+      document.getElementById('loading').style.display = 'none';
       document.getElementById('app').style.display = 'none';
-      document.getElementById('splash').style.display = 'flex';
+      const splashEl = document.getElementById('splash');
+      splashEl.style.display = 'block';
 
       const cities = getAvailableCities();
 
       // City options
       document.getElementById('splash-cities').innerHTML = cities.map(c =>
         `<div class="splash-opt city-opt ${c === splashCity ? 'selected' : ''}" onclick="splashPickCity('${esc(c)}')">${c}</div>`
-      ).join('') || '<div style="color:var(--text3);font-family:DM Mono,monospace;font-size:11px">No data in results.js — run parse_results.py</div>';
+      ).join('') || '<div style="color:var(--text3);font-family:DM Mono,monospace;font-size:11px">No data — run parse_results.py</div>';
 
-      // Year options — all unique years across cities
+      // Year options
       const allYears = new Set();
       cities.forEach(c => getAvailableYears(c).forEach(y => allYears.add(y)));
       const sortedYears = [...allYears].sort((a, b) => b - a);
       renderSplashYears(sortedYears);
+
+      // Fire the cinematic animation
+      requestAnimationFrame(() => {
+        if (window.startSplashAnimation) window.startSplashAnimation();
+      });
     }
 
     function renderSplashYears(years) {
@@ -4543,17 +3878,351 @@
       selectedCity = splashCity;
       selectedYear = splashYear;
       saveSelection();
-      document.getElementById('splash').style.display = 'none';
-      document.getElementById('app').style.display = 'flex';
-      reloadForSelection();
+      const splashEl = document.getElementById('splash');
+      splashEl.classList.add('exiting');
+      window._splashStop && window._splashStop();
+      setTimeout(() => {
+        splashEl.style.display = 'none';
+        splashEl.classList.remove('exiting');
+        document.getElementById('app').style.display = 'flex';
+        reloadForSelection();
+      }, 560);
     }
+
+    function skipSplashAnim() {
+      window._splashSkip && window._splashSkip();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  CINEMATIC SPLASH ANIMATION — particle convergence to text
+    // ═══════════════════════════════════════════════════════════════════════
+    (function() {
+      // ── Timing (ms) ────────────────────────────────────────────────────
+      const T_BURST   =  350;   // dot → explosion
+      const T_SCATTER = 1400;   // particles drifting
+      const T_PULL    = 1400;   // start pulling to targets (same as end of scatter, immediate pull)
+      const T_SETTLE  = 3600;   // fully converged
+      const T_REVEAL  = 3800;   // CSS text visible, canvas text fading
+      const T_UI      = 4000;   // UI panel slides up
+
+      // ── Colors ─────────────────────────────────────────────────────────
+      const C_AMBER  = [232, 160,  32];
+      const C_TEAL   = [ 45, 212, 191];
+      const C_SILVER = [200, 200, 222];
+      const PALETTE  = [C_AMBER, C_AMBER, C_AMBER, C_TEAL, C_SILVER];
+
+      // ── State ──────────────────────────────────────────────────────────
+      let canvas, ctx, W, H, CX, CY;
+      let particles = [];
+      let rafId = null;
+      let t0 = 0;
+      let uiRevealed = false;
+      let skipRequested = false;
+
+      // ── Canvas init ────────────────────────────────────────────────────
+      function initCanvas() {
+        canvas = document.getElementById('splash-canvas');
+        if (!canvas) return false;
+        ctx = canvas.getContext('2d');
+        resize();
+        window.addEventListener('resize', onResize);
+        return true;
+      }
+
+      function resize() {
+        W  = canvas.width  = canvas.offsetWidth  || window.innerWidth;
+        H  = canvas.height = canvas.offsetHeight || window.innerHeight;
+        CX = W / 2;
+        CY = H * 0.38;
+      }
+
+      function onResize() { resize(); }
+
+      // ── Sample DEKMA pixel positions ───────────────────────────────────
+      function sampleDEKMA() {
+        const fontSize = Math.min(W * 0.175, 148);
+        const ow = W;
+        const oh = Math.ceil(fontSize * 1.5);
+        const off = document.createElement('canvas');
+        off.width = ow; off.height = oh;
+        const oc = off.getContext('2d');
+        oc.clearRect(0, 0, ow, oh);
+        oc.fillStyle = '#ffffff';
+        oc.font = `${fontSize}px 'Bebas Neue', sans-serif`;
+        oc.textAlign = 'center';
+        oc.textBaseline = 'middle';
+        oc.fillText('DEKMA', ow / 2, oh / 2);
+
+        const imgData = oc.getImageData(0, 0, ow, oh).data;
+        const pts = [];
+        // Adaptive step: aim for ~500 points
+        const step = Math.max(3, Math.round(Math.sqrt((ow * oh) / 600)));
+
+        for (let y = 0; y < oh; y += step) {
+          for (let x = 0; x < ow; x += step) {
+            const i = (y * ow + x) * 4;
+            if (imgData[i + 3] > 80) {
+              pts.push({
+                x: x,
+                y: CY - oh / 2 + y
+              });
+            }
+          }
+        }
+        return pts;
+      }
+
+      // ── Create particles ───────────────────────────────────────────────
+      function buildParticles(targets) {
+        particles = targets.map((t) => {
+          const col = PALETTE[Math.floor(Math.random() * PALETTE.length)];
+          // Initial position: tightly packed near center (will burst outward)
+          const angle  = Math.random() * Math.PI * 2;
+          const radius = Math.random() * 30;
+          const scatterAngle  = Math.random() * Math.PI * 2;
+          const scatterRadius = 80 + Math.random() * Math.max(W, H) * 0.52;
+          return {
+            x:   CX + Math.cos(angle) * radius,
+            y:   CY + Math.sin(angle) * radius,
+            vx:  (Math.random() - .5) * 3,
+            vy:  (Math.random() - .5) * 3,
+            tx:  t.x,   // letter target x
+            ty:  t.y,   // letter target y
+            sx:  CX + Math.cos(scatterAngle) * scatterRadius,  // scatter target
+            sy:  CY + Math.sin(scatterAngle) * scatterRadius,
+            r:   Math.random() * 1.6 + 0.5,
+            col: col,
+            alpha: 0,
+            trail: [],
+            delay: Math.random() * 600, // stagger burst timing
+          };
+        });
+      }
+
+      // ── Draw faint grid ────────────────────────────────────────────────
+      function drawGrid(alpha) {
+        if (alpha <= 0.001) return;
+        const gs = 55;
+        ctx.strokeStyle = `rgba(232,160,32,${alpha})`;
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        for (let x = (CX % gs); x < W; x += gs) { ctx.moveTo(x, 0); ctx.lineTo(x, H); }
+        for (let y = (CY % gs); y < H; y += gs) { ctx.moveTo(0, y); ctx.lineTo(W, y); }
+        ctx.stroke();
+      }
+
+      // ── Draw origin pulse ──────────────────────────────────────────────
+      function drawOrigin(elapsed) {
+        const life = Math.min(elapsed / T_BURST, 1);
+        // Rings
+        for (let i = 0; i < 4; i++) {
+          const phase = ((elapsed * 0.00065) + i * 0.25) % 1;
+          const r = phase * Math.min(W, H) * 0.45;
+          const a = (1 - phase) * (1 - life * 0.6) * 0.22;
+          if (a < 0.005) continue;
+          ctx.beginPath();
+          ctx.arc(CX, CY, r, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(232,160,32,${a})`;
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+        }
+        // Core dot
+        const dotA = (0.3 + 0.7 * Math.sin(elapsed * 0.008)) * (1 - life);
+        if (dotA > 0.01) {
+          const g = ctx.createRadialGradient(CX, CY, 0, CX, CY, 18);
+          g.addColorStop(0, `rgba(255,220,100,${dotA})`);
+          g.addColorStop(0.4, `rgba(232,160,32,${dotA * 0.6})`);
+          g.addColorStop(1, `rgba(232,160,32,0)`);
+          ctx.beginPath();
+          ctx.arc(CX, CY, 18, 0, Math.PI * 2);
+          ctx.fillStyle = g;
+          ctx.fill();
+        }
+      }
+
+      // ── Ease functions ─────────────────────────────────────────────────
+      function easeOutExpo(t) { return t === 1 ? 1 : 1 - Math.pow(2, -10 * t); }
+      function easeInOutCubic(t) { return t < .5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; }
+
+      // ── Main animation loop ────────────────────────────────────────────
+      function frame(ts) {
+        rafId = requestAnimationFrame(frame);
+        const elapsed = ts - t0;
+
+        // Clear
+        ctx.clearRect(0, 0, W, H);
+
+        // Vignette
+        const vig = ctx.createRadialGradient(CX, CY, H * 0.1, CX, CY, H * 0.85);
+        vig.addColorStop(0, 'rgba(0,0,0,0)');
+        vig.addColorStop(1, 'rgba(0,0,0,0.7)');
+        ctx.fillStyle = vig;
+        ctx.fillRect(0, 0, W, H);
+
+        // Grid fades in during convergence
+        const gridAlpha = elapsed > T_SCATTER
+          ? Math.min((elapsed - T_SCATTER) / 1200, 1) * 0.028
+          : 0;
+        drawGrid(gridAlpha);
+
+        // Origin rings (only before scatter fully begins)
+        if (elapsed < T_BURST + 600) drawOrigin(elapsed);
+
+        // Update + draw particles
+        const pullStart = T_SCATTER;
+        const pullEnd   = T_SETTLE;
+
+        particles.forEach(p => {
+          const pElapsed = elapsed - p.delay;
+
+          if (pElapsed < 0) { return; } // not yet born
+
+          // ── Phase logic ────────────────────────────────────────────────
+          if (pElapsed < T_BURST) {
+            // ORIGIN: particles converge at center
+            p.alpha = Math.min(pElapsed / T_BURST, 1) * 0.5;
+
+          } else if (elapsed < pullStart) {
+            // SCATTER: move toward scatter position
+            const t = easeOutExpo(Math.min((pElapsed - T_BURST) / (T_SCATTER - T_BURST), 1));
+            p.x = CX + Math.cos(Math.atan2(p.sy - CY, p.sx - CX)) * t * Math.hypot(p.sx - CX, p.sy - CY) + (Math.random() - .5) * 0.4;
+            p.y = CY + Math.sin(Math.atan2(p.sy - CY, p.sx - CX)) * t * Math.hypot(p.sx - CX, p.sy - CY) + (Math.random() - .5) * 0.4;
+            p.alpha = 0.5 + t * 0.3;
+
+          } else if (elapsed <= pullEnd) {
+            // PULL: spring toward letter target
+            const dx = p.tx - p.x;
+            const dy = p.ty - p.y;
+            const k = 0.055 + (elapsed - pullStart) / (pullEnd - pullStart) * 0.04;
+            p.vx = p.vx * 0.80 + dx * k;
+            p.vy = p.vy * 0.80 + dy * k;
+            p.trail.push({ x: p.x, y: p.y });
+            if (p.trail.length > 9) p.trail.shift();
+            p.x += p.vx;
+            p.y += p.vy;
+            const pullProg = (elapsed - pullStart) / (pullEnd - pullStart);
+            p.alpha = 0.6 + pullProg * 0.4;
+
+          } else {
+            // SETTLED: snap to target, fade as CSS text takes over
+            p.x += (p.tx - p.x) * 0.25;
+            p.y += (p.ty - p.y) * 0.25;
+            p.trail = [];
+            const fade = 1 - Math.min((elapsed - T_REVEAL) / 500, 1);
+            p.alpha = Math.max(0, fade);
+          }
+
+          // ── Draw trail ─────────────────────────────────────────────────
+          if (p.trail.length > 1) {
+            for (let i = 1; i < p.trail.length; i++) {
+              const tr = p.trail[i];
+              const ta = (i / p.trail.length) * p.alpha * 0.28;
+              if (ta < 0.01) continue;
+              ctx.beginPath();
+              ctx.arc(tr.x, tr.y, p.r * 0.55, 0, Math.PI * 2);
+              ctx.fillStyle = `rgba(${p.col[0]},${p.col[1]},${p.col[2]},${ta})`;
+              ctx.fill();
+            }
+          }
+
+          // ── Draw core ──────────────────────────────────────────────────
+          if (p.alpha < 0.01) return;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${p.col[0]},${p.col[1]},${p.col[2]},${p.alpha})`;
+          ctx.fill();
+
+          // Glow on settled particles
+          if (p.alpha > 0.5 && elapsed > T_SETTLE - 400) {
+            const gr = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 5);
+            gr.addColorStop(0, `rgba(${p.col[0]},${p.col[1]},${p.col[2]},${p.alpha * 0.12})`);
+            gr.addColorStop(1, `rgba(${p.col[0]},${p.col[1]},${p.col[2]},0)`);
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r * 5, 0, Math.PI * 2);
+            ctx.fillStyle = gr;
+            ctx.fill();
+          }
+        });
+
+        // ── Flash on crystallize ────────────────────────────────────────
+        if (elapsed > T_SETTLE && elapsed < T_REVEAL) {
+          const fp = (elapsed - T_SETTLE) / (T_REVEAL - T_SETTLE);
+          const fa = Math.sin(fp * Math.PI) * 0.06;
+          ctx.fillStyle = `rgba(232,160,32,${fa})`;
+          ctx.fillRect(0, 0, W, H);
+        }
+
+        // ── Reveal UI ──────────────────────────────────────────────────
+        if (elapsed >= T_REVEAL && !uiRevealed) {
+          uiRevealed = true;
+          // Fade in CSS wordmark
+          const reveal = document.getElementById('splash-text-reveal');
+          if (reveal) reveal.style.opacity = '1';
+          // Slide up UI panel
+          setTimeout(() => {
+            const panel = document.getElementById('splash-ui-panel');
+            if (panel) panel.classList.add('visible');
+          }, T_UI - T_REVEAL);
+        }
+
+        // ── Stop drawing particles once fully faded ─────────────────────
+        if (elapsed > T_REVEAL + 800) {
+          cancelAnimationFrame(rafId);
+          rafId = null;
+        }
+      }
+
+      // ── Skip handler ───────────────────────────────────────────────────
+      window._splashSkip = function() {
+        skipRequested = true;
+        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+        // Instantly show CSS text + UI
+        const reveal = document.getElementById('splash-text-reveal');
+        if (reveal) reveal.style.opacity = '1';
+        const panel = document.getElementById('splash-ui-panel');
+        if (panel) panel.classList.add('visible');
+        uiRevealed = true;
+        // Clear canvas
+        if (ctx) ctx.clearRect(0, 0, W, H);
+      };
+
+      window._splashStop = function() {
+        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+        window.removeEventListener('resize', onResize);
+      };
+
+      // ── Public start ───────────────────────────────────────────────────
+      window.startSplashAnimation = function() {
+        if (!initCanvas()) return;
+        // Sample text after fonts are ready
+        document.fonts.ready.then(() => {
+          const targets = sampleDEKMA();
+          if (!targets.length) {
+            // Fallback if font not available
+            window._splashSkip();
+            return;
+          }
+          buildParticles(targets);
+          uiRevealed = false;
+          t0 = performance.now();
+          if (rafId) cancelAnimationFrame(rafId);
+          rafId = requestAnimationFrame(frame);
+
+          // Show skip button after 1.5s
+          setTimeout(() => {
+            const skip = document.getElementById('splash-skip');
+            if (skip && !uiRevealed) skip.classList.add('visible');
+          }, 1500);
+        });
+      };
+    })();
 
     // ═══════════════════════════════════════════════════
     //  DATA LOADING
     // ═══════════════════════════════════════════════════
     function loadData() {
       // Hide loader immediately, decide what to show
-      (function(){ const l=document.getElementById('loading'); if(l){ l.classList.add('fade-out'); setTimeout(()=>{ l.style.display='none'; },650); } })();
+      document.getElementById('loading').style.display = 'none';
 
       // Check if dekmaData exists (from results.js)
       if (!window.dekmaData || !Object.keys(window.dekmaData).length) {
@@ -4640,8 +4309,9 @@
       renderLeaderboard();
       populateStudentFilters();
       searchStudents();
-      const _sf = document.getElementById('sidebar-footer-text');
-      if (_sf) _sf.innerHTML = `<div>${EXAMS.length} test${EXAMS.length !== 1 ? 's' : ''} loaded</div><div>${ALL.length.toLocaleString()} entries</div>`;
+      document.getElementById('sidebar-footer').innerHTML =
+        `<div>${EXAMS.length} test${EXAMS.length !== 1 ? 's' : ''} loaded</div>` +
+        `<div>${ALL.length.toLocaleString()} entries</div>`;
 
       // Reinitialise hash routing
       window.removeEventListener('hashchange', handleHashChange);
@@ -4673,31 +4343,12 @@
       dashboard: 'DASHBOARD', tests: 'ALL TESTS', leaderboard: 'LEADERBOARD',
       students: 'STUDENT LOOKUP', schools: 'SCHOOL ANALYSIS', analytics: 'ANALYTICS'
     };
-    const PAGE_ORDER = ['dashboard','tests','leaderboard','students','schools','analytics'];
-    let _currentPage = 'dashboard';
 
     function showPage(page) {
       if (!PAGE_TITLES[page]) return;
-      const prevPage = _currentPage;
-      const prevIdx = PAGE_ORDER.indexOf(prevPage);
-      const nextIdx = PAGE_ORDER.indexOf(page);
-      const dir = nextIdx > prevIdx ? 1 : -1;
-      const animIn  = dir >= 0 ? 'wipe-in' : 'wipe-in-left';
-      const isFirst = !prevPage || prevPage === page;
-
-      // Always sync the URL hash — this is what the browser address bar shows
-      if (location.hash !== '#' + page) {
-        history.replaceState(null, '', '#' + page);
-      }
-
-      document.querySelectorAll('.page').forEach(p => {
-        p.classList.remove('active','wipe-in','wipe-in-left');
-      });
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      const el = document.getElementById('page-' + page);
-      el.classList.add('active');
-      if (!isFirst && prevPage !== page) el.classList.add(animIn);
-
+      document.getElementById('page-' + page).classList.add('active');
       document.querySelectorAll('.nav-item').forEach(n => {
         const onclick = n.getAttribute('onclick');
         if (onclick && onclick.includes("'" + page + "'")) n.classList.add('active');
@@ -4706,8 +4357,9 @@
       const contentEl = document.getElementById('main-content');
       if (contentEl) contentEl.scrollTop = 0;
       window.scrollTo(0, 0);
-      _currentPage = page;
       if (page === 'students') {
+        // Only reset to search view if we're NOT mid-way through opening a profile
+        // (_navOrigin being set means openStudentProfile is about to run)
         if (!_navOrigin) {
           const fb = document.getElementById('stu-filter-bar');
           if (fb) fb.style.display = '';
@@ -4720,7 +4372,6 @@
       if (page === 'analytics') setTimeout(renderAnalytics, 50);
       if (page === 'schools') renderSchools();
       if (page === 'leaderboard') renderLeaderboard();
-      updateBottomNav();
     }
 
     function handleHashChange() {
@@ -5225,14 +4876,14 @@
     // ═══════════════════════════════════════════════════
     function getRankTier(rank, total) {
       if (rank === 1) return { tier: 1, icon: '🥇', label: 'Rank #1', tierClass: 'rank-tier-1' };
-      if (rank <= 3) return { tier: 1, icon: '◈', label: 'Top 3', tierClass: 'rank-tier-1' };
-      if (rank <= 10) return { tier: 2, icon: '★', label: 'Top 10', tierClass: 'rank-tier-2' };
+      if (rank <= 3) return { tier: 1, icon: '🏆', label: 'Top 3', tierClass: 'rank-tier-1' };
+      if (rank <= 10) return { tier: 2, icon: '⭐', label: 'Top 10', tierClass: 'rank-tier-2' };
       if (rank <= 25) return { tier: 2, icon: '🔥', label: 'Top 25', tierClass: 'rank-tier-2' };
       const pct = total > 0 ? (rank / total) * 100 : 100;
       if (pct <= 10) return { tier: 3, icon: '💎', label: 'Top 10%', tierClass: 'rank-tier-3' };
       if (pct <= 25) return { tier: 4, icon: '🌟', label: 'Top 25%', tierClass: 'rank-tier-4' };
-      if (pct <= 50) return { tier: 5, icon: '↑', label: 'Top Half', tierClass: 'rank-tier-5' };
-      return { tier: 6, icon: '·', label: 'Ranked', tierClass: 'rank-tier-6' };
+      if (pct <= 50) return { tier: 5, icon: '📈', label: 'Top Half', tierClass: 'rank-tier-5' };
+      return { tier: 6, icon: '📊', label: 'Ranked', tierClass: 'rank-tier-6' };
     }
 
     // ═══════════════════════════════════════════════════
@@ -5252,7 +4903,7 @@
     // ═══════════════════════════════════════════════════
     //  DASHBOARD
     // ═══════════════════════════════════════════════════
-    function renderOverviewStats() { /* tilt attached after render */
+    function renderOverviewStats() {
       if (!EXAMS.length) { document.getElementById('overview-stats').innerHTML = ''; return; }
       const total = ALL.length;
       const unique = new Set(ALL.map(r => r.name + '||' + r.school)).size;
@@ -5296,7 +4947,7 @@
 
     function renderPodium() {
       const wrap = document.getElementById('podium-wrap');
-      if (!EXAMS.length) { wrap.innerHTML = '<div class="empty"><div class="empty-icon">◈</div>No data</div>'; return; }
+      if (!EXAMS.length) { wrap.innerHTML = '<div class="empty"><div class="empty-icon">🏆</div>No data</div>'; return; }
       const sel = podiumTestSel;
       const isAvg = isAgg(sel);
       let top3;
@@ -5305,10 +4956,10 @@
       } else {
         const eid = resolveExamIds(sel)[0];
         const exam = EXAMS.find(x => x.id === eid);
-        if (!exam) { wrap.innerHTML = '<div class="empty"><div class="empty-icon">◈</div>No data</div>'; return; }
+        if (!exam) { wrap.innerHTML = '<div class="empty"><div class="empty-icon">🏆</div>No data</div>'; return; }
         top3 = deduplicateStudents([...exam.students]).sort((a, b) => b.marks - a.marks).slice(0, 3);
       }
-      if (!top3.length) { wrap.innerHTML = '<div class="empty"><div class="empty-icon">◈</div>No data</div>'; return; }
+      if (!top3.length) { wrap.innerHTML = '<div class="empty"><div class="empty-icon">🏆</div>No data</div>'; return; }
       const order = top3.length === 3 ? [top3[1], top3[0], top3[2]] : top3;
       const medals = ['🥈', '🥇', '🥉'];
       const ini = n => (n || '').split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
@@ -5412,7 +5063,7 @@
       else {
         const eid = resolveExamIds(sel)[0];
         const exam = EXAMS.find(x => x.id === eid);
-        if (!exam) { document.getElementById('top10-table').innerHTML = '<div class="empty"><div class="empty-icon">·</div>No data</div>'; return; }
+        if (!exam) { document.getElementById('top10-table').innerHTML = '<div class="empty"><div class="empty-icon">📋</div>No data</div>'; return; }
         rows = deduplicateStudents([...exam.students]).sort((a, b) => b.marks - a.marks);
       }
       if (top10SortField === 'avg') { rows.sort((a, b) => top10SortAsc ? a.marks - b.marks : b.marks - a.marks); }
@@ -6008,6 +5659,7 @@
       const totalThy = Object.keys(_thyRankMap).length;
       const totalRev = Object.keys(_revRankMap).length;
       const rankTierInfo = typeof gRank === 'number' ? getRankTier(gRank, totalStudents) : null;
+
       const stdDev = marks.length > 1 ? Math.sqrt(marks.reduce((s, m) => s + (m - avg) ** 2, 0) / marks.length) : 0;
       const consistency = marks.length > 1 ? Math.max(0, Math.round(100 - (stdDev / avg) * 100)) : 100;
 
@@ -6024,6 +5676,15 @@
         else { trendLabel = '→ Steady'; trendColor = 'var(--blue)'; }
       }
 
+      let predicted = null;
+      if (marks.length >= 3) {
+        const n = marks.length, xMean = (n - 1) / 2;
+        const num = marks.reduce((s, m, i) => s + (i - xMean) * m, 0);
+        const den = marks.reduce((s, _, i) => s + (i - xMean) ** 2, 0);
+        const slope = den ? num / den : 0;
+        const intercept = avg - slope * xMean;
+        predicted = Math.round(Math.min(100, Math.max(0, intercept + slope * n)));
+      }
 
       const aboveAvgCount = apps.filter(a => {
         const exam = EXAMS.find(e => e.id === a.exam_id);
@@ -6053,17 +5714,17 @@
 
       let archetype, archetypeDesc = '', archetypeIcon, archetypeColor;
       if (avg >= 93 && consistency >= 80) { archetype = 'Exceptional'; archetypeIcon = '🌠'; archetypeColor = '#e8a020'; }
-      else if (avg >= 90) { archetype = 'Elite Performer'; archetypeIcon = '◈'; archetypeColor = '#e8a020'; }
+      else if (avg >= 90) { archetype = 'Elite Performer'; archetypeIcon = '🏆'; archetypeColor = '#e8a020'; }
       else if (avg >= 85 && consistency < 65) { archetype = 'Volatile Talent'; archetypeIcon = '⚡'; archetypeColor = '#f59e0b'; }
-      else if (avg >= 80 && trend > 1.2) { archetype = 'Rising Force'; archetypeIcon = '↑'; archetypeColor = '#4ade80'; }
-      else if (avg >= 80 && trend < -1.0) { archetype = 'Fading Grip'; archetypeIcon = '↓'; archetypeColor = '#f472b6'; }
+      else if (avg >= 80 && trend > 1.2) { archetype = 'Rising Force'; archetypeIcon = '🚀'; archetypeColor = '#4ade80'; }
+      else if (avg >= 80 && trend < -1.0) { archetype = 'Fading Grip'; archetypeIcon = '📉'; archetypeColor = '#f472b6'; }
       else if (avg >= 80) { archetype = 'Solid Performer'; archetypeIcon = '🎯'; archetypeColor = '#60a5fa'; }
       else if (avg >= 72 && consistency >= 82) { archetype = 'The Grinder'; archetypeIcon = '⚙️'; archetypeColor = '#818cf8'; }
       else if (avg >= 72 && revTheoryGap !== null && Math.abs(revTheoryGap) > 10) { archetype = revTheoryGap > 0 ? 'Revision Specialist' : 'Theory Specialist'; archetypeIcon = revTheoryGap > 0 ? '🗂️' : '📖'; archetypeColor = 'var(--teal)'; }
-      else if (avg >= 72 && trend > 1.0) { archetype = 'Climbing'; archetypeIcon = '↑'; archetypeColor = '#4ade80'; }
+      else if (avg >= 72 && trend > 1.0) { archetype = 'Climbing'; archetypeIcon = '📈'; archetypeColor = '#4ade80'; }
       else if (avg >= 65) { archetype = 'Mid-Field'; archetypeIcon = '🌱'; archetypeColor = '#9090b0'; }
       else if (avg >= 55 && trend > 0.5) { archetype = 'Work in Progress'; archetypeIcon = '🔨'; archetypeColor = '#fb923c'; }
-      else if (avg >= 55) { archetype = 'Struggling'; archetypeIcon = '!'; archetypeColor = '#f472b6'; }
+      else if (avg >= 55) { archetype = 'Struggling'; archetypeIcon = '⚠️'; archetypeColor = '#f472b6'; }
       else { archetype = 'Critical Zone'; archetypeIcon = '🔴'; archetypeColor = 'var(--pink)'; }
 
       const name = stuData.name, school = stuData.school;
@@ -6117,13 +5778,9 @@
         }
       }, 10);
 
-      const _stuIdx = typeof idxOrName === 'number' ? idxOrName : STU_REGISTRY.findIndex(s => s.name === idxOrName && s.school === _legacySchool);
-      const _inCmp = isInCompare(_stuIdx);
       pv.innerHTML = `
-        <div style="margin-bottom:16px;display:flex;align-items:center;gap:8px">
+        <div style="margin-bottom:16px">
           <button onclick="goBackFromProfile()" class="filter-btn" id="profile-back-btn">← Back</button>
-          <button class="compare-btn ${_inCmp ? 'in-compare' : ''}" onclick="toggleCompareStudent(${_stuIdx})">⇄ ${_inCmp ? 'Remove from Compare' : 'Add to Compare'}</button>
-
         </div>
         ${rankBadgeHTML}
         <div class="student-header">
@@ -6147,7 +5804,7 @@
           <div>
             <div class="verdict-title" style="color:${archetypeColor}">${archetype}</div>
             <div class="verdict-text">${archetypeDesc}
-
+              ${predicted !== null ? ` <span style="color:var(--text3)">Projected next score:</span> <span style="color:var(--amber);font-weight:600">${predicted}</span>.` : ''}
             </div>
           </div>
         </div>
@@ -6186,11 +5843,11 @@
          </div>
         <div class="card" style="margin-bottom:20px">
           <div class="card-header">
-            <div class="card-title">Performance Timeline</div>
+            <div class="card-title">📈 Performance Timeline</div>
             <div style="display:flex;gap:14px;font-family:'DM Mono',monospace;font-size:10px">
               ${thyApps.length ? `<span style="color:var(--teal)">● Theory</span>` : ''}
               ${revApps.length ? `<span style="color:var(--amber)">● Revision</span>` : ''}
-
+              ${predicted !== null ? `<span style="color:#818cf8">⋯ Predicted</span>` : ''}
             </div>
           </div>
           <div class="card-body"><div style="height:240px;position:relative"><canvas id="stu-chart"></canvas></div></div>
@@ -6198,7 +5855,7 @@
 
         <div class="two-col" style="margin-bottom:24px">
           <div class="card">
-            <div class="card-header"><div class="card-title">Test History</div>
+            <div class="card-header"><div class="card-title">📋 Test History</div>
               <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)">Theory first · Impact = difficulty-adjusted z-score</div>
             </div>
             <div class="table-wrap"><table>
@@ -6212,7 +5869,7 @@
         const z = examZ(a.exam_id, a.marks);
         const zStr = (z >= 0 ? '+' : '') + z.toFixed(2) + 'σ';
         const zCol = z >= 1.5 ? '#4ade80' : z >= 0.5 ? 'var(--teal)' : z >= -0.5 ? 'var(--text2)' : z >= -1.5 ? '#fb923c' : 'var(--pink)';
-        const zLabel = z >= 2 ? 'exceptional' : z >= 1 ? 'above avg' : z >= -0.5 ? '· average' : z >= -1.5 ? '▼ below avg' : '⚠ struggling';
+        const zLabel = z >= 2 ? '🔥 exceptional' : z >= 1 ? '✦ above avg' : z >= -0.5 ? '· average' : z >= -1.5 ? '▼ below avg' : '⚠ struggling';
         return `<tr>
                   <td class="td-school">${a.exam_label}</td>
                   <td><span style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 6px;border-radius:3px;${a.exam_type === 'theory' ? 'background:rgba(45,212,191,.15);color:var(--teal)' : 'background:rgba(232,160,32,.15);color:var(--amber)'}">${a.exam_type.slice(0, 3).toUpperCase()}</span></td>
@@ -6226,7 +5883,7 @@
             </table></div>
           </div>
           <div class="card">
-            <div class="card-header"><div class="card-title">vs School Peers</div></div>
+            <div class="card-header"><div class="card-title">🏫 vs School Peers</div></div>
             <div class="card-body">
               ${rival ? `<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);margin-bottom:12px">Top classmates by average score</div>
               ${schoolMates.slice(0, 8).map((s, i) => {
@@ -6242,7 +5899,7 @@
                 <div class="score-bar-label" style="width:130px;color:var(--amber);font-weight:600">${name.split(' ')[0]} (you)</div>
                 <div class="score-bar-track"><div class="score-bar-fill" style="width:${avg / Math.max(...schoolMates.slice(0, 8).map(x => x.marks), avg) * 100}%;background:var(--amber)"></div></div>
                 <div class="score-bar-val" style="color:var(--amber)">${avgStr}</div>
-              </div>` : '<div class="empty" style="padding:24px">No classmates found</div>'}
+              </div>` : '<div class="empty" style="padding:24px"><div class="empty-icon">🏫</div>No classmates found</div>'}
             </div>
           </div>
         </div>`;
@@ -6284,8 +5941,12 @@
         });
         datasets.push({ label: 'Class Avg', data: classAvgs, borderColor: 'rgba(255,255,255,.18)', backgroundColor: 'transparent', borderWidth: 1, borderDash: [5, 4], pointRadius: 0, fill: false, tension: .3 });
 
+        if (predicted !== null) {
+          const pd = new Array(sortedMarks.length).fill(null); pd.push(predicted);
+          datasets.push({ label: 'Predicted', data: pd, borderColor: '#818cf8', backgroundColor: 'rgba(129,140,248,.18)', borderWidth: 1.5, borderDash: [3, 3], pointRadius: (ctx) => { const w = ctx.chart.width || 300; return ctx.dataIndex === sortedMarks.length ? (w < 500 ? 5 : 8) : 0; }, pointBackgroundColor: '#818cf8', fill: false });
+        }
 
-        const allLabels = sortedApps.map(a => a.exam_label);
+        const allLabels = [...sortedApps.map(a => a.exam_label), ...(predicted !== null ? ['Next →'] : [])];
         CHARTS.stuChart = new Chart(ctx, {
           type: 'line', data: { labels: allLabels, datasets },
           options: {
@@ -6297,6 +5958,7 @@
                   label: (c) => {
                     if (c.datasetIndex === 0) { const a = sortedApps[c.dataIndex]; return a ? `${a.exam_type === 'theory' ? '▸ Theory' : '▸ Revision'} · ${c.parsed.y} pts` : ''; }
                     if (c.datasetIndex === 1) return `Class avg · ${c.parsed.y}`;
+                    return `Predicted · ${c.parsed.y}`;
                   }
                 }
               }
@@ -6597,8 +6259,7 @@
     });
     document.addEventListener('keydown', ev => {
       if (ev.key === '/' && document.activeElement.tagName !== 'INPUT') { ev.preventDefault(); document.getElementById('global-search').focus(); }
-      if (ev.key === 'Escape') { document.getElementById('global-search').blur(); document.getElementById('search-results').classList.remove('visible'); closeSidebar(); closeExportDrop(); }
-      if (ev.key === '?' && document.activeElement.tagName !== 'INPUT') { ev.preventDefault(); toggleShortcutsModal(); }
+      if (ev.key === 'Escape') { document.getElementById('global-search').blur(); document.getElementById('search-results').classList.remove('visible'); closeSidebar(); }
     });
 
     // ═══════════════════════════════════════════════════
@@ -6630,543 +6291,10 @@
       return (s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
-
-    // ═══════════════════════════════════════════════════
-    //  THEME TOGGLE
-    // ═══════════════════════════════════════════════════
-    function initTheme() {
-      const saved = localStorage.getItem('dekma_theme') || 'dark';
-      if (saved === 'light') {
-        document.documentElement.setAttribute('data-theme','light');
-        document.getElementById('theme-toggle').textContent = '☾';
-      } else {
-        document.documentElement.removeAttribute('data-theme');
-        document.getElementById('theme-toggle').textContent = '☀︎';
-      }
-    }
-    function toggleTheme() {
-      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-      if (isLight) {
-        document.documentElement.removeAttribute('data-theme');
-        localStorage.setItem('dekma_theme','dark');
-        document.getElementById('theme-toggle').textContent = '☀︎';
-      } else {
-        document.documentElement.setAttribute('data-theme','light');
-        localStorage.setItem('dekma_theme','light');
-        document.getElementById('theme-toggle').textContent = '☾';
-      }
-    }
-    initTheme();
-
-    // ═══════════════════════════════════════════════════
-    //  EXPORT STUDENT CSV
-    // ═══════════════════════════════════════════════════
-    function exportStudentCSV(idx) {
-      const s = STU_REGISTRY[idx];
-      if (!s) return;
-      const rows = [['Test','Type','Marks','Rank','Class Avg']];
-      s.apps.forEach(a => {
-        const exam = EXAMS.find(e => e.id === a.exam_id);
-        const cAvg = exam ? (exam.students.reduce((s,st)=>s+st.marks,0)/exam.students.length).toFixed(1) : '';
-        rows.push([a.exam_label, a.exam_type, a.marks, a.rank, cAvg]);
-      });
-      const csv = rows.map(r => r.map(v=>'\"'+String(v).replace(/\"/g,'\"\"')+'\"').join(',')).join('\n');
-      const blob = new Blob([csv], {type:'text/csv'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'dekma_' + s.name.replace(/ /g,'_') + '.csv';
-      document.body.appendChild(a); a.click();
-      setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
-    }
-
-    // ═══════════════════════════════════════════════════
-    //  BOTTOM NAV SYNC
-    // ═══════════════════════════════════════════════════
-    const BNAV_PAGES = ['dashboard','leaderboard','students','schools','analytics'];
-    function updateBottomNav() {
-      const page = (_currentPage || location.hash.replace('#','') || 'dashboard');
-      const items = document.querySelectorAll('.bnav-item');
-      let activeIdx = 0;
-      items.forEach((el, i) => {
-        const isActive = el.dataset.page === page;
-        el.classList.toggle('active', isActive);
-        if (isActive) activeIdx = i;
-      });
-      // Slide pill
-      const pill = document.getElementById('bnav-pill');
-      if (pill) pill.style.transform = `translateX(${activeIdx * 100}%)`;
-      // Update context chip text
-      const chip = document.getElementById('bnav-ctx-chip');
-      if (chip && typeof selectedCity !== 'undefined') {
-        const city = selectedCity ? selectedCity.charAt(0).toUpperCase() + selectedCity.slice(1) : '—';
-        chip.textContent = city + (selectedYear ? ' ' + selectedYear : '');
-      }
-    }
-    window.addEventListener('hashchange', updateBottomNav);
-
-    // ═══════════════════════════════════════════════════
-    //  EXPORT DROPDOWN
-    // ═══════════════════════════════════════════════════
-    function toggleExportDrop(id, btn) {
-      const dd = document.getElementById(id);
-      if (!dd) return;
-      const wasOpen = dd.classList.contains('open');
-      closeExportDrop();
-      if (!wasOpen) {
-        dd.classList.add('open');
-        // Close on outside click
-        setTimeout(()=>{
-          document.addEventListener('click', closeExportDrop, { once: true, capture: true });
-        }, 10);
-      }
-    }
-    function closeExportDrop() {
-      document.querySelectorAll('.export-dropdown.open').forEach(d => d.classList.remove('open'));
-    }
-
-    // ═══════════════════════════════════════════════════
-    //  EXPORT TO CSV / PDF
-    // ═══════════════════════════════════════════════════
-    function buildExportRows() {
-      const page = location.hash.replace('#','') || 'dashboard';
-      let rows = [], filename = 'dekma_export';
-      if (page === 'leaderboard' || page === 'dashboard') {
-        filename = 'dekma_leaderboard_' + selectedYear;
-        rows = [['Rank','Name','School','Gender','Rating','Avg Score','Best Score','Tests']];
-        const agg = aggregateByStudent(ALL).sort((a,b)=>b.rating-a.rating);
-        agg.forEach((s,i)=>rows.push([i+1, s.name, s.school, s.gender, s.rating, s.marks, s.best, s.tests]));
-      } else if (page === 'schools') {
-        filename = 'dekma_schools_' + selectedYear;
-        rows = [['Rank','School','Students','Adj Avg','Top Score']];
-        const stats = buildSchoolStats(ALL);
-        Object.entries(stats).sort((a,b)=>b[1].bayesAvg-a[1].bayesAvg).forEach(([sch,v],i)=>{
-          rows.push([i+1, sch, v.count, v.bayesAvg.toFixed(1), v.top]);
-        });
-      } else if (page === 'analytics' || page === 'tests') {
-        filename = 'dekma_tests_' + selectedYear;
-        rows = [['Test','Type','Students','Average','Top Score','Boys','Girls']];
-        EXAMS.forEach(e=>{
-          const m=e.students.map(s=>s.marks);
-          const avg=(m.reduce((a,b)=>a+b,0)/m.length).toFixed(1);
-          const boys=e.students.filter(s=>s.gender===GEN_MALE).length;
-          const girls=e.students.filter(s=>s.gender===GEN_FEMALE).length;
-          rows.push([e.label, e.type, e.students.length, avg, Math.max(...m), boys, girls]);
-        });
-      } else {
-        filename = 'dekma_students_' + selectedYear;
-        rows = [['Name','School','Gender','Best Score','Avg Score','Tests']];
-        STU_REGISTRY.forEach(s=>{
-          const marks=s.apps.map(a=>a.marks);
-          const best=Math.max(...marks);
-          const avg=(marks.reduce((a,b)=>a+b,0)/marks.length).toFixed(1);
-          rows.push([s.name, s.school, s.gender, best, avg, s.apps.length]);
-        });
-      }
-      return { rows, filename };
-    }
-
-    function exportCurrentView(format) {
-      const { rows, filename } = buildExportRows();
-      if (!rows.length) return;
-      if (format === 'pdf') {
-        // Build a minimal print window
-        const dispCity = selectedCity.charAt(0).toUpperCase() + selectedCity.slice(1);
-        const title = `DEKMA ${dispCity} ${selectedYear} — ${(location.hash.replace('#','')||'dashboard').toUpperCase()}`;
-        const tableHTML = `<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;font-size:11px;font-family:Arial,sans-serif">
-          ${rows.map((r,i)=>`<tr style="${i===0?'background:#e8a020;color:#000;font-weight:bold':'background:'+( i%2?'#f5f5f0':'#fff')}">
-            ${r.map(v=>`<${i===0?'th':'td'} style="border:1px solid #ccc;padding:5px 8px">${v}</${i===0?'th':'td'}>`).join('')}
-          </tr>`).join('')}
-        </table>`;
-        const win = window.open('','_blank');
-        win.document.write(`<!DOCTYPE html><html><head><title>${title}</title>
-          <style>@media print{body{margin:16px}h2{font-family:Arial;font-size:18px;margin-bottom:12px}}</style></head>
-          <body><h2>${title}</h2>${tableHTML}
-          <script>setTimeout(()=>{window.print();},300);<\/script></body></html>`);
-        win.document.close();
-      } else {
-        const csv = rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
-        const blob = new Blob([csv], {type:'text/csv'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = filename + '.csv';
-        document.body.appendChild(a); a.click();
-        setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
-      }
-    }
-
-    // ═══════════════════════════════════════════════════
-    //  STUDENT COMPARISON (up to 4)
-    // ═══════════════════════════════════════════════════
-    const CMP_MAX = 4;
-    const CMP_COLORS = [
-      { bg:'rgba(91,168,255,.2)', border:'#5ba8ff', text:'#5ba8ff' },
-      { bg:'rgba(240,111,160,.2)', border:'#f06fa0', text:'#f06fa0' },
-      { bg:'rgba(15,214,190,.2)', border:'#0fd6be', text:'#0fd6be' },
-      { bg:'rgba(240,160,32,.2)', border:'#f0a020', text:'#f0a020' }
-    ];
-    let _cmpStudents = [];
-
-    function toggleCompareStudent(idx) {
-      const s = STU_REGISTRY[idx];
-      if (!s) return;
-      const existIdx = _cmpStudents.findIndex(x => x && x.idx === idx);
-      if (existIdx >= 0) {
-        _cmpStudents.splice(existIdx, 1);
-      } else if (_cmpStudents.length < CMP_MAX) {
-        _cmpStudents.push({...s, idx});
-      } else {
-        // Replace last
-        _cmpStudents[CMP_MAX-1] = {...s, idx};
-      }
-      updateCompareDock();
-    }
-
-    function isInCompare(idx) {
-      return _cmpStudents.some(x => x && x.idx === idx);
-    }
-
-    function clearCompare() {
-      _cmpStudents = [];
-      updateCompareDock();
-    }
-
-    function updateCompareDock() {
-      const dock = document.getElementById('compare-dock');
-      dock.classList.toggle('visible', _cmpStudents.length > 0);
-      const slotsEl = document.getElementById('cmp-dock-slots');
-      const onStudentsPage = (_currentPage === 'students');
-      let dockHTML = _cmpStudents.map((s, i) => {
-        const c = CMP_COLORS[i];
-        const ini = s.name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
-        return `<div class="compare-dock-slot">
-          <div class="compare-dock-avatar" style="background:${c.bg};border:1.5px solid ${c.border};color:${c.text}">${ini}</div>
-          <span class="compare-dock-name">${s.name.split(' ')[0]}</span>
-          <button onclick="toggleCompareStudent(${s.idx})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:0 2px" title="Remove">✕</button>
-        </div>
-        ${i < _cmpStudents.length-1 ? '<span class="compare-dock-vs">vs</span>' : ''}`;
-      }).join('');
-      // If waiting for more students and we're on the students page, show a prompt
-      if (_cmpStudents.length > 0 && _cmpStudents.length < CMP_MAX && onStudentsPage) {
-        dockHTML += `<span class="compare-dock-vs" style="font-size:10px;letter-spacing:.5px;opacity:.5">+</span>
-        <div class="compare-dock-slot" style="opacity:.45;border:1px dashed var(--border2);border-radius:6px;padding:0 8px;min-width:60px;justify-content:center">
-          <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)">pick student</span>
-        </div>`;
-      }
-      slotsEl.innerHTML = dockHTML;
-      const goBtn = document.getElementById('cmp-go-btn');
-      if (goBtn) goBtn.disabled = _cmpStudents.length < 2;
-    }
-
-    function openCompareModal() {
-      if (_cmpStudents.length < 2) return;
-      const CMP_METRIC_LABELS = ['Best Score','Average','Global Rank','Consistency','Trend','Tests'];
-
-      const buildData = (s) => {
-        const apps = STU_REGISTRY[s.idx]?.apps || s.apps || [];
-        const marks = apps.map(a=>a.marks);
-        const best = Math.max(...marks);
-        const avg = marks.reduce((a,b)=>a+b,0)/marks.length;
-        const gRank = globalRank(s.name, s.school);
-        const total = Object.keys(_globalRankMap).length;
-        const pct = typeof gRank==='number' ? Math.round((1-(gRank-1)/total)*100) : 0;
-        const stdDev = marks.length>1 ? Math.sqrt(marks.reduce((s,m)=>(s+(m-avg)**2),0)/marks.length) : 0;
-        const consistency = marks.length>1 ? Math.max(0,Math.round(100-(stdDev/avg)*100)) : 100;
-        let trend = 0;
-        if (marks.length>=2) {
-          const n=marks.length, xm=(n-1)/2;
-          const num=marks.reduce((s,m,i)=>s+(i-xm)*m,0);
-          const den=marks.reduce((s,_,i)=>s+(i-xm)**2,0);
-          trend=den?num/den:0;
-        }
-        const trendScore = Math.min(100, Math.max(0, 50 + trend*10));
-        return { name:s.name, school:s.school, gender:s.gender, best, avg:+avg.toFixed(1),
-                 rank:gRank, pct, consistency, trend:+trend.toFixed(2), trendScore, tests:apps.length, apps, marks };
-      };
-
-      const students = _cmpStudents.map(buildData);
-
-      // Determine winner per metric
-      const metrics = [
-        { key:'best', higher:true, fmt:(v)=>v },
-        { key:'avg',  higher:true, fmt:(v)=>v },
-        { key:'rank', higher:false, fmt:(v)=>typeof v==='number'?'#'+v:'—' },
-        { key:'consistency', higher:true, fmt:(v)=>v+'%' },
-        { key:'trendScore', higher:true, fmt:(v,d)=>d.trend>=0?'↗ +'+d.trend:' ↘ '+d.trend },
-        { key:'tests', higher:true, fmt:(v)=>v },
-      ];
-
-      // Count wins per student
-      const wins = students.map(()=>0);
-      metrics.forEach(m=>{
-        const vals = students.map(d=>d[m.key]);
-        const best = m.higher ? Math.max(...vals.filter(v=>typeof v==='number')) : Math.min(...vals.filter(v=>typeof v==='number'));
-        vals.forEach((v,i)=>{ if(v===best) wins[i]++; });
-      });
-      const overallWinner = wins.indexOf(Math.max(...wins));
-
-      // Verdict text
-      const verdictMsg = students.length===2
-        ? wins[0]>wins[1] ? `${students[0].name.split(' ')[0]} wins ${wins[0]}–${wins[1]} across ${metrics.length} categories`
-          : wins[1]>wins[0] ? `${students[1].name.split(' ')[0]} wins ${wins[1]}–${wins[0]} across ${metrics.length} categories`
-          : `Dead heat — tied across all ${metrics.length} categories`
-        : `${students[overallWinner].name.split(' ')[0]} leads with ${wins[overallWinner]}/${metrics.length} wins`;
-
-      // Header row
-      const headerRow = students.map((d,i)=>{
-        const c = CMP_COLORS[i];
-        const gc = d.gender===GEN_MALE?'var(--male)':d.gender===GEN_FEMALE?'var(--female)':'var(--text3)';
-        const ini = d.name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
-        const isWinner = i===overallWinner && students.length>=2;
-        return `<div style="text-align:center;padding:12px 8px;border-bottom:1px solid var(--border)">
-          <div style="width:52px;height:52px;border-radius:50%;background:${c.bg};border:2px solid ${c.border};display:flex;align-items:center;justify-content:center;font-family:sans-serif;font-size:24px;color:${c.text};margin:0 auto 8px">${ini}</div>
-          ${isWinner?'<div style="font-family:monospace;font-size:8px;color:var(--amber);letter-spacing:2px;margin-bottom:4px">★ WINNER</div>':''}
-          <div style="font-family:sans-serif;font-size:16px;letter-spacing:1px">${d.name}</div>
-          <div style="font-family:monospace;font-size:9px;color:var(--text3)">${d.school}</div>
-          <div style="font-family:monospace;font-size:10px;color:var(--amber);margin-top:4px">${wins[i]}/${metrics.length} wins</div>
-        </div>`;
-      }).join('');
-
-      // Metric rows
-      const metricRows = metrics.map((m)=>{
-        const vals = students.map(d=>d[m.key]);
-        const numVals = vals.filter(v=>typeof v==='number');
-        const bestVal = numVals.length ? (m.higher ? Math.max(...numVals) : Math.min(...numVals)) : null;
-        const cells = students.map((d,i)=>{
-          const v = d[m.key];
-          const isWin = (typeof v==='number') && v===bestVal;
-          const c = CMP_COLORS[i];
-          const pct = m.key!=='rank' && numVals.length>1
-            ? (Math.max(...numVals)>0 ? (typeof v==='number'?v/Math.max(...numVals)*100:0) : 50) : null;
-          return `<td style="text-align:center;padding:10px 8px;position:relative">
-            ${pct!==null?`<div style="position:absolute;bottom:4px;left:8%;width:84%;height:3px;background:var(--bg3);border-radius:2px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${c.border};border-radius:2px;transition:width .8s"></div></div>`:''}
-            <div style="font-family:sans-serif;font-size:22px;color:${isWin?c.text:'var(--text2)'};${isWin?'text-shadow:0 0 16px '+c.border+'50':''}">${m.fmt(v,d)}</div>
-            ${isWin?`<div style="font-family:monospace;font-size:8px;color:${c.text};letter-spacing:1px">▲ BEST</div>`:''}
-          </td>`;
-        }).join('');
-        return `<tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:10px 14px;font-family:monospace;font-size:9px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;border-right:1px solid var(--border)">${CMP_METRIC_LABELS[metrics.indexOf(m)]}</td>
-          ${cells}
-        </tr>`;
-      }).join('');
-
-      // Shared tests section
-      const sharedExamIds = students[0].apps
-        .map(a=>a.exam_id)
-        .filter(id => students.every(d => d.apps.some(a=>a.exam_id===id)));
-      let testSection = '';
-      if (sharedExamIds.length) {
-        const testRows = sharedExamIds.map(id => {
-          const label = students[0].apps.find(a=>a.exam_id===id)?.exam_label || id;
-          const vals = students.map(d => d.apps.find(a=>a.exam_id===id)?.marks || 0);
-          const mx = Math.max(...vals, 1);
-          const topVal = Math.max(...vals);
-          const cells = vals.map((v,i)=>{
-            const c = CMP_COLORS[i];
-            const isTop = v===topVal;
-            return `<td style="text-align:center;padding:8px;position:relative">
-              <div style="height:4px;background:var(--bg3);border-radius:2px;margin-bottom:5px;overflow:hidden"><div style="height:100%;width:${v/mx*100}%;background:${c.border};transition:width .8s"></div></div>
-              <span style="font-family:sans-serif;font-size:18px;color:${isTop?c.text:'var(--text2)'}">${v}</span>
-            </td>`;
-          }).join('');
-          return `<tr style="border-bottom:1px solid var(--border)">
-            <td style="padding:8px 14px;font-family:monospace;font-size:10px;color:var(--text2);border-right:1px solid var(--border)">${label}</td>
-            ${cells}
-          </tr>`;
-        }).join('');
-        testSection = `<div style="margin-top:20px">
-          <div style="font-family:monospace;font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px">Shared Tests (${sharedExamIds.length})</div>
-          <div class="table-wrap"><table style="width:100%;border-collapse:collapse">
-            <thead><tr style="background:var(--bg3)"><th style="padding:8px 14px;text-align:left;font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);border-right:1px solid var(--border)">Test</th>
-              ${students.map((_,i)=>`<th style="text-align:center;padding:8px;font-family:monospace;font-size:9px;color:${CMP_COLORS[i].text}">${_.name.split(' ')[0]}</th>`).join('')}
-            </tr></thead>
-            <tbody>${testRows}</tbody>
-          </table></div>
-        </div>`;
-      }
-
-      const numCols = students.length + 1;
-      document.getElementById('compare-modal').querySelector('.modal-title').textContent =
-        students.length===2 ? 'HEAD-TO-HEAD' : `${students.length}-WAY COMPARISON`;
-      document.getElementById('compare-body').innerHTML = `
-        <div style="background:linear-gradient(135deg,rgba(240,160,32,.1),rgba(240,160,32,.03));border:1px solid rgba(240,160,32,.3);border-radius:var(--radius);padding:12px 18px;margin-bottom:20px;font-family:'DM Mono',monospace;font-size:11px;color:var(--amber)">
-          ★ ${verdictMsg}
-        </div>
-        <div class="table-wrap">
-          <table style="width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:var(--radius2);overflow:hidden">
-            <thead>
-              <tr>
-                <th style="background:var(--bg3);padding:8px 14px;border-right:1px solid var(--border);border-bottom:1px solid var(--border)"></th>
-                ${students.map((_,i)=>`<th style="background:var(--bg3);border-bottom:1px solid var(--border)">${headerRow.split('</div>')[i*5]}</th>`).join('')}
-              </tr>
-              <tr>
-                <th style="background:var(--bg3);padding:8px 14px;border-right:1px solid var(--border)"></th>
-                ${students.map((d,i)=>`<th style="background:var(--bg3);border-bottom:1px solid var(--border)"><div style="padding:12px 8px;text-align:center;border-bottom:1px solid var(--border)">
-                  <div style="width:48px;height:48px;border-radius:50%;background:${CMP_COLORS[i].bg};border:2px solid ${CMP_COLORS[i].border};display:flex;align-items:center;justify-content:center;font-family:sans-serif;font-size:22px;color:${CMP_COLORS[i].text};margin:0 auto 6px">${d.name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase()}</div>
-                  ${i===overallWinner&&_cmpStudents.length>=2?'<div style="font-family:monospace;font-size:8px;color:var(--amber);letter-spacing:2px;margin-bottom:3px">★ WINNER</div>':''}
-                  <div style="font-family:sans-serif;font-size:15px;letter-spacing:1px">${d.name}</div>
-                  <div style="font-family:monospace;font-size:9px;color:var(--text3)">${d.school}</div>
-                  <div style="font-family:monospace;font-size:10px;color:var(--amber);margin-top:3px">${wins[i]}/${metrics.length} wins</div>
-                </div></th>`).join('')}
-              </tr>
-            </thead>
-            <tbody>${metricRows}</tbody>
-          </table>
-        </div>
-        ${testSection}`;
-      document.getElementById('compare-overlay').classList.add('open');
-    }
-
-    function closeCompareModal(ev) {
-      if (!ev || ev.target===document.getElementById('compare-overlay')) {
-        document.getElementById('compare-overlay').classList.remove('open');
-      }
-    }
-
-    // ═══════════════════════════════════════════════════
-    //  PERCENTILE BAR HELPER
-    // ═══════════════════════════════════════════════════
-
-
-    // ═══════════════════════════════════════════════════
-    //  COOL ANIMATIONS
-    // ═══════════════════════════════════════════════════
-
-    // A) Bottom nav ripple on tap
-    document.addEventListener('click', function(e) {
-      const item = e.target.closest('.bnav-item');
-      if (!item) return;
-      const r = document.createElement('div');
-      r.className = 'bnav-ripple';
-      const rect = item.getBoundingClientRect();
-      const size = Math.max(rect.width, rect.height);
-      r.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX-rect.left-size/2}px;top:${e.clientY-rect.top-size/2}px`;
-      item.appendChild(r);
-      r.addEventListener('animationend', () => r.remove());
-    });
-
-    // B) 3D card tilt on desktop
-    (function() {
-      function addTilt(el) {
-        el.addEventListener('mousemove', function(e) {
-          const r = el.getBoundingClientRect();
-          const x = (e.clientX - r.left) / r.width  - .5;
-          const y = (e.clientY - r.top)  / r.height - .5;
-          el.style.transform = `perspective(500px) rotateY(${x*6}deg) rotateX(${-y*6}deg) translateZ(2px)`;
-        });
-        el.addEventListener('mouseleave', function() {
-          el.style.transform = '';
-        });
-      }
-      function attachTilts() {
-        document.querySelectorAll('.stat-card').forEach(el => {
-          if (!el.dataset.tilt) { el.dataset.tilt = '1'; addTilt(el); }
-        });
-      }
-      // Attach after data load
-      const _orig = window._afterRender || function(){};
-      window._attachTilts = attachTilts;
-      document.addEventListener('dekma:rendered', attachTilts);
-    })();
-
-    // C) Text scramble for page title on nav
-    (function() {
-      const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789·—';
-      function scrambleTo(el, target, dur) {
-        dur = dur || 320;
-        let frame = 0;
-        const totalFrames = Math.round(dur / 40);
-        const orig = el.textContent;
-        let id = setInterval(function() {
-          frame++;
-          const prog = frame / totalFrames;
-          const revealUpto = Math.floor(prog * target.length);
-          let out = '';
-          for (let i = 0; i < target.length; i++) {
-            if (i < revealUpto) {
-              out += target[i];
-            } else {
-              out += CHARS[Math.floor(Math.random() * CHARS.length)];
-            }
-          }
-          el.textContent = out;
-          if (frame >= totalFrames) {
-            clearInterval(id);
-            el.textContent = target;
-            el.classList.add('loaded');
-          }
-        }, 40);
-      }
-      window._scrambleTo = scrambleTo;
-    })();
-
-    // D) Stat value count-up
-    function animateCountUp(el, target, suffix) {
-      suffix = suffix || '';
-      const start = 0;
-      const dur = 600;
-      const startTime = performance.now();
-      function step(now) {
-        const elapsed = now - startTime;
-        const prog = Math.min(elapsed / dur, 1);
-        // ease-out cubic
-        const eased = 1 - Math.pow(1 - prog, 3);
-        const val = Math.round(eased * target);
-        el.textContent = val.toLocaleString() + suffix;
-        if (prog < 1) requestAnimationFrame(step);
-        else { el.textContent = target.toLocaleString() + suffix; el.classList.remove('counting'); }
-      }
-      el.classList.add('counting');
-      requestAnimationFrame(step);
-    }
-    window._animateCountUp = animateCountUp;
-
-    // E) Hook page title scramble into showPage
-    const _origShowPage = showPage;
-    function showPage(page) {
-      _origShowPage(page);
-      const titleEl = document.getElementById('page-title');
-      if (titleEl && window._scrambleTo) {
-        titleEl.classList.remove('loaded');
-        window._scrambleTo(titleEl, titleEl.textContent, 280);
-      }
-    }
-
-    // F) Attach tilt on stat renders (hook into overview stats)
-    const _OrigRenderOverview = typeof renderOverviewStats === 'function' ? renderOverviewStats : null;
-
-    // ═══════════════════════════════════════════════════
-    //  KEYBOARD SHORTCUTS MODAL
-    // ═══════════════════════════════════════════════════
-    function toggleShortcutsModal() {
-      const el = document.getElementById('shortcuts-overlay');
-      if (el) el.classList.toggle('open');
-    }
-
     // ═══════════════════════════════════════════════════
     //  BOOT
     // ═══════════════════════════════════════════════════
-    window.addEventListener('DOMContentLoaded', () => {
-      loadData();
-      updateBottomNav();
-      setTimeout(function(){ document.dispatchEvent(new Event('dekma:rendered')); window._attachTilts && window._attachTilts(); }, 1200);
-      // Mobile secret: tap theme-toggle 7 times within 3s
-      (function(){
-        let _tc = 0, _tt = null;
-        const el = document.getElementById('theme-toggle');
-        if (!el) return;
-        el.addEventListener('touchend', function(e){
-          _tc++;
-          clearTimeout(_tt);
-          _tt = setTimeout(function(){ _tc = 0; }, 10000);
-          if (_tc >= 7) {
-            _tc = 0;
-            sessionStorage.setItem('__adm', Date.now().toString());
-            window.location.href = 'admin.html';
-          }
-        }, { passive: true });
-      })();
-    });
-    // Keyboard shortcut hints in sidebar footer
+    window.addEventListener('DOMContentLoaded', loadData);
 
     // ═══════════════════════════════════════════════════
     //  SECRET ADMIN TRIGGER
@@ -7208,61 +6336,6 @@
       });
     })();
   </script>
-
-  <!-- ══ BOTTOM NAV ══ -->
-  <nav class="bottom-nav" id="bottom-nav" aria-label="Bottom navigation">
-    <div class="bottom-nav-blur"></div>
-    <div class="bottom-nav-inner">
-      <div class="bnav-pill" id="bnav-pill"></div>
-      <div class="bnav-item" data-page="dashboard" onclick="location.hash='dashboard'">
-        <div class="bnav-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12L12 3l9 9"/><path d="M5 10v11h5v-5h4v5h5V10"/></svg></div>
-        <span class="bnav-label">Home</span>
-      </div>
-      <div class="bnav-item" data-page="leaderboard" onclick="location.hash='leaderboard'">
-        <div class="bnav-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h8M6 10h12M4 14h16M2 18h20"/><circle cx="12" cy="4" r="2"/></svg></div>
-        <span class="bnav-label">Ranks</span>
-      </div>
-      <div class="bnav-item" data-page="students" onclick="location.hash='students'">
-        <div class="bnav-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="7" r="4"/><path d="M2 21v-2a6 6 0 0 1 6-6h0"/><path d="M15 17a3 3 0 1 0 6 0 3 3 0 0 0-6 0"/><path d="M18 14v6m-3-3h6"/></svg></div>
-        <span class="bnav-label">Students</span>
-      </div>
-      <div class="bnav-item" data-page="schools" onclick="location.hash='schools'">
-        <div class="bnav-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 9h3v11h14V9h3z"/><rect x="9" y="14" width="6" height="7"/><path d="M12 2v7"/></svg></div>
-        <span class="bnav-label">Schools</span>
-      </div>
-      <div class="bnav-item" data-page="analytics" onclick="location.hash='analytics'">
-        <div class="bnav-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg></div>
-        <span class="bnav-label">Stats</span>
-      </div>
-    </div>
-  </nav>
-
-  <!-- ══ COMPARE DOCK ══ -->
-  <div id="compare-dock" role="complementary" aria-label="Student comparison">
-    <div id="cmp-dock-slots" style="display:flex;align-items:center;gap:8px"></div>
-    <button class="compare-dock-go" onclick="openCompareModal()" id="cmp-go-btn" disabled>Compare</button>
-    <button class="compare-dock-clear" onclick="clearCompare()" title="Clear all">✕</button>
-    <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);white-space:nowrap">up to 4</div>
-  </div>
-
-
-  <!-- Keyboard Shortcuts Modal -->
-  <div class="modal-overlay" id="shortcuts-overlay" onclick="this.classList.remove('open')" style="z-index:600">
-    <div class="modal" style="max-width:480px" onclick="event.stopPropagation()">
-      <div class="modal-header">
-        <div class="modal-title">KEYBOARD SHORTCUTS</div>
-        <button class="modal-close" onclick="document.getElementById('shortcuts-overlay').classList.remove('open')">✕</button>
-      </div>
-      <div class="modal-body">
-        <div style="display:grid;grid-template-columns:auto 1fr;gap:8px 20px;align-items:center">
-          ${[['/', 'Focus search'],['Esc', 'Close / dismiss'],['?', 'Show this panel'],['Ctrl×3 + ?', 'Power mode']].map(([k,d])=>`
-            <div style="font-family:'DM Mono',monospace;font-size:12px;padding:5px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;text-align:center;color:var(--amber);white-space:nowrap">${k}</div>
-            <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text2)">${d}</div>`).join('')}
-        </div>
-      </div>
-    </div>
-  </div>
-
 </body>
 
 </html>
