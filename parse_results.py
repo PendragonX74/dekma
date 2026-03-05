@@ -80,6 +80,20 @@ def load_manual_edits():
         print(f"[WARN] Could not load manual_edits.json: {e}")
         return {"scoreEdits": [], "studentRenames": []}
 
+def recompute_ranks(exam):
+    """
+    Recompute student ranks based on current marks.
+    Tied marks → same rank. Next distinct mark → dense skip
+    (matches the admin.html recomputeRanks behaviour exactly).
+    This MUST be called after any score edit so ranks stay in sync.
+    """
+    students = sorted(exam["students"], key=lambda s: s["marks"], reverse=True)
+    for i, s in enumerate(students):
+        if i > 0 and s["marks"] == students[i - 1]["marks"]:
+            s["rank"] = students[i - 1]["rank"]
+        else:
+            s["rank"] = i + 1
+
 def apply_edits(data_by_city_year, edits):
     """
     Apply student renames and score edits to the in‑memory data.
@@ -91,7 +105,6 @@ def apply_edits(data_by_city_year, edits):
         old = (rename["oldName"], rename["oldSchool"])
         new_name = rename["newName"]
         new_school = rename["newSchool"]
-        # Loop through all exams and update matching students
         for exams in data_by_city_year.values():
             for exam in exams:
                 for s in exam["students"]:
@@ -99,7 +112,7 @@ def apply_edits(data_by_city_year, edits):
                         s["name"] = new_name
                         s["school"] = new_school
 
-    # 2. Apply score edits (after renames, so we look for the student with possibly new name/school)
+    # 2. Apply score edits (after renames, so we look for possibly-renamed students)
     for score_edit in edits.get("scoreEdits", []):
         exam_id = score_edit["examId"]
         edit_city = score_edit.get("city")   # present in edits made after the fix; None for older ones
@@ -124,7 +137,8 @@ def apply_edits(data_by_city_year, edits):
                 break
         if not found:
             city_hint = f" (city={edit_city})" if edit_city else ""
-            print(f"  [NOTE] Score edit for exam {exam_id}{city_hint} and student {student_info} could not be applied (exam or student missing).")
+            print(f"  [NOTE] Score edit for exam {exam_id}{city_hint} and student {student_info} "
+                  f"could not be applied (exam or student missing).")
 
 def write_chunk(city, year, exams):
     chunk_file = OUTPUT_DIR / f"results_{slug(city)}_{year}.js"
@@ -178,7 +192,8 @@ def main():
     # Load manual edits (if any)
     edits = load_manual_edits()
     if edits["studentRenames"] or edits["scoreEdits"]:
-        print(f"Loaded {len(edits['studentRenames'])} rename(s) and {len(edits['scoreEdits'])} score edit(s) from manual_edits.json")
+        print(f"Loaded {len(edits['studentRenames'])} rename(s) and "
+              f"{len(edits['scoreEdits'])} score edit(s) from manual_edits.json")
 
     # --- First pass: gather all XML files per city/year ---
     city_year_exams = {}  # key: (city, year) -> list of exam objects from XML
@@ -221,6 +236,19 @@ def main():
 
     # Apply manual edits to the in‑memory data
     apply_edits(city_year_exams, edits)
+
+    # --- FIX: Recompute ranks for every exam after edits are applied ---
+    # The XML stores the original ranks from DEKMA's server. After a score edit
+    # those marks change but ranks would still reflect the old values unless we
+    # recalculate them here. This is the root cause of ranks reverting after admin
+    # edits: the parser was overwriting admin-computed ranks with stale XML ranks.
+    rank_edits_applied = sum(len(edits.get("scoreEdits", [])) > 0 for _ in [1])
+    total_recomputed = 0
+    for exams in city_year_exams.values():
+        for exam in exams:
+            recompute_ranks(exam)
+            total_recomputed += 1
+    print(f"\nRecomputed ranks for {total_recomputed} exam(s) (ensures score edits are reflected).")
 
     # --- Write the updated chunks ---
     for (city, year), exams in city_year_exams.items():

@@ -708,8 +708,15 @@
   // ═══════════════════════════════════════════════
   let _ghQueue = Promise.resolve();
   function ghEnqueue(fn) {
-    _ghQueue = _ghQueue.then(() => fn()).catch(() => fn());
-    return _ghQueue;
+    // Run fn after any in-flight operation finishes.
+    // We store a "swallowed" version in _ghQueue so a failure in one fn
+    // doesn't permanently jam the queue for subsequent callers.
+    // The *returned* promise still rejects normally so callers can handle errors.
+    const result = _ghQueue.then(() => fn());
+    _ghQueue = result.catch(err => {
+      console.warn('ghQueue: operation failed, queue continues:', err?.message || err);
+    });
+    return result;
   }
 
   // Shared helper: builds GitHub API headers from config
@@ -1384,7 +1391,15 @@
     const tbody = document.getElementById('test-tbody');
     if (!tbody || !_currentExam) return;
 
-    let students = [..._currentExam.students].sort((a,b) => b.marks - a.marks);
+    // Sort by marks descending and compute fresh display ranks so the table
+    // always reflects in-memory scores (not the stale XML rank field).
+    const allSorted = [..._currentExam.students].sort((a, b) => b.marks - a.marks);
+    allSorted.forEach((s, i) => {
+      s._displayRank = i > 0 && s.marks === allSorted[i-1].marks
+        ? allSorted[i-1]._displayRank : i + 1;
+    });
+
+    let students = allSorted;
     if (q) students = students.filter(s => s.name.toLowerCase().includes(q.toLowerCase().trim()));
 
     tbody.innerHTML = students.map(s => {
@@ -1394,7 +1409,7 @@
         ? `<span style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:3px;background:rgba(244,114,182,.12);color:#f472b6">G</span>`
         : '<span style="color:var(--text3)">—</span>';
       return `<tr>
-        <td class="tbl-rank">#${s.rank || '—'}</td>
+        <td class="tbl-rank">#${s._displayRank ?? s.rank ?? '—'}</td>
         <td style="font-weight:600">${esc(s.name)}</td>
         <td class="tbl-school">${esc(s.school)}</td>
         <td>${gBadge}</td>

@@ -6,84 +6,128 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DEKMA Results</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link
     href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap"
     rel="stylesheet">
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" as="script">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
-  <!-- ========== VERSION‑BASED CACHE BUSTING ========== -->
+  <!-- ========== ASYNC VERSION‑BASED DATA LOADING ========== -->
   <script>
-    // Fetch the current version from data/version.txt synchronously.
-    // This tiny request blocks page rendering only briefly.
-    var version = '0'; // fallback
-    (function() {
-      var xhr = new XMLHttpRequest();
-      // Add a cache‑buster for the version file itself (but it's tiny)
-      xhr.open('GET', 'data/version.txt?_=' + Date.now(), false);
-      try {
-        xhr.send();
-        if (xhr.status === 200) {
-          version = xhr.responseText.trim();
-        }
-      } catch (e) {
-        console.warn('Could not load version.txt, using fallback', e);
-      }
-    })();
-  </script>
+    window.dekmaData = {};
 
-  <script>
-    // Load results_index.js with the version number
-    document.write('<script src="data/results_index.js?v=' + version + '"><\/script>');
-  </script>
+    // Shared slug helper (single definition)
+    function _slug(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, ''); }
 
-  <script>
-    // Load all data chunks with the same version number
-    (function () {
-      window.dekmaData = {};
-      var chunks = window.dekmaChunks || [];
-      function slug(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, ''); }
-      chunks.forEach(function (c) {
-        document.write('<script src="data/' + c.file + '?v=' + version + '"><\/script>');
-      });
-    })();
-  </script>
-  <!-- =============================================== -->
-
-  <script>
-    // Merge loaded chunks into window.dekmaData
-    (function () {
-      function slug(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, ''); }
+    function _mergeChunks() {
       (window.dekmaChunks || []).forEach(function (c) {
-        var key = 'dekmaChunk_' + slug(c.city) + '_' + c.year;
+        var key = 'dekmaChunk_' + _slug(c.city) + '_' + c.year;
         if (window[key]) {
           if (!window.dekmaData[c.city]) window.dekmaData[c.city] = {};
           window.dekmaData[c.city][c.year] = window[key];
         }
       });
+    }
+
+    function _loadScript(src) {
+      return new Promise(function (resolve) {
+        var s = document.createElement('script');
+        s.src = src;
+        s.onload = resolve;
+        s.onerror = function () { console.warn('DEKMA: failed to load ' + src); resolve(); };
+        document.head.appendChild(s);
+      });
+    }
+
+    // Bootstrap: fetch version, load index + all data chunks in parallel, then boot app.
+    // All non-blocking — the loading spinner covers the wait.
+    (async function bootstrap() {
+      var version = '0';
+      try {
+        var resp = await fetch('data/version.txt?_=' + Date.now());
+        if (resp.ok) version = (await resp.text()).trim();
+      } catch (e) { console.warn('DEKMA: could not load version.txt, using fallback', e); }
+
+      // Load index first (it defines window.dekmaChunks)
+      await _loadScript('data/results_index.js?v=' + version);
+
+      // Load all chunks in parallel
+      var chunks = window.dekmaChunks || [];
+      await Promise.all(chunks.map(function (c) {
+        return _loadScript('data/' + c.file + '?v=' + version);
+      }));
+
+      _mergeChunks();
+
+      // Trigger app — wait for DOM if not yet ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () {
+          if (typeof loadData === 'function') loadData();
+        });
+      } else {
+        if (typeof loadData === 'function') loadData();
+      }
     })();
   </script>
+  <!-- ===================================================== -->
   <style>
     :root {
-      --bg: #0a0a0f;
-      --bg2: #111118;
-      --bg3: #18181f;
-      --border: #2a2a38;
-      --border2: #3a3a50;
-      --amber: #e8a020;
-      --amber2: #f5c060;
+      --bg: #08080d;
+      --bg2: #0f0f16;
+      --bg3: #16161f;
+      --border: #242434;
+      --border2: #363650;
+      --amber: #f0a830;
+      --amber2: #f8cc70;
       --teal: #2dd4bf;
       --teal2: #99f6e4;
       --pink: #f472b6;
       --blue: #60a5fa;
-      --text: #e8e8f0;
-      --text2: #9090b0;
-      --text3: #5a5a78;
+      --green: #4ade80;
+      --text: #eeeef8;
+      --text2: #8888aa;
+      --text3: #52527a;
       --male: #60a5fa;
       --female: #f472b6;
       --radius: 8px;
       --radius2: 14px;
-      --sidebar-w: 220px
+      --sidebar-w: 224px;
+      --card-shadow: 0 2px 12px rgba(0,0,0,.5);
+      --topbar-blur: blur(20px)
     }
+
+    /* ── LIGHT THEME ─────────────────────────────────── */
+    [data-theme='light'] {
+      --bg: #f0f0f5;
+      --bg2: #ffffff;
+      --bg3: #e8e8f0;
+      --border: #d8d8e8;
+      --border2: #c0c0d8;
+      --amber: #d08018;
+      --amber2: #e8a030;
+      --teal: #0ea593;
+      --teal2: #5dd6c8;
+      --pink: #d0407a;
+      --blue: #3880d8;
+      --green: #18a045;
+      --text: #10101a;
+      --text2: #40405a;
+      --text3: #80809a;
+      --male: #3880d8;
+      --female: #d0407a;
+      --card-shadow: 0 2px 10px rgba(0,0,0,.08);
+      --topbar-blur: blur(20px)
+    }
+
+    [data-theme='light'] body::before { opacity: .15 }
+    [data-theme='light'] .topbar { background: rgba(255,255,255,.88) !important }
+    [data-theme='light'] .sidebar { box-shadow: 1px 0 0 var(--border) }
+    [data-theme='light'] .row-gold td { background: rgba(208,128,24,.06) !important }
+    [data-theme='light'] .stat-card::after { background: radial-gradient(circle at 70% 30%, rgba(208,128,24,.04), transparent 60%) }
+    [data-theme='light'] .splash-bg-glow { background: radial-gradient(circle, rgba(208,128,24,.08) 0%, transparent 70%) }
+    [data-theme='light'] .tdd-panel, [data-theme='light'] .logo-drop, [data-theme='light'] .school-dd-panel { box-shadow: 0 8px 32px rgba(0,0,0,.15) }
 
     * {
       box-sizing: border-box;
@@ -144,7 +188,19 @@
       left: 0;
       bottom: 0;
       z-index: 100;
-      transition: transform .3s
+      transition: transform .3s;
+      box-shadow: var(--card-shadow)
+    }
+
+    .sidebar::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--amber), var(--teal));
+      z-index: 1
     }
 
     /* ── LOGO / SELECTOR AREA ── */
@@ -349,10 +405,11 @@
       position: sticky;
       top: 0;
       z-index: 50;
-      background: rgba(10, 10, 15, .85);
-      backdrop-filter: blur(16px);
+      background: rgba(8, 8, 13, .88);
+      backdrop-filter: var(--topbar-blur);
+      -webkit-backdrop-filter: var(--topbar-blur);
       border-bottom: 1px solid var(--border);
-      padding: 14px 32px;
+      padding: 12px 28px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -614,55 +671,11 @@
     }
 
     .stat-card {
-      animation: cardIn .5s ease-out both
-    }
-
-    .stat-card:nth-child(1) {
-      animation-delay: .05s
-    }
-
-    .stat-card:nth-child(2) {
-      animation-delay: .1s
-    }
-
-    .stat-card:nth-child(3) {
-      animation-delay: .15s
-    }
-
-    .stat-card:nth-child(4) {
-      animation-delay: .2s
-    }
-
-    .stat-card:nth-child(5) {
-      animation-delay: .25s
-    }
-
-    .stat-card:nth-child(6) {
-      animation-delay: .3s
+      animation: cardIn .5s ease-out calc(var(--i, 0) * 55ms) both
     }
 
     .card {
-      animation: cardIn .5s ease-out both
-    }
-
-    .two-col>.card:nth-child(1) {
-      animation-delay: .15s
-    }
-
-    .two-col>.card:nth-child(2) {
-      animation-delay: .25s
-    }
-
-    .three-col>.card:nth-child(1) {
-      animation-delay: .1s
-    }
-
-    .three-col>.card:nth-child(2) {
-      animation-delay: .2s
-    }
-
-    .three-col>.card:nth-child(3) {
-      animation-delay: .3s
+      animation: cardIn .5s ease-out calc(var(--i, 0) * 100ms) both
     }
 
     .score-bar-fill {
@@ -670,47 +683,7 @@
     }
 
     tbody tr {
-      animation: rowFadeIn .3s ease-out both
-    }
-
-    tbody tr:nth-child(1) {
-      animation-delay: .05s
-    }
-
-    tbody tr:nth-child(2) {
-      animation-delay: .08s
-    }
-
-    tbody tr:nth-child(3) {
-      animation-delay: .11s
-    }
-
-    tbody tr:nth-child(4) {
-      animation-delay: .14s
-    }
-
-    tbody tr:nth-child(5) {
-      animation-delay: .17s
-    }
-
-    tbody tr:nth-child(6) {
-      animation-delay: .2s
-    }
-
-    tbody tr:nth-child(7) {
-      animation-delay: .23s
-    }
-
-    tbody tr:nth-child(8) {
-      animation-delay: .26s
-    }
-
-    tbody tr:nth-child(9) {
-      animation-delay: .29s
-    }
-
-    tbody tr:nth-child(10) {
-      animation-delay: .32s
+      animation: rowFadeIn .3s ease-out calc(var(--row, 0) * 28ms) both
     }
 
     .stats-grid {
@@ -724,22 +697,24 @@
       background: var(--bg2);
       border: 1px solid var(--border);
       border-radius: var(--radius2);
-      padding: 20px;
+      padding: 22px;
       position: relative;
       overflow: hidden;
-      transition: border-color .2s, transform .2s
+      transition: border-color .2s, transform .2s, box-shadow .2s;
+      box-shadow: var(--card-shadow)
     }
 
     .stat-card:hover {
       border-color: var(--border2);
-      transform: translateY(-3px)
+      transform: translateY(-4px);
+      box-shadow: 0 8px 32px rgba(0,0,0,.4)
     }
 
     .stat-card::after {
       content: '';
       position: absolute;
       inset: -40px;
-      background: radial-gradient(circle at 70% 30%, rgba(232, 160, 32, .06), transparent 60%);
+      background: radial-gradient(circle at 70% 30%, rgba(240, 168, 48, .07), transparent 60%);
       pointer-events: none
     }
 
@@ -754,7 +729,7 @@
 
     .stat-value {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 42px;
+      font-size: 48px;
       line-height: 1;
       color: var(--text);
       letter-spacing: 1px
@@ -824,11 +799,13 @@
       border: 1px solid var(--border);
       border-radius: var(--radius2);
       overflow: hidden;
-      transition: border-color .2s
+      transition: border-color .2s, box-shadow .2s;
+      box-shadow: var(--card-shadow)
     }
 
     .card:hover {
-      border-color: var(--border2)
+      border-color: var(--border2);
+      box-shadow: 0 0 0 1px rgba(240,168,48,.07), 0 8px 32px rgba(0,0,0,.25)
     }
 
     .card-header {
@@ -1414,7 +1391,7 @@
 
     tbody tr {
       border-bottom: 1px solid var(--border);
-      transition: background .1s
+      transition: background .1s, box-shadow .1s
     }
 
     tbody tr:last-child {
@@ -1422,7 +1399,8 @@
     }
 
     tbody tr:hover {
-      background: var(--bg3)
+      background: var(--bg3);
+      box-shadow: inset 3px 0 0 var(--amber)
     }
 
     tbody td {
@@ -1492,15 +1470,15 @@
 
     .score-bar-track {
       flex: 1;
-      height: 6px;
+      height: 8px;
       background: var(--bg3);
-      border-radius: 3px;
+      border-radius: 4px;
       overflow: hidden
     }
 
     .score-bar-fill {
       height: 100%;
-      border-radius: 3px;
+      border-radius: 4px;
       transition: width .6s cubic-bezier(.34, 1.56, .64, 1)
     }
 
@@ -1529,31 +1507,7 @@
       transition: all .2s;
       position: relative;
       overflow: hidden;
-      animation: cardIn .4s ease-out both
-    }
-
-    .test-card:nth-child(1) {
-      animation-delay: .05s
-    }
-
-    .test-card:nth-child(2) {
-      animation-delay: .1s
-    }
-
-    .test-card:nth-child(3) {
-      animation-delay: .15s
-    }
-
-    .test-card:nth-child(4) {
-      animation-delay: .2s
-    }
-
-    .test-card:nth-child(5) {
-      animation-delay: .25s
-    }
-
-    .test-card:nth-child(6) {
-      animation-delay: .3s
+      animation: cardIn .4s ease-out calc(var(--i, 0) * 55ms) both
     }
 
     .test-card::before {
@@ -3115,8 +3069,558 @@
         min-width: 88px
       }
     }
+
+    /* ── TOPBAR ICON BUTTONS ─────────────────────────── */
+    .topbar-icon-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      height: 34px;
+      padding: 0 10px;
+      color: var(--text3);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all .15s;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      letter-spacing: .3px
+    }
+
+    .topbar-icon-btn:hover {
+      border-color: var(--border2);
+      color: var(--text);
+      background: var(--bg3)
+    }
+
+    /* ── COMPARE BAR ─────────────────────────────────── */
+    .compare-bar {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--bg2);
+      border: 1px solid var(--amber);
+      border-radius: var(--radius2);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 400;
+      box-shadow: 0 8px 40px rgba(0,0,0,.6), 0 0 0 1px rgba(240,168,48,.12);
+      transition: transform .35s cubic-bezier(.34,1.4,.64,1);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      white-space: nowrap;
+      flex-wrap: wrap;
+      max-width: calc(100vw - 32px)
+    }
+
+    .compare-bar.visible { transform: translateX(-50%) translateY(0) }
+
+    .compare-bar-label { color: var(--text2) }
+
+    .compare-slot {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 11px;
+      color: var(--text)
+    }
+
+    .compare-slot-remove {
+      cursor: pointer;
+      color: var(--text3);
+      font-size: 14px;
+      line-height: 1;
+      transition: color .1s;
+      margin-left: 2px
+    }
+
+    .compare-slot-remove:hover { color: var(--pink) }
+
+    .compare-go-btn {
+      background: var(--amber);
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      padding: 7px 18px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: filter .15s;
+      letter-spacing: .5px
+    }
+
+    .compare-go-btn:hover { filter: brightness(1.1) }
+    .compare-go-btn:disabled { opacity: .45; pointer-events: none }
+
+    .compare-clear-btn {
+      background: none;
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+      cursor: pointer;
+      transition: all .15s
+    }
+
+    .compare-clear-btn:hover { border-color: var(--pink); color: var(--pink) }
+
+    /* ── COMPARISON MODAL ────────────────────────────── */
+    .cmp-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px
+    }
+
+    .cmp-header-col {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius2);
+      padding: 20px;
+      text-align: center;
+      position: relative
+    }
+
+    .cmp-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 26px;
+      margin-bottom: 10px;
+      border: 2px solid
+    }
+
+    .cmp-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 1.5px;
+      line-height: 1.1
+    }
+
+    .cmp-school {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+      margin-top: 5px
+    }
+
+    .cmp-stat-table { width: 100%; border-collapse: collapse; margin-bottom: 20px }
+
+    .cmp-stat-row {
+      display: grid;
+      grid-template-columns: 1fr 80px 1fr;
+      gap: 4px;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border)
+    }
+
+    .cmp-stat-row:last-child { border-bottom: none }
+
+    .cmp-stat-val {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      line-height: 1;
+      transition: color .2s
+    }
+
+    .cmp-stat-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: var(--text3);
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 1px
+    }
+
+    .cmp-winner { color: var(--amber) }
+    .cmp-loser { color: var(--text3) }
+    .cmp-tie { color: var(--teal) }
+
+    .cmp-bar-track {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: 4px;
+      overflow: hidden
+    }
+
+    .cmp-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width .6s cubic-bezier(.34,1.4,.64,1)
+    }
+
+    /* ── PERCENTILE VISUALIZATION ────────────────────── */
+    .percentile-wrap {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 20px
+    }
+
+    .percentile-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: var(--text3);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center
+    }
+
+    .percentile-canvas-wrap { position: relative; height: 72px }
+
+    .percentile-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text2);
+      text-align: center;
+      margin-top: 4px
+    }
+
+    /* ── ADD-TO-COMPARE BUTTON ───────────────────────── */
+    .add-compare-btn {
+      background: none;
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 5px 11px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+      cursor: pointer;
+      transition: all .15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px
+    }
+
+    .add-compare-btn:hover {
+      border-color: var(--amber);
+      color: var(--amber);
+      background: rgba(240,168,48,.06)
+    }
+
+    .add-compare-btn.added {
+      border-color: var(--amber);
+      color: var(--amber);
+      background: rgba(240,168,48,.1)
+    }
+
+    /* ── MOBILE OVERHAUL ─────────────────────────────── */
+    @media(max-width:768px) {
+      .content { padding: 16px !important }
+      .topbar { padding: 10px 14px }
+      .topbar .topbar-icon-btn:not(#theme-toggle-btn) { display: none }
+      .filter-bar {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        flex-wrap: nowrap;
+        padding-bottom: 2px
+      }
+      .filter-bar::-webkit-scrollbar { display: none }
+      .filter-bar .filter-btn,
+      .filter-bar .tdd-wrap,
+      .filter-bar input { flex-shrink: 0 }
+      .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px }
+      .two-col, .three-col { grid-template-columns: 1fr; gap: 14px }
+      #stu-grid { grid-template-columns: 1fr 1fr !important }
+    }
+
+    @media(max-width:480px) {
+      #stu-grid { grid-template-columns: 1fr !important }
+      .topbar { padding: 8px 12px; gap: 8px }
+      .search-input { width: 140px; font-size: 11px }
+      .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px }
+      .stat-value { font-size: 32px }
+      .content { padding: 12px !important }
+      .cmp-grid { grid-template-columns: 1fr }
+    }
+
+    /* ── PRINT / PDF ─────────────────────────────────── */
+    @media print {
+      .sidebar, .topbar, .compare-bar, #back-to-top, #toast-container,
+      .filter-bar, .hamburger, .sidebar-overlay, .export-btn,
+      .add-compare-btn, .copy-link-btn, .topbar-icon-btn { display: none !important }
+      body { background: #fff !important; color: #000 !important }
+      .main { margin-left: 0 !important }
+      .content { padding: 16px !important }
+      .card, .stat-card, .insight-card {
+        border: 1px solid #ccc !important;
+        box-shadow: none !important;
+        background: #fff !important;
+        break-inside: avoid
+      }
+      .page:not(.active) { display: none !important }
+      .chart-wrap, .chart-wrap.tall { height: 200px }
+      @page { margin: 16mm }
+    }
+
+    /* ── TOAST NOTIFICATIONS ── */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none
+    }
+
+    .toast {
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      padding: 10px 16px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text2);
+      box-shadow: 0 8px 32px rgba(0,0,0,.5);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: toastIn .3s ease-out both;
+      pointer-events: all;
+      max-width: 300px
+    }
+
+    .toast.fade-out {
+      animation: toastOut .3s ease-in forwards
+    }
+
+    .toast-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: var(--amber)
+    }
+
+    .toast-dot.teal { background: var(--teal) }
+    .toast-dot.pink { background: var(--pink) }
+    .toast-dot.blue { background: var(--blue) }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(12px) scale(.95) }
+      to   { opacity: 1; transform: translateY(0)    scale(1) }
+    }
+
+    @keyframes toastOut {
+      from { opacity: 1; transform: translateY(0)    scale(1) }
+      to   { opacity: 0; transform: translateY(-8px) scale(.95) }
+    }
+
+    /* ── BACK TO TOP ── */
+    .back-to-top {
+      position: fixed;
+      bottom: 24px;
+      left: calc(var(--sidebar-w) + 24px);
+      z-index: 400;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      color: var(--text3);
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .2s;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
+      box-shadow: 0 4px 16px rgba(0,0,0,.4)
+    }
+
+    .back-to-top.visible {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateY(0)
+    }
+
+    .back-to-top:hover {
+      border-color: var(--amber);
+      color: var(--amber);
+      transform: translateY(-2px)
+    }
+
+    @media(max-width:768px) {
+      .back-to-top { left: 16px; bottom: 72px }
+      .toast-container { bottom: 80px; right: 16px }
+    }
+
+    /* ── KEYBOARD SHORTCUTS OVERLAY ── */
+    .kb-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.7);
+      backdrop-filter: blur(6px);
+      z-index: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s
+    }
+
+    .kb-overlay.open {
+      opacity: 1;
+      pointer-events: all
+    }
+
+    .kb-panel {
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius2);
+      padding: 28px 32px;
+      width: min(520px, 92vw);
+      box-shadow: 0 24px 64px rgba(0,0,0,.8);
+      transform: translateY(20px);
+      transition: transform .2s
+    }
+
+    .kb-overlay.open .kb-panel {
+      transform: translateY(0)
+    }
+
+    .kb-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+      color: var(--text)
+    }
+
+    .kb-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 24px
+    }
+
+    .kb-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      gap: 12px
+    }
+
+    .kb-desc {
+      font-family: 'Crimson Pro', serif;
+      font-size: 15px;
+      color: var(--text2)
+    }
+
+    .kb-keys {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0
+    }
+
+    .kb-key {
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+      white-space: nowrap
+    }
+
+    .kb-close-hint {
+      text-align: center;
+      margin-top: 20px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text3)
+    }
+
+    /* ── EXPORT BUTTON ── */
+    .export-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 4px 10px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+      cursor: pointer;
+      transition: all .15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px
+    }
+
+    .export-btn:hover {
+      border-color: var(--teal);
+      color: var(--teal)
+    }
+
+    /* ── COPY LINK BUTTON (student profile) ── */
+    .copy-link-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 5px 12px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+      cursor: pointer;
+      transition: all .15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px
+    }
+
+    .copy-link-btn:hover {
+      border-color: var(--amber);
+      color: var(--amber)
+    }
+
+    /* ── SEARCH KEYBOARD NAVIGATION ── */
+    .search-item.kb-focused {
+      background: var(--bg2);
+      outline: 1px solid var(--amber)
+    }
+
+    /* ── LOADING SCREEN IMPROVEMENTS ── */
+    .loader-messages {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+      letter-spacing: 1px;
+      margin-top: 16px;
+      min-height: 14px;
+      transition: opacity .3s
+    }
   </style>
-</head>
 
 <body>
 
@@ -3124,6 +3628,7 @@
     <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;color:var(--amber)">DEKMA</div>
     <div class="loader"></div>
     <div class="loader-text">LOADING…</div>
+    <div class="loader-messages" id="loader-msg"></div>
   </div>
 
   <!-- ══ SPLASH SCREEN (first visit / no selection) ══ -->
@@ -3201,9 +3706,15 @@
             role="button" aria-label="Change year and city"><span id="context-badge-text"></span><span
               class="context-badge-arrow">▾</span></div>
         </div>
-        <div class="search-wrap">
-          <input class="search-input" id="global-search" placeholder="Search… (/ to focus)" autocomplete="off">
-          <div class="search-results" id="search-results"></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="search-wrap">
+            <input class="search-input" id="global-search" placeholder="Search… (/ to focus)" autocomplete="off">
+            <div class="search-results" id="search-results"></div>
+          </div>
+          <button id="compare-btn" class="topbar-icon-btn" onclick="openCompareModal()" title="Compare students" style="display:none" aria-label="Compare students">⇌ <span id="compare-count" style="font-size:9px;background:var(--amber);color:#000;border-radius:8px;padding:1px 5px;margin-left:2px">0</span></button>
+          <button onclick="exportCurrentPDF()" class="topbar-icon-btn" title="Export page as PDF" aria-label="Export PDF">⬡ PDF</button>
+          <button onclick="toggleTheme()" id="theme-toggle-btn" class="topbar-icon-btn" title="Toggle light/dark theme" aria-label="Toggle theme">◑</button>
+          <button onclick="openKbHelp()" title="Keyboard shortcuts (?)" class="topbar-icon-btn" aria-label="Keyboard shortcuts">?</button>
         </div>
       </header>
 
@@ -3299,12 +3810,15 @@
             <div class="filter-btn" id="lb-g-b" onclick="setLbGender('B',this)">Boys</div>
             <div class="filter-btn" id="lb-g-g" onclick="setLbGender('G',this)">Girls</div>
             <input class="search-input" id="lb-name" placeholder="Filter by name…"
-              oninput="lbPage=1;renderLeaderboard()" style="width:200px;max-width:100%">
+              oninput="clearTimeout(window._lbNameTimer);window._lbNameTimer=setTimeout(()=>{lbPage=1;renderLeaderboard()},180)" style="width:200px;max-width:100%">
           </div>
           <div class="card">
             <div class="card-header">
               <div class="card-title" id="lb-title">Leaderboard</div>
-              <div class="chip" id="lb-count">—</div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <button class="export-btn" onclick="exportLeaderboardCSV()" title="Export visible results as CSV">⬇ CSV</button>
+                <div class="chip" id="lb-count">—</div>
+              </div>
             </div>
             <div class="table-wrap" id="lb-table"></div>
             <div style="padding:0 20px 16px" id="lb-pager"></div>
@@ -3315,11 +3829,12 @@
         <div class="page" id="page-students">
           <div class="filter-bar" id="stu-filter-bar">
             <input class="search-input stu-search-input" id="stu-search" placeholder="Type a student name…"
-              oninput="searchStudents()" style="width:320px;max-width:100%">
+              oninput="searchStudents()" style="width:220px;max-width:100%">
             <div id="stu-school-wrap" class="tdd-wrap"></div>
             <div class="filter-btn active" id="stu-g-all" onclick="setStuGender('',this)">All</div>
             <div class="filter-btn" id="stu-g-b" onclick="setStuGender('B',this)">Boys</div>
             <div class="filter-btn" id="stu-g-g" onclick="setStuGender('G',this)">Girls</div>
+            <button class="export-btn" onclick="exportStudentsCSV()" title="Export visible students as CSV">⬇ CSV</button>
           </div>
           <div id="stu-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px">
           </div>
@@ -3437,6 +3952,14 @@
     </main>
   </div>
 
+  <!-- Comparison floating bar -->
+  <div class="compare-bar" id="compare-bar">
+    <span class="compare-bar-label">Compare:</span>
+    <div id="compare-slots" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+    <button class="compare-go-btn" id="compare-go-btn" onclick="openCompareModal()" disabled>Compare →</button>
+    <button class="compare-clear-btn" onclick="clearCompare()">Clear</button>
+  </div>
+
   <!-- Modal -->
   <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
     <div class="modal">
@@ -3445,6 +3968,34 @@
         <button class="modal-close" onclick="closeModal()">✕</button>
       </div>
       <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Back to top -->
+  <button class="back-to-top" id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">▲</button>
+
+  <!-- Keyboard shortcuts overlay -->
+  <div class="kb-overlay" id="kb-overlay" onclick="if(event.target===this)closeKbHelp()">
+    <div class="kb-panel">
+      <div class="kb-title">⌨ Keyboard Shortcuts</div>
+      <div class="kb-grid">
+        <div class="kb-row"><span class="kb-desc">Focus search</span><span class="kb-keys"><span class="kb-key">/</span></span></div>
+        <div class="kb-row"><span class="kb-desc">Close / dismiss</span><span class="kb-keys"><span class="kb-key">Esc</span></span></div>
+        <div class="kb-row"><span class="kb-desc">Navigate search results</span><span class="kb-keys"><span class="kb-key">↑</span><span class="kb-key">↓</span></span></div>
+        <div class="kb-row"><span class="kb-desc">Select search result</span><span class="kb-keys"><span class="kb-key">Enter</span></span></div>
+        <div class="kb-row"><span class="kb-desc">Dashboard</span><span class="kb-keys"><span class="kb-key">G</span><span class="kb-key">D</span></span></div>
+        <div class="kb-row"><span class="kb-desc">Leaderboard</span><span class="kb-keys"><span class="kb-key">G</span><span class="kb-key">L</span></span></div>
+        <div class="kb-row"><span class="kb-desc">Students</span><span class="kb-keys"><span class="kb-key">G</span><span class="kb-key">S</span></span></div>
+        <div class="kb-row"><span class="kb-desc">Schools</span><span class="kb-keys"><span class="kb-key">G</span><span class="kb-key">C</span></span></div>
+        <div class="kb-row"><span class="kb-desc">Tests</span><span class="kb-keys"><span class="kb-key">G</span><span class="kb-key">T</span></span></div>
+        <div class="kb-row"><span class="kb-desc">Analytics</span><span class="kb-keys"><span class="kb-key">G</span><span class="kb-key">A</span></span></div>
+        <div class="kb-row"><span class="kb-desc">Show this help</span><span class="kb-keys"><span class="kb-key">?</span></span></div>
+        <div class="kb-row"><span class="kb-desc">Admin panel</span><span class="kb-keys"><span class="kb-key">Ctrl</span><span class="kb-key">×3</span><span class="kb-key">asoiaf</span></span></div>
+      </div>
+      <div class="kb-close-hint">Press <span class="kb-key">Esc</span> or click outside to close</div>
     </div>
   </div>
 
@@ -3694,6 +4245,7 @@
       }
       saveSelection();
       reloadForSelection();
+      showToast(`Switched to <strong>${city} ${selectedYear}</strong>`, 'amber');
     }
 
     function switchYear(year) {
@@ -3702,6 +4254,7 @@
       selectedYear = year;
       saveSelection();
       reloadForSelection();
+      showToast(`Switched to <strong>${selectedCity} ${year}</strong>`, 'teal');
     }
 
     function toggleTopbarSelector(ev) {
@@ -3962,6 +4515,14 @@
       window.removeEventListener('hashchange', handleHashChange);
       window.addEventListener('hashchange', handleHashChange);
       handleHashChange();
+
+      // Deep-link: if URL contains ?student=&school= navigate to that profile
+      const urlParams = new URLSearchParams(location.search);
+      const dlStudent = urlParams.get('student');
+      const dlSchool = urlParams.get('school');
+      if (dlStudent && dlSchool) {
+        setTimeout(() => navToStudent(dlStudent, dlSchool), 120);
+      }
     }
 
     // ═══════════════════════════════════════════════════
@@ -4136,7 +4697,7 @@
       window.addEventListener('scroll', (ev) => {
         if (ev.target && typeof ev.target.closest === 'function' && (ev.target.closest('.tdd-panel') || ev.target.closest('.school-dd-panel'))) return;
         closeAllDropdowns(); closeSchoolDrop(); closeStuSchoolDrop();
-      }, true);
+      }, { capture: true, passive: true });
       window.addEventListener('resize', () => { closeAllDropdowns(); closeLogoDrop(); });
     }
 
@@ -4564,9 +5125,9 @@
         { label: 'Average Score', value: avg, color: 'amber', sub: 'all tests combined' },
       ];
       document.getElementById('overview-stats').innerHTML = cards.map((c, i) => `
-        <div class="stat-card">
+        <div class="stat-card" style="--i:${i}">
           <div class="stat-label">${c.label}</div>
-          <div class="stat-value ${c.color}" data-target="${c.value}" style="animation-delay:${i * 60}ms">${c.fmt ? c.value.toLocaleString() : c.value}</div>
+          <div class="stat-value ${c.color}" data-target="${c.value}">${c.fmt ? c.value.toLocaleString() : c.value}</div>
           <div class="stat-sub">${c.sub}</div>
         </div>`).join('');
       animateCounters();
@@ -4739,7 +5300,7 @@
         const medal = tieRank === 1 ? '🥇' : tieRank === 2 ? '🥈' : tieRank === 3 ? '🥉' : '';
         const gold = tieRank <= 3 ? 'class="row-gold"' : '';
         const rankColor = tieRank <= 3 ? 'var(--amber)' : 'var(--text3)';
-        h += `<tr ${gold}>
+        h += `<tr ${gold} style="--row:${i}">
           <td class="td-rank" style="color:${rankColor}">${medal || tieRank}</td>
           <td class="td-name" onclick="navToStudent('${_ns(r.name)}','${_ns(r.school)}')">${r.name}</td>
           <td class="${isAll ? 'td-avg' : 'td-marks'}">${r.marks}</td>
@@ -4768,12 +5329,12 @@
         if (a.type !== b.type) return a.type === 'revision' ? -1 : 1;
         return (b.number || 0) - (a.number || 0);
       });
-      grid.innerHTML = list.map(exam => {
+      grid.innerHTML = list.map((exam, i) => {
         const m = exam.students.map(s => s.marks);
         const avg = m.length ? (m.reduce((a, b) => a + b) / m.length).toFixed(1) : 0;
         const top = m.length ? Math.max(...m) : 0;
         const schools = new Set(exam.students.map(s => s.school)).size;
-        return `<div class="test-card ${exam.type}" onclick="openTestModal('${esc(exam.id)}')">
+        return `<div class="test-card ${exam.type}" style="--i:${i}" onclick="openTestModal('${esc(exam.id)}')">
           <div class="test-card-type">${exam.type} test</div>
           <div class="test-card-title">${exam.label}</div>
           <div class="test-card-stats">
@@ -5124,7 +5685,7 @@
         const gold = rowHighlight > 0 && isTop3 ? 'class="row-gold"' : '';
         const gBadge = r.gender === GEN_MALE ? `<span class="badge badge-b">Boy</span>` : r.gender === GEN_FEMALE ? `<span class="badge badge-g">Girl</span>` : '';
         const ratingCol = (r.rating || 0) >= 60 ? '#4ade80' : (r.rating || 0) >= 45 ? 'var(--amber)' : 'var(--pink)';
-        h += `<tr ${gold}>
+        h += `<tr ${gold} style="--row:${i}">
           <td class="td-rank" style="color:${isTop3 ? 'var(--amber)' : 'var(--text3)'};font-weight:${isTop3 ? 'bold' : 'normal'}">${medal || '#' + gRankVal}</td>
           <td class="td-name" onclick="navToStudent('${_ns(r.name)}','${_ns(r.school)}')">${r.name}</td>
           ${isAgg
@@ -5202,18 +5763,23 @@
           <div class="card-body">
             <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
               <div style="width:42px;height:42px;border-radius:50%;background:${gc}22;border:1.5px solid ${gc};display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:18px;color:${gc}">${ini}</div>
-              <div>
-                <div style="font-weight:600;font-size:15px">${s.name}</div>
-                <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">${s.school}</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-weight:600;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.name}</div>
+                <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.school}</div>
               </div>
               ${typeof gRank === 'number' ? `<div style="margin-left:auto;font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--amber)">${rankStr}</div>` : ''}
             </div>
-            <div style="display:flex;gap:14px">
+            <div style="display:flex;gap:14px;margin-bottom:10px">
               <div class="test-stat"><strong style="color:var(--amber)">${best}</strong>Best</div>
               <div class="test-stat"><strong style="color:var(--teal)">${avg}</strong>Avg</div>
               <div class="test-stat"><strong>${s.apps.length}</strong>Tests</div>
               ${s.gender !== 'U' ? `<div class="test-stat"><strong>${s.gender === GEN_MALE ? '♂' : '♀'}</strong></div>` : ''}
             </div>
+            <button class="add-compare-btn ${_compareList.some(c=>c.name===s.name&&c.school===s.school)?'added':''}"
+              data-name="${esc(s.name)}" data-school="${esc(s.school)}"
+              onclick="event.stopPropagation();toggleCompare('${_ns(s.name)}','${_ns(s.school)}',${s.idx})">
+              ⇌ Compare
+            </button>
           </div></div>`;
       }).join('');
       if (students.length > 60) grid.innerHTML += `<div class="empty" style="grid-column:1/-1;padding:16px">Showing 60 of ${students.length} — refine your search</div>`;
@@ -5421,11 +5987,32 @@
         if (btn && _navOrigin) {
           btn.textContent = _navOrigin.page === 'students' ? '← Back to Search' : `← Back to ${_navOrigin.label}`;
         }
+
+        // Render percentile bell curve
+        const allAvgs = Object.values(_globalRankMap).length > 0
+          ? (() => {
+              const agg = aggregateByStudent(ALL);
+              return agg.map(s => s.marks);
+            })()
+          : ALL.map(r => r.marks);
+        if (allAvgs.length > 10) {
+          const pct = renderPercentileViz('pct-canvas', +avgStr, allAvgs);
+          const lbl = document.getElementById('pct-label');
+          const summ = document.getElementById('pct-summary');
+          if (lbl) lbl.textContent = `Your average (${avgStr}) vs all ${allAvgs.length.toLocaleString()} student averages`;
+          if (summ && pct !== undefined) summ.textContent = `Top ${100-pct}%`;
+        }
       }, 10);
 
       pv.innerHTML = `
-        <div style="margin-bottom:16px">
+        <div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <button onclick="goBackFromProfile()" class="filter-btn" id="profile-back-btn">← Back</button>
+          <button class="copy-link-btn" onclick="copyStudentLink('${esc(stuData.name)}','${esc(stuData.school)}')" title="Copy shareable link to this profile">⎘ Copy Link</button>
+          <button class="add-compare-btn ${_compareList.some(c=>c.name===stuData.name&&c.school===stuData.school)?'added':''}"
+            data-name="${esc(stuData.name)}" data-school="${esc(stuData.school)}"
+            onclick="toggleCompare('${_ns(stuData.name)}','${_ns(stuData.school)}',STU_REGISTRY.findIndex(s=>s.name==='${_ns(stuData.name)}'&&s.school==='${_ns(stuData.school)}'))">
+            ⇌ Compare
+          </button>
         </div>
         ${rankBadgeHTML}
         <div class="student-header">
@@ -5452,6 +6039,16 @@
               ${predicted !== null ? ` <span style="color:var(--text3)">Projected next score:</span> <span style="color:var(--amber);font-weight:600">${predicted}</span>.` : ''}
             </div>
           </div>
+        </div>
+        <div class="percentile-wrap">
+          <div class="percentile-title">
+            <span>Score Distribution — Where you stand</span>
+            <span id="pct-summary" style="color:var(--amber);font-size:10px"></span>
+          </div>
+          <div class="percentile-canvas-wrap">
+            <canvas id="pct-canvas" style="width:100%;height:72px"></canvas>
+          </div>
+          <div class="percentile-label" id="pct-label">Your avg vs all students across all tests</div>
         </div>
          <div class="insight-grid">
            <div class="insight-card amber" style="animation-delay:.05s">
@@ -5873,11 +6470,135 @@
     }
 
     // ═══════════════════════════════════════════════════
-    //  GLOBAL SEARCH
+    //  TOAST NOTIFICATIONS
+    // ═══════════════════════════════════════════════════
+    function showToast(msg, type = 'amber', duration = 2800) {
+      const c = document.getElementById('toast-container');
+      if (!c) return;
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.innerHTML = `<span class="toast-dot ${type === 'amber' ? '' : type}"></span>${msg}`;
+      c.appendChild(t);
+      setTimeout(() => {
+        t.classList.add('fade-out');
+        setTimeout(() => { if (t.parentNode) t.parentNode.removeChild(t); }, 320);
+      }, duration);
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  BACK TO TOP
+    // ═══════════════════════════════════════════════════
+    (function () {
+      const btn = document.getElementById('back-to-top');
+      if (!btn) return;
+      window.addEventListener('scroll', () => {
+        btn.classList.toggle('visible', window.scrollY > 300);
+      }, { passive: true });
+    })();
+
+    // ═══════════════════════════════════════════════════
+    //  KEYBOARD SHORTCUTS HELP
+    // ═══════════════════════════════════════════════════
+    function openKbHelp() { document.getElementById('kb-overlay')?.classList.add('open'); }
+    function closeKbHelp() { document.getElementById('kb-overlay')?.classList.remove('open'); }
+
+    // ═══════════════════════════════════════════════════
+    //  CSV EXPORT
+    // ═══════════════════════════════════════════════════
+    function exportLeaderboardCSV() {
+      const sel = lbTestSel;
+      const isAll = isAgg(sel);
+      const gFilter = lbGender;
+      const schFilter = lbSchool;
+      const nameQ = (document.getElementById('lb-name')?.value || '').toLowerCase().trim();
+
+      let data = isAll ? aggregateByStudent(getRowsForSel(sel)) : deduplicateStudents(getRowsForSel(sel));
+      if (gFilter) data = data.filter(r => r.gender === gFilter);
+      if (schFilter) data = data.filter(r => r.school === schFilter);
+      if (nameQ) data = data.filter(r => r.name.toLowerCase().includes(nameQ));
+      data.sort((a, b) => (isAll ? b.rating - a.rating : b.marks - a.marks));
+
+      const headers = isAll
+        ? ['Rank', 'Name', 'School', 'Gender', 'Rating', 'Raw Avg', 'Best', 'Tests']
+        : ['Rank', 'Name', 'School', 'Gender', 'Marks'];
+
+      const rows = data.map((r, i) => {
+        const base = [`${i + 1}`, `"${r.name}"`, `"${r.school}"`, r.gender === GEN_MALE ? 'Boy' : r.gender === GEN_FEMALE ? 'Girl' : '—'];
+        return isAll
+          ? [...base, r.rating, r.marks, r.best, r.tests]
+          : [...base, r.marks];
+      });
+
+      const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `dekma_${selectedCity}_${selectedYear}_leaderboard.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      showToast('CSV exported', 'teal');
+    }
+
+    function exportStudentsCSV() {
+      const q = (document.getElementById('stu-search')?.value || '').toLowerCase().trim();
+      let students = STU_REGISTRY.map((s, i) => ({ ...s, idx: i }));
+      if (q) students = students.filter(s => s.name.toLowerCase().includes(q));
+      if (stuSchool) students = students.filter(s => s.school === stuSchool);
+      if (stuGender) students = students.filter(s => s.gender === stuGender);
+      students.sort((a, b) => a.name.localeCompare(b.name));
+
+      if (!students.length) { showToast('No students to export', 'pink'); return; }
+
+      const headers = ['Name', 'School', 'Gender', 'Best Score', 'Avg Score', 'Tests', 'Global Rank'];
+      const rows = students.map(s => {
+        const best = Math.max(...s.apps.map(a => a.marks));
+        const avg = (s.apps.reduce((x, a) => x + a.marks, 0) / s.apps.length).toFixed(1);
+        const gRankVal = globalRank(s.name, s.school);
+        return [`"${s.name}"`, `"${s.school}"`, s.gender === GEN_MALE ? 'Boy' : s.gender === GEN_FEMALE ? 'Girl' : '—', best, avg, s.apps.length, typeof gRankVal === 'number' ? gRankVal : '—'];
+      });
+
+      const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `dekma_${selectedCity}_${selectedYear}_students.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      showToast(`${students.length} students exported`, 'teal');
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  LOADING MESSAGES
+    // ═══════════════════════════════════════════════════
+    (function () {
+      const msgs = ['Crunching numbers…', 'Ranking students…', 'Computing statistics…', 'Preparing charts…', 'Almost there…'];
+      let i = 0;
+      const el = document.getElementById('loader-msg');
+      if (!el) return;
+      el.textContent = msgs[0];
+      const iv = setInterval(() => {
+        el.style.opacity = '0';
+        setTimeout(() => { el.textContent = msgs[++i % msgs.length]; el.style.opacity = '1'; }, 300);
+      }, 1400);
+      window.addEventListener('DOMContentLoaded', () => clearInterval(iv), { once: true });
+    })();
+    // ═══════════════════════════════════════════════════
+    //  GLOBAL SEARCH (keyboard navigation + goto shortcuts)
     // ═══════════════════════════════════════════════════
     let searchTimer;
+    let _searchFocusIdx = -1;
+
+    function _searchItems() { return document.querySelectorAll('#search-results .search-item'); }
+
+    function _searchHighlight(idx) {
+      const items = _searchItems();
+      items.forEach((el, i) => el.classList.toggle('kb-focused', i === idx));
+      _searchFocusIdx = idx;
+    }
+
     document.getElementById('global-search').addEventListener('input', function () {
       clearTimeout(searchTimer);
+      _searchFocusIdx = -1;
       const q = this.value.toLowerCase().trim();
       const res = document.getElementById('search-results');
       if (q.length < 2) { res.classList.remove('visible'); return; }
@@ -5899,12 +6620,60 @@
         res.classList.add('visible');
       }, 200);
     });
+
+    document.getElementById('global-search').addEventListener('keydown', function (ev) {
+      const items = _searchItems();
+      const res = document.getElementById('search-results');
+      if (!res.classList.contains('visible') || !items.length) return;
+      if (ev.key === 'ArrowDown') {
+        ev.preventDefault();
+        _searchHighlight(Math.min(_searchFocusIdx + 1, items.length - 1));
+      } else if (ev.key === 'ArrowUp') {
+        ev.preventDefault();
+        _searchHighlight(Math.max(_searchFocusIdx - 1, 0));
+      } else if (ev.key === 'Enter') {
+        ev.preventDefault();
+        if (_searchFocusIdx >= 0 && items[_searchFocusIdx]) items[_searchFocusIdx].click();
+        else if (items[0]) items[0].click();
+      }
+    });
+
     document.addEventListener('click', ev => {
       if (!ev.target.closest('.search-wrap')) document.getElementById('search-results').classList.remove('visible');
     });
+
+    // Goto shortcuts: g→d/l/s/c/t/a  |  ? for help  |  Esc to close
+    let _gotoMode = false, _gotoTimer = null;
     document.addEventListener('keydown', ev => {
-      if (ev.key === '/' && document.activeElement.tagName !== 'INPUT') { ev.preventDefault(); document.getElementById('global-search').focus(); }
-      if (ev.key === 'Escape') { document.getElementById('global-search').blur(); document.getElementById('search-results').classList.remove('visible'); closeSidebar(); }
+      const tag = document.activeElement.tagName;
+      const inInput = tag === 'INPUT' || tag === 'TEXTAREA';
+
+      if (ev.key === '?' && !inInput) { ev.preventDefault(); openKbHelp(); return; }
+      if (ev.key === 'Escape') {
+        document.getElementById('global-search').blur();
+        document.getElementById('search-results').classList.remove('visible');
+        closeSidebar();
+        closeKbHelp();
+        _gotoMode = false;
+        return;
+      }
+      if (inInput) return;
+      if (ev.key === '/') { ev.preventDefault(); document.getElementById('global-search').focus(); return; }
+
+      // g + page key navigation
+      if (ev.key.toLowerCase() === 'g' && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
+        _gotoMode = true;
+        clearTimeout(_gotoTimer);
+        _gotoTimer = setTimeout(() => { _gotoMode = false; }, 1200);
+        return;
+      }
+      if (_gotoMode) {
+        _gotoMode = false;
+        clearTimeout(_gotoTimer);
+        const map = { d: 'dashboard', l: 'leaderboard', s: 'students', c: 'schools', t: 'tests', a: 'analytics' };
+        const page = map[ev.key.toLowerCase()];
+        if (page) { ev.preventDefault(); location.hash = page; }
+      }
     });
 
     // ═══════════════════════════════════════════════════
@@ -5917,15 +6686,20 @@
     //  CHART CONFIG HELPER
     // ═══════════════════════════════════════════════════
     function cOpts({ dual = false, ylabel = '' } = {}) {
+      const cs = getComputedStyle(document.documentElement);
+      const tickC = cs.getPropertyValue('--text3').trim() || '#5a5a78';
+      const gridC = document.documentElement.getAttribute('data-theme') === 'light'
+        ? 'rgba(0,0,0,.06)' : 'rgba(255,255,255,.04)';
+      const legC = cs.getPropertyValue('--text2').trim() || '#9090b0';
       const base = {
         responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { labels: { color: '#9090b0', font: { family: 'DM Mono', size: 11 } } } },
+        plugins: { legend: { labels: { color: legC, font: { family: 'DM Mono', size: 11 } } } },
         scales: {
-          x: { ticks: { color: '#5a5a78', font: { family: 'DM Mono', size: 9 }, maxRotation: 35 }, grid: { color: 'rgba(255,255,255,.04)' } },
-          y: { ticks: { color: '#5a5a78', font: { family: 'DM Mono', size: 9 } }, grid: { color: 'rgba(255,255,255,.04)' }, title: ylabel ? { display: true, text: ylabel, color: '#5a5a78', font: { family: 'DM Mono', size: 9 } } : {} }
+          x: { ticks: { color: tickC, font: { family: 'DM Mono', size: 9 }, maxRotation: 35 }, grid: { color: gridC } },
+          y: { ticks: { color: tickC, font: { family: 'DM Mono', size: 9 } }, grid: { color: gridC }, title: ylabel ? { display: true, text: ylabel, color: tickC, font: { family: 'DM Mono', size: 9 } } : {} }
         }
       };
-      if (dual) base.scales.y1 = { position: 'right', ticks: { color: '#5a5a78', font: { family: 'DM Mono', size: 9 } }, grid: { display: false } };
+      if (dual) base.scales.y1 = { position: 'right', ticks: { color: tickC, font: { family: 'DM Mono', size: 9 } }, grid: { display: false } };
       return base;
     }
 
@@ -5936,10 +6710,306 @@
       return (s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
+    function copyStudentLink(name, school) {
+      // Build a URL that encodes city, year, and student identity so sharing works
+      const url = new URL(location.href.split('#')[0]);
+      url.searchParams.set('city', selectedCity);
+      url.searchParams.set('year', selectedYear);
+      url.searchParams.set('student', name);
+      url.searchParams.set('school', school);
+      url.hash = 'students';
+      navigator.clipboard.writeText(url.toString()).then(() => {
+        showToast('Link copied to clipboard', 'teal');
+      }).catch(() => {
+        showToast('Copy failed — try manually', 'pink');
+      });
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  THEME TOGGLE
+    // ═══════════════════════════════════════════════════
+    (function () {
+      const saved = (() => { try { return localStorage.getItem('dekma_theme'); } catch (e) { return null; } })();
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+    })();
+
+    function toggleTheme() {
+      const cur = document.documentElement.getAttribute('data-theme');
+      const next = cur === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem('dekma_theme', next); } catch (e) {}
+      // Update chart colors and re-render open charts
+      const btn = document.getElementById('theme-toggle-btn');
+      if (btn) btn.textContent = next === 'light' ? '☀' : '◑';
+      // Redraw all active charts with new palette
+      Object.values(CHARTS).forEach(c => { if (c && typeof c.update === 'function') c.update(); });
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  STUDENT COMPARISON
+    // ═══════════════════════════════════════════════════
+    let _compareList = []; // [{name, school, idx}]
+
+    function _syncCompareBar() {
+      const bar = document.getElementById('compare-bar');
+      const slotsEl = document.getElementById('compare-slots');
+      const goBtn = document.getElementById('compare-go-btn');
+      const topBtn = document.getElementById('compare-btn');
+      const cntEl = document.getElementById('compare-count');
+      if (!bar) return;
+
+      if (_compareList.length === 0) {
+        bar.classList.remove('visible');
+        if (topBtn) topBtn.style.display = 'none';
+      } else {
+        bar.classList.add('visible');
+        if (topBtn) { topBtn.style.display = 'inline-flex'; if (cntEl) cntEl.textContent = _compareList.length; }
+      }
+
+      if (slotsEl) {
+        slotsEl.innerHTML = _compareList.map((s, i) => `
+          <div class="compare-slot">
+            <span>${s.name.split(' ')[0]}</span>
+            <span class="compare-slot-remove" onclick="removeFromCompare(${i})">✕</span>
+          </div>`).join('');
+      }
+
+      if (goBtn) goBtn.disabled = _compareList.length < 2;
+
+      // Update all "add" buttons
+      document.querySelectorAll('.add-compare-btn').forEach(btn => {
+        const n = btn.dataset.name, sc = btn.dataset.school;
+        const inList = _compareList.some(s => s.name === n && s.school === sc);
+        btn.classList.toggle('added', inList);
+        btn.title = inList ? 'Remove from comparison' : 'Add to comparison';
+        btn.innerHTML = inList ? '⇌ Added' : '⇌ Compare';
+      });
+    }
+
+    function toggleCompare(name, school, idx) {
+      const existIdx = _compareList.findIndex(s => s.name === name && s.school === school);
+      if (existIdx >= 0) {
+        _compareList.splice(existIdx, 1);
+      } else {
+        if (_compareList.length >= 4) { showToast('Max 4 students to compare', 'pink'); return; }
+        _compareList.push({ name, school, idx });
+      }
+      _syncCompareBar();
+    }
+
+    function removeFromCompare(i) {
+      _compareList.splice(i, 1);
+      _syncCompareBar();
+    }
+
+    function clearCompare() {
+      _compareList = [];
+      _syncCompareBar();
+    }
+
+    function openCompareModal() {
+      if (_compareList.length < 2) { showToast('Select at least 2 students to compare', 'pink'); return; }
+      const stuList = _compareList.map(c => STU_REGISTRY[c.idx] || STU_REGISTRY.find(s => s.name === c.name && s.school === c.school));
+      if (stuList.some(s => !s)) { showToast('Student data not found', 'pink'); return; }
+
+      const colorsA = ['var(--amber)', 'var(--blue)', 'var(--teal)', 'var(--pink)'];
+      const gcColor = s => s.gender === GEN_MALE ? 'var(--male)' : s.gender === GEN_FEMALE ? 'var(--female)' : 'var(--text3)';
+
+      const buildStats = s => {
+        const marks = s.apps.map(a => a.marks);
+        const avg = marks.reduce((a,b) => a+b, 0) / marks.length;
+        const best = Math.max(...marks);
+        const worst = Math.min(...marks);
+        const stdDev = marks.length > 1 ? Math.sqrt(marks.reduce((a,m) => a+(m-avg)**2,0)/marks.length) : 0;
+        const consistency = marks.length > 1 ? Math.max(0, Math.round(100-(stdDev/avg)*100)) : 100;
+        const revApps = s.apps.filter(a => a.exam_type === 'revision');
+        const thyApps = s.apps.filter(a => a.exam_type === 'theory');
+        const revAvg = revApps.length ? revApps.reduce((a,b)=>a+b.marks,0)/revApps.length : null;
+        const thyAvg = thyApps.length ? thyApps.reduce((a,b)=>a+b.marks,0)/thyApps.length : null;
+        const gRankVal = globalRank(s.name, s.school);
+        const zList = s.apps.map(a => examZ(a.exam_id, a.marks));
+        const post = computePosterior(zList);
+        return { avg: +avg.toFixed(1), best, worst, consistency, revAvg, thyAvg, gRank: gRankVal, rating: post.rating, tests: s.apps.length };
+      };
+
+      const stats = stuList.map(buildStats);
+
+      const statRows = [
+        { label: 'Avg Score', key: 'avg', higherBetter: true, fmt: v => v },
+        { label: 'Best Score', key: 'best', higherBetter: true, fmt: v => v },
+        { label: 'Worst Score', key: 'worst', higherBetter: true, fmt: v => v },
+        { label: 'Consistency', key: 'consistency', higherBetter: true, fmt: v => v + '%' },
+        { label: 'Rating', key: 'rating', higherBetter: true, fmt: v => v },
+        { label: 'Global Rank', key: 'gRank', higherBetter: false, fmt: v => typeof v === 'number' ? '#' + v : '—' },
+        { label: 'Tests Taken', key: 'tests', higherBetter: true, fmt: v => v },
+      ];
+
+      const maxAvg = Math.max(...stats.map(s => s.avg || 0), 1);
+
+      const headerHTML = stuList.map((s, i) => {
+        const ini = s.name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
+        const gc = gcColor(s);
+        return `<div class="cmp-header-col">
+          <div class="cmp-avatar" style="border-color:${gc};color:${gc};background:${gc}1a">${ini}</div>
+          <div class="cmp-name">${s.name}</div>
+          <div class="cmp-school">${s.school}</div>
+          <div class="cmp-bar-track" style="margin-top:10px"><div class="cmp-bar-fill" style="width:${stats[i].avg/maxAvg*100}%;background:${gc}"></div></div>
+        </div>`;
+      }).join('');
+
+      const rowsHTML = statRows.map(row => {
+        const vals = stats.map(s => s[row.key]);
+        const numVals = vals.filter(v => typeof v === 'number');
+        const best = numVals.length ? (row.higherBetter ? Math.max(...numVals) : Math.min(...numVals)) : null;
+        const worst = numVals.length ? (row.higherBetter ? Math.min(...numVals) : Math.max(...numVals)) : null;
+        const cellsHTML = vals.map((v, i) => {
+          const cls = best === null || v === null ? '' : v === best ? 'cmp-winner' : v === worst ? 'cmp-loser' : 'cmp-tie';
+          return `<div class="cmp-stat-val ${cls}" style="text-align:${i===0?'right':'left'}">${row.fmt(v)}</div>`;
+        });
+        // Insert label in centre for 2 students, or render flat for more
+        if (stuList.length === 2) {
+          return `<div class="cmp-stat-row">${cellsHTML[0]}<div class="cmp-stat-label">${row.label}</div>${cellsHTML[1]}</div>`;
+        }
+        return `<div style="padding:8px 0;border-bottom:1px solid var(--border)">
+          <div class="cmp-stat-label" style="text-align:left;margin-bottom:5px">${row.label}</div>
+          <div style="display:flex;gap:12px">${vals.map((v,i)=>`<div style="flex:1;text-align:center">
+            <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:2px">${stuList[i].name.split(' ')[0]}</div>
+            <div class="cmp-stat-val ${best===null||v===null?'':v===best?'cmp-winner':v===worst?'cmp-loser':'cmp-tie'}">${row.fmt(v)}</div>
+          </div>`).join('')}</div>
+        </div>`;
+      }).join('');
+
+      document.getElementById('modal-title').innerHTML = `⇌ Student Comparison <span style="font-family:'DM Mono',monospace;font-size:13px;opacity:.5">${stuList.length} students</span>`;
+      document.getElementById('modal-body').innerHTML = `
+        <div class="cmp-grid" style="${stuList.length>2?'grid-template-columns:repeat('+stuList.length+',1fr)':''}">${headerHTML}</div>
+        <div>${rowsHTML}</div>
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap">
+          ${stuList.map((s,i)=>`<button class="filter-btn" onclick="closeModal();navToStudent('${_ns(s.name)}','${_ns(s.school)}')"
+            style="border-color:${colorsA[i]};color:${colorsA[i]}">View ${s.name.split(' ')[0]}'s Profile →</button>`).join('')}
+        </div>`;
+      openModal();
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  SCORE PERCENTILE VISUALIZATION
+    // ═══════════════════════════════════════════════════
+    function renderPercentileViz(canvasId, studentScore, allScores) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas || !allScores.length) return;
+      const ctx = canvas.getContext('2d');
+      const W = canvas.offsetWidth || canvas.parentElement?.offsetWidth || 300;
+      const H = 72;
+      canvas.width = W;
+      canvas.height = H;
+      ctx.clearRect(0, 0, W, H);
+
+      // Compute normal distribution params from data
+      const n = allScores.length;
+      const mean = allScores.reduce((a,b) => a+b, 0) / n;
+      const variance = allScores.reduce((a,b) => a+(b-mean)**2, 0) / n;
+      const sd = Math.sqrt(variance) || 1;
+      const min = mean - 3.5*sd, max = mean + 3.5*sd;
+
+      // Draw filled bell curve
+      const phi = x => Math.exp(-0.5*((x-mean)/sd)**2) / (sd * Math.sqrt(2*Math.PI));
+      const steps = 120;
+      const dx = (max-min)/steps;
+
+      // Peak value for scaling
+      const peak = phi(mean);
+
+      // Compute student percentile
+      const below = allScores.filter(s => s < studentScore).length;
+      const atSame = allScores.filter(s => s === studentScore).length;
+      const pct = Math.round((below + atSame*0.5) / n * 100);
+
+      const toX = v => ((v-min)/(max-min)) * W;
+      const toY = v => H - 8 - (v/peak) * (H - 16);
+
+      // Gradient fill: area left of student (muted), area at student (highlight)
+      const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+      const fillBefore = isDark ? 'rgba(96,165,250,.18)' : 'rgba(56,128,216,.15)';
+      const fillAfter = isDark ? 'rgba(96,165,250,.06)' : 'rgba(56,128,216,.05)';
+      const lineCol = isDark ? 'rgba(96,165,250,.5)' : 'rgba(56,128,216,.4)';
+      const markerCol = isDark ? '#f0a830' : '#d08018';
+
+      // Draw before-student fill
+      ctx.beginPath();
+      ctx.moveTo(toX(min), H - 8);
+      const sX = toX(studentScore);
+      for (let i = 0; i <= steps; i++) {
+        const x = min + i*dx;
+        if (x > studentScore) break;
+        ctx.lineTo(toX(x), toY(phi(x)));
+      }
+      ctx.lineTo(sX, H-8);
+      ctx.closePath();
+      ctx.fillStyle = fillBefore;
+      ctx.fill();
+
+      // Draw after-student fill
+      ctx.beginPath();
+      ctx.moveTo(sX, H-8);
+      for (let i = 0; i <= steps; i++) {
+        const x = min + i*dx;
+        if (x < studentScore) continue;
+        ctx.lineTo(toX(x), toY(phi(x)));
+      }
+      ctx.lineTo(toX(max), H-8);
+      ctx.closePath();
+      ctx.fillStyle = fillAfter;
+      ctx.fill();
+
+      // Draw curve outline
+      ctx.beginPath();
+      for (let i = 0; i <= steps; i++) {
+        const x = min + i*dx;
+        const y = toY(phi(x));
+        i === 0 ? ctx.moveTo(toX(x), y) : ctx.lineTo(toX(x), y);
+      }
+      ctx.strokeStyle = lineCol;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Draw student marker line
+      ctx.beginPath();
+      ctx.moveTo(sX, H - 8);
+      ctx.lineTo(sX, toY(phi(studentScore)));
+      ctx.strokeStyle = markerCol;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([3, 2]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Draw marker dot
+      ctx.beginPath();
+      ctx.arc(sX, toY(phi(studentScore)) - 4, 4, 0, Math.PI * 2);
+      ctx.fillStyle = markerCol;
+      ctx.fill();
+
+      // Percentile label
+      ctx.fillStyle = markerCol;
+      ctx.font = `bold 10px 'DM Mono', monospace`;
+      const labelTxt = pct + 'th pct';
+      const tw = ctx.measureText(labelTxt).width;
+      const lx = Math.max(4, Math.min(sX - tw/2, W - tw - 4));
+      ctx.fillText(labelTxt, lx, 12);
+
+      return pct;
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  PDF EXPORT
+    // ═══════════════════════════════════════════════════
+    function exportCurrentPDF() {
+      showToast('Opening print dialog…', 'amber', 2000);
+      setTimeout(() => window.print(), 300);
+    }
+
     // ═══════════════════════════════════════════════════
     //  BOOT
     // ═══════════════════════════════════════════════════
-    window.addEventListener('DOMContentLoaded', loadData);
+    // App boot is handled by the async bootstrap in <head> — no DOMContentLoaded needed here.
 
     // ═══════════════════════════════════════════════════
     //  SECRET ADMIN TRIGGER
