@@ -151,5 +151,13 @@
       "timestamp": 1772641555022
     }
   ],
-  "studentRenames": []
+  "studentRenames": [
+    {
+      "oldName": "Mahima Dahanayaka",
+      "oldSchool": "Mahinda College",
+      "newName": "Mahima Dahanayake",
+      "newSchool": "Mahinda College",
+      "timestamp": 1772732527604
+    }
+  ]
 }
