@@ -89,28 +89,28 @@
       --bottom-nav-h: 0px;
     }
     [data-theme="light"] {
-      --bg: #edeae4;
-      --bg2: #f5f2ec;
-      --bg3: #e4e0d8;
-      --border: #ccc8be;
-      --border2: #b0ab9e;
-      --amber: #a05e00;
-      --amber2: #c07810;
-      --teal: #0a7a6c;
-      --teal2: #0d9e8e;
-      --pink: #9e2257;
-      --blue: #1a52a8;
-      --text: #18140e;
-      --text2: #3e3828;
-      --text3: #7a7060;
-      --male: #1a52a8;
-      --female: #9e2257;
-      --accent-glow: rgba(160,94,0,.08);
-      --card-shine: linear-gradient(135deg, rgba(255,255,255,.35) 0%, transparent 60%);
+      --bg: #f0ece4;
+      --bg2: #f8f5ef;
+      --bg3: #e8e4da;
+      --border: #d4cfc4;
+      --border2: #bab49f;
+      --amber: #8a4e00;
+      --amber2: #b06800;
+      --teal: #136e5e;
+      --teal2: #1a9078;
+      --pink: #882050;
+      --blue: #1c45a0;
+      --text: #1a1612;
+      --text2: #48422e;
+      --text3: #8a826a;
+      --male: #1c45a0;
+      --female: #882050;
+      --accent-glow: rgba(138,78,0,.06);
+      --card-shine: linear-gradient(135deg, rgba(255,255,255,.5) 0%, transparent 60%);
       --shadow-lg: 0 20px 60px rgba(0,0,0,.08);
     }
     @media(max-width:768px) {
-      :root { --bottom-nav-h: 64px; }
+      :root { --bottom-nav-h: 68px; }
     }
 
     * {
@@ -140,10 +140,8 @@
       z-index: 9999;
       opacity: .5
     }
-    [data-theme="light"] body::before { opacity: .08 }
-    [data-theme="light"] body {
-      background: var(--bg)
-    }
+    [data-theme="light"] body::before { opacity: .12 }
+    [data-theme="light"] body { background: var(--bg) }
 
     ::-webkit-scrollbar {
       width: 6px;
@@ -404,7 +402,7 @@
       box-shadow: 0 1px 0 var(--border), 0 4px 24px rgba(0,0,0,.3)
     }
     [data-theme="light"] .topbar {
-      background: rgba(237,234,228,.92);
+      background: rgba(240,236,228,.92);
       border-bottom-color: var(--border2)
     }
 
@@ -2298,21 +2296,7 @@
       gap: 16px
     }
 
-    .loader {
-      width: 40px;
-      height: 40px;
-      border: 3px solid var(--border);
-      border-top-color: var(--amber);
-      border-radius: 50%;
-      animation: spin .7s linear infinite
-    }
-
-    .loader-text {
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      color: var(--text3);
-      letter-spacing: 2px
-    }
+    /* loader replaced */
 
     /* ══ SPLASH SCREEN ══════════════════════════════════════════════════════ */
     #splash {
@@ -2835,8 +2819,10 @@
       }
 
       .hamburger {
-        display: flex
+        display: none
       }
+      /* On mobile, topbar left side shows only page title + context chip */
+      .topbar-left-desktop { display: none }
 
       .stats-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -3422,45 +3408,71 @@
     }
     .pct-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3) }
 
-    /* ══ BOTTOM NAV (mobile) ══ */
+    /* ══ BOTTOM NAV ══ */
     .bottom-nav {
       display: none;
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      height: 64px;
-      background: var(--bg2);
-      border-top: 1px solid var(--border);
-      z-index: 200;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 -4px 24px rgba(0,0,0,.3)
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: 68px; z-index: 300
     }
-    [data-theme="light"] .bottom-nav { background: rgba(245,242,236,.97); border-top-color:var(--border2) }
+    .bottom-nav-blur {
+      position: absolute; inset: 0;
+      background: rgba(12,12,20,.96);
+      border-top: 1px solid var(--border);
+      backdrop-filter: blur(24px) saturate(1.4);
+      -webkit-backdrop-filter: blur(24px) saturate(1.4);
+      box-shadow: 0 -2px 24px rgba(0,0,0,.5)
+    }
+    [data-theme="light"] .bottom-nav-blur {
+      background: rgba(30,28,23,.97); border-top-color: var(--border2)
+    }
     .bottom-nav-inner {
-      display: flex; height: 100%; align-items: stretch
+      position: relative; display: flex; height: 100%; align-items: stretch
+    }
+    /* Sliding box indicator — plain, just a subtle highlight behind the active item */
+    .bnav-pill {
+      position: absolute;
+      top: 8px; bottom: 8px;
+      width: 20%;
+      border-radius: 10px;
+      background: rgba(240,160,32,.1);
+      border: 1px solid rgba(240,160,32,.18);
+      pointer-events: none;
+      will-change: transform;
+      transition: transform .32s cubic-bezier(.4,0,.2,1)
     }
     .bnav-item {
       flex: 1; display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       gap: 3px; cursor: pointer;
       color: var(--text3);
-      transition: color .18s;
-      position: relative;
-      -webkit-tap-highlight-color: transparent
+      transition: color .22s ease;
+      position: relative; z-index: 1;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none
     }
     .bnav-item.active { color: var(--amber) }
-    .bnav-item::before {
-      content: ''; position: absolute;
-      bottom: 0; left: 20%; right: 20%;
-      height: 2px; background: var(--amber);
-      border-radius: 2px 2px 0 0;
-      opacity: 0; transition: opacity .2s
+    .bnav-icon {
+      width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .3s cubic-bezier(.34,1.4,.64,1)
     }
-    .bnav-item.active::before { opacity: 1 }
-    .bnav-item.active .bnav-icon { transform: translateY(-2px); transition: transform .2s }
-    .bnav-item .bnav-icon { transition: transform .2s }
-    .bnav-icon { font-size: 20px; line-height: 1 }
-    .bnav-label { font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: .5px; text-transform: uppercase }
+    .bnav-icon svg {
+      width: 20px; height: 20px;
+      stroke: currentColor; fill: none;
+      stroke-width: 1.6;
+      transition: stroke-width .22s
+    }
+    .bnav-item.active .bnav-icon {
+      transform: translateY(-2px) scale(1.12)
+    }
+    .bnav-item.active .bnav-icon svg { stroke-width: 2.2 }
+    .bnav-label {
+      font-family: 'DM Mono', monospace; font-size: 8px;
+      letter-spacing: .5px; text-transform: uppercase;
+      opacity: .45; transition: opacity .22s, letter-spacing .22s
+    }
+    .bnav-item.active .bnav-label { opacity: 1; letter-spacing: .8px }
+
     @media(max-width:768px) {
       .bottom-nav { display: block }
       .main { padding-bottom: var(--bottom-nav-h) }
@@ -3489,26 +3501,7 @@
     .global-rank-badge .rank-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3); letter-spacing: 2px; text-transform: uppercase }
     .global-rank-badge .rank-of { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text2) }
 
-    /* ══ LOADING SCREEN ══ */
-    #loading {
-      position: fixed; inset: 0;
-      background: var(--bg);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 16px; z-index: 9998
-    }
-    .loader {
-      width: 36px; height: 36px;
-      border: 2px solid var(--border2);
-      border-top-color: var(--amber);
-      border-radius: 50%;
-      animation: spin .7s linear infinite
-    }
-    .loader-text {
-      font-family: 'DM Mono', monospace;
-      font-size: 10px; letter-spacing: 3px;
-      color: var(--text3); text-transform: uppercase
-    }
+
 
     /* ══ TOPBAR ACTIONS GROUP ══ */
     .topbar-actions {
@@ -3604,6 +3597,112 @@
     .type-rank-chip.revision { background: rgba(240,160,32,.09); border: 1px solid rgba(240,160,32,.25) }
 
     /* ══ PRINT STYLES ══ */
+
+    /* ══ COOL ANIMATIONS ════════════════════════════════════ */
+
+    /* A) Ripple on bottom nav tap */
+    .bnav-ripple {
+      position: absolute; border-radius: 50%;
+      background: rgba(240,160,32,.35);
+      transform: scale(0); animation: bnavRipple .5s ease-out forwards;
+      pointer-events: none
+    }
+    @keyframes bnavRipple {
+      to { transform: scale(4); opacity: 0 }
+    }
+
+    /* B) Stat card 3D tilt (desktop) */
+    .stat-card {
+      transform-style: preserve-3d;
+      perspective: 600px;
+      transition: transform .15s ease, box-shadow .15s ease
+    }
+
+    /* C) Text scramble chars */
+    .scramble-char {
+      display: inline-block;
+      animation: charFlip .06s steps(1) forwards;
+      color: var(--amber)
+    }
+    @keyframes charFlip {
+      0%  { opacity: 1 }
+      50% { opacity: .5; transform: scaleY(.6) }
+      100%{ opacity: 1; transform: scaleY(1); color: inherit }
+    }
+
+    /* D) Page wipe transition (clip-path reveal) */
+    .page.active.wipe-in {
+      animation: wipeIn .3s cubic-bezier(.4,0,.2,1) both
+    }
+    @keyframes wipeIn {
+      from { clip-path: inset(0 100% 0 0); opacity: 1 }
+      to   { clip-path: inset(0 0% 0 0);   opacity: 1 }
+    }
+    .page.active.wipe-in-left {
+      animation: wipeInLeft .3s cubic-bezier(.4,0,.2,1) both
+    }
+    @keyframes wipeInLeft {
+      from { clip-path: inset(0 0 0 100%); opacity: 1 }
+      to   { clip-path: inset(0 0 0 0%);   opacity: 1 }
+    }
+
+    /* E) Card shimmer on hover — travelling light streak */
+    .card {
+      overflow: hidden
+    }
+    .card::after {
+      content: '';
+      position: absolute; top: 0; left: -70%;
+      width: 40%; height: 100%;
+      background: linear-gradient(100deg, transparent 20%, rgba(255,255,255,.045) 50%, transparent 80%);
+      transform: skewX(-20deg);
+      transition: left 0s;
+      pointer-events: none
+    }
+    .card:hover::after {
+      left: 130%;
+      transition: left .55s ease
+    }
+
+    /* F) Stat value count-up shimmer */
+    .stat-value.counting {
+      color: var(--amber);
+      transition: color .4s
+    }
+
+    /* G) Sidebar nav item — slide-in dot */
+    .nav-item.active::after {
+      content: '';
+      position: absolute; right: 0; top: 50%;
+      transform: translateY(-50%);
+      width: 3px; height: 18px;
+      background: var(--amber);
+      border-radius: 3px 0 0 3px;
+      box-shadow: 0 0 8px rgba(240,160,32,.6);
+      animation: navDotIn .25s cubic-bezier(.34,1.56,.64,1) both
+    }
+    @keyframes navDotIn {
+      from { height: 0; opacity: 0 }
+      to   { height: 18px; opacity: 1 }
+    }
+
+    /* H) Score bars grow in with springy ease */
+    .score-bar-fill {
+      transition: width .6s cubic-bezier(.34,1.2,.64,1) !important
+    }
+
+    /* I) Page title morphing underline */
+    .page-title::after {
+      content: '';
+      display: block; height: 2px;
+      background: linear-gradient(90deg, var(--amber), transparent);
+      transform-origin: left;
+      transform: scaleX(0);
+      transition: transform .4s cubic-bezier(.34,1.2,.64,1);
+      margin-top: 2px
+    }
+    .page-title.loaded::after { transform: scaleX(1) }
+
     @media print {
       .sidebar, .topbar, .bottom-nav, #compare-dock, .hamburger, .theme-toggle { display: none !important }
       .main { margin-left: 0 !important }
@@ -3611,16 +3710,68 @@
       .card, .stat-card { break-inside: avoid; box-shadow: none !important }
     }
 
+
+    /* ══ LOADING SCREEN ══════════════════════════════════════════════════ */
+    #loading {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; z-index: 10000;
+      transition: opacity .5s ease;
+    }
+    #loading.fade-out { opacity: 0; pointer-events: none }
+    #ld-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 64px;
+      letter-spacing: 16px;
+      color: var(--amber);
+      line-height: 1;
+      opacity: 0;
+      animation: ld-up .6s ease-out .5s forwards;
+    }
+    #ld-subtitle {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px; letter-spacing: 5px;
+      color: var(--text3);
+      text-transform: uppercase;
+      opacity: 0;
+      animation: ld-up .5s ease-out .7s forwards;
+      margin-top: 10px;
+    }
+    #ld-dots {
+      display: flex; gap: 8px; margin-top: 24px;
+      opacity: 0;
+      animation: ld-up .4s ease .9s forwards;
+    }
+    .ld-dot {
+      width: 3px; height: 3px;
+      border-radius: 50%;
+      background: var(--amber);
+      animation: ld-dot-pulse 1.4s ease-in-out infinite;
+    }
+    .ld-dot:nth-child(2) { animation-delay: .22s }
+    .ld-dot:nth-child(3) { animation-delay: .44s }
+    @keyframes ld-up {
+      from { opacity: 0; transform: translateY(10px) }
+      to   { opacity: 1; transform: translateY(0) }
+    }
+    @keyframes ld-dot-pulse {
+      0%, 100% { opacity: .2 }
+      50%       { opacity: 1 }
+    }
   </style>
 </head>
 
 <body>
 
   <div id="loading">
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:8px;color:var(--amber);text-shadow:0 0 40px rgba(240,160,32,.3);margin-bottom:8px">DEKMA</div>
-    <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:4px;color:var(--text3);text-transform:uppercase;margin-bottom:24px">RESULTS PORTAL</div>
-    <div class="loader"></div>
-    <div class="loader-text">LOADING…</div>
+    <div id="ld-title">DEKMA</div>
+    <div id="ld-subtitle">Results Portal</div>
+    <div id="ld-dots">
+      <div class="ld-dot"></div>
+      <div class="ld-dot"></div>
+      <div class="ld-dot"></div>
+    </div>
   </div>
 
   <!-- ══ SPLASH SCREEN (first visit / no selection) ══ -->
@@ -3651,6 +3802,7 @@
   <div class="shell" id="app" style="display:none">
     <aside class="sidebar" id="sidebar">
       <div class="logo">
+        <div id="sidebar-logo" style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:6px;color:var(--amber);line-height:1;margin-bottom:14px;cursor:default;text-shadow:0 0 24px rgba(240,160,32,.3)">DEKMA</div>
         <!-- Year selector -->
         <div class="logo-selector-row">
           <div class="logo-selector" id="year-sel-btn" onclick="toggleLogoDrop('year')">
@@ -3739,14 +3891,14 @@
           <div class="two-col">
             <div class="card">
               <div class="card-header">
-                <div class="card-title">🏆 Top Performers</div>
+                <div class="card-title">Top Performers</div>
                 <div id="podium-sel" class="tdd-wrap"></div>
               </div>
               <div id="podium-wrap"></div>
             </div>
             <div class="card card-dist">
               <div class="card-header">
-                <div class="card-title">📊 Score Distribution</div>
+                <div class="card-title">Score Distribution</div>
                 <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)" id="dist-label"></div>
               </div>
               <div class="card-body">
@@ -3762,7 +3914,7 @@
           </div>
           <div class="card" style="margin-bottom:24px">
             <div class="card-header">
-              <div class="card-title">⭐ Top 10</div>
+              <div class="card-title">Top 10</div>
               <div style="display:flex;align-items:center;gap:8px">
                 <div id="top10-sel" class="tdd-wrap"></div>
                 <button class="t10-sort-btn active" id="t10-rank-btn" onclick="setTop10Sort('rank',this)">By
@@ -3775,7 +3927,7 @@
           <div class="two-col">
             <div class="card">
               <div class="card-header">
-                <div class="card-title">📈 Tests Overview</div>
+                <div class="card-title">Tests Overview</div>
               </div>
               <div class="card-body">
                 <div class="chart-wrap"><canvas id="tests-chart"></canvas></div>
@@ -3783,7 +3935,7 @@
             </div>
             <div class="card">
               <div class="card-header">
-                <div class="card-title">🏫 Top Schools (by entries)</div>
+                <div class="card-title">Top Schools</div>
                 <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">All Tests</div>
               </div>
               <div id="top-schools-bar-wrap">
@@ -3795,15 +3947,6 @@
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- TOP MOVERS (new) -->
-        <div class="card" style="margin-bottom:32px" id="top-movers-card">
-          <div class="card-header">
-            <div class="card-title">🚀 Top Movers</div>
-            <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)">Biggest score gains across tests</div>
-          </div>
-          <div class="card-body" id="top-movers-body" style="padding:0"></div>
         </div>
 
         <!-- ALL TESTS -->
@@ -3834,22 +3977,7 @@
               <div class="card-title" id="lb-title">Leaderboard</div>
               <div style="display:flex;align-items:center;gap:8px">
                 <div class="chip" id="lb-count">—</div>
-                <div class="export-wrap">
-                  <button class="export-btn" onclick="toggleExportDrop('lb-export-dd',this)" title="Export">
-                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v8m0 0l-3-3m3 3 3-3M3 12h10"/></svg>
-                    Export ▾
-                  </button>
-                  <div class="export-dropdown" id="lb-export-dd">
-                    <div class="export-dd-item" onclick="exportCurrentView('csv');closeExportDrop()">
-                      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 2h7l3 3v9H3V2z"/><path d="M10 2v3h3"/></svg>
-                      <div><div class="export-dd-label">CSV</div></div>
-                    </div>
-                    <div class="export-dd-item" onclick="exportCurrentView('pdf');closeExportDrop()">
-                      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 2h7l3 3v9H3V2z"/><path d="M10 2v3h3"/><path d="M6 9h4M6 11h2"/></svg>
-                      <div><div class="export-dd-label">PDF</div></div>
-                    </div>
-                  </div>
-                </div>
+
               </div>
             </div>
             <div class="table-wrap" id="lb-table"></div>
@@ -3895,7 +4023,7 @@
               </div>
               <div class="card-body" id="school-detail">
                 <div class="empty">
-                  <div class="empty-icon">🏫</div>Click a school to explore
+                  Click a school to explore
                 </div>
               </div>
             </div>
@@ -4349,7 +4477,7 @@
     //  SPLASH SCREEN
     // ═══════════════════════════════════════════════════
     function showSplash() {
-      document.getElementById('loading').style.display = 'none';
+      (function(){ const l=document.getElementById('loading'); if(l){ l.classList.add('fade-out'); setTimeout(()=>{ l.style.display='none'; },650); } })();
       document.getElementById('app').style.display = 'none';
       document.getElementById('splash').style.display = 'flex';
 
@@ -4425,7 +4553,7 @@
     // ═══════════════════════════════════════════════════
     function loadData() {
       // Hide loader immediately, decide what to show
-      document.getElementById('loading').style.display = 'none';
+      (function(){ const l=document.getElementById('loading'); if(l){ l.classList.add('fade-out'); setTimeout(()=>{ l.style.display='none'; },650); } })();
 
       // Check if dekmaData exists (from results.js)
       if (!window.dekmaData || !Object.keys(window.dekmaData).length) {
@@ -4553,12 +4681,17 @@
       const prevPage = _currentPage;
       const prevIdx = PAGE_ORDER.indexOf(prevPage);
       const nextIdx = PAGE_ORDER.indexOf(page);
-      const dir = nextIdx > prevIdx ? 1 : -1; // 1=right, -1=left
-      const animIn  = dir >= 0 ? 'slide-in-right' : 'slide-in-left';
+      const dir = nextIdx > prevIdx ? 1 : -1;
+      const animIn  = dir >= 0 ? 'wipe-in' : 'wipe-in-left';
       const isFirst = !prevPage || prevPage === page;
 
+      // Always sync the URL hash — this is what the browser address bar shows
+      if (location.hash !== '#' + page) {
+        history.replaceState(null, '', '#' + page);
+      }
+
       document.querySelectorAll('.page').forEach(p => {
-        p.classList.remove('active','slide-in-right','slide-in-left');
+        p.classList.remove('active','wipe-in','wipe-in-left');
       });
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
       const el = document.getElementById('page-' + page);
@@ -5092,14 +5225,14 @@
     // ═══════════════════════════════════════════════════
     function getRankTier(rank, total) {
       if (rank === 1) return { tier: 1, icon: '🥇', label: 'Rank #1', tierClass: 'rank-tier-1' };
-      if (rank <= 3) return { tier: 1, icon: '🏆', label: 'Top 3', tierClass: 'rank-tier-1' };
-      if (rank <= 10) return { tier: 2, icon: '⭐', label: 'Top 10', tierClass: 'rank-tier-2' };
+      if (rank <= 3) return { tier: 1, icon: '◈', label: 'Top 3', tierClass: 'rank-tier-1' };
+      if (rank <= 10) return { tier: 2, icon: '★', label: 'Top 10', tierClass: 'rank-tier-2' };
       if (rank <= 25) return { tier: 2, icon: '🔥', label: 'Top 25', tierClass: 'rank-tier-2' };
       const pct = total > 0 ? (rank / total) * 100 : 100;
       if (pct <= 10) return { tier: 3, icon: '💎', label: 'Top 10%', tierClass: 'rank-tier-3' };
       if (pct <= 25) return { tier: 4, icon: '🌟', label: 'Top 25%', tierClass: 'rank-tier-4' };
-      if (pct <= 50) return { tier: 5, icon: '📈', label: 'Top Half', tierClass: 'rank-tier-5' };
-      return { tier: 6, icon: '📊', label: 'Ranked', tierClass: 'rank-tier-6' };
+      if (pct <= 50) return { tier: 5, icon: '↑', label: 'Top Half', tierClass: 'rank-tier-5' };
+      return { tier: 6, icon: '·', label: 'Ranked', tierClass: 'rank-tier-6' };
     }
 
     // ═══════════════════════════════════════════════════
@@ -5119,7 +5252,7 @@
     // ═══════════════════════════════════════════════════
     //  DASHBOARD
     // ═══════════════════════════════════════════════════
-    function renderOverviewStats() {
+    function renderOverviewStats() { /* tilt attached after render */
       if (!EXAMS.length) { document.getElementById('overview-stats').innerHTML = ''; return; }
       const total = ALL.length;
       const unique = new Set(ALL.map(r => r.name + '||' + r.school)).size;
@@ -5163,7 +5296,7 @@
 
     function renderPodium() {
       const wrap = document.getElementById('podium-wrap');
-      if (!EXAMS.length) { wrap.innerHTML = '<div class="empty"><div class="empty-icon">🏆</div>No data</div>'; return; }
+      if (!EXAMS.length) { wrap.innerHTML = '<div class="empty"><div class="empty-icon">◈</div>No data</div>'; return; }
       const sel = podiumTestSel;
       const isAvg = isAgg(sel);
       let top3;
@@ -5172,10 +5305,10 @@
       } else {
         const eid = resolveExamIds(sel)[0];
         const exam = EXAMS.find(x => x.id === eid);
-        if (!exam) { wrap.innerHTML = '<div class="empty"><div class="empty-icon">🏆</div>No data</div>'; return; }
+        if (!exam) { wrap.innerHTML = '<div class="empty"><div class="empty-icon">◈</div>No data</div>'; return; }
         top3 = deduplicateStudents([...exam.students]).sort((a, b) => b.marks - a.marks).slice(0, 3);
       }
-      if (!top3.length) { wrap.innerHTML = '<div class="empty"><div class="empty-icon">🏆</div>No data</div>'; return; }
+      if (!top3.length) { wrap.innerHTML = '<div class="empty"><div class="empty-icon">◈</div>No data</div>'; return; }
       const order = top3.length === 3 ? [top3[1], top3[0], top3[2]] : top3;
       const medals = ['🥈', '🥇', '🥉'];
       const ini = n => (n || '').split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
@@ -5279,7 +5412,7 @@
       else {
         const eid = resolveExamIds(sel)[0];
         const exam = EXAMS.find(x => x.id === eid);
-        if (!exam) { document.getElementById('top10-table').innerHTML = '<div class="empty"><div class="empty-icon">📋</div>No data</div>'; return; }
+        if (!exam) { document.getElementById('top10-table').innerHTML = '<div class="empty"><div class="empty-icon">·</div>No data</div>'; return; }
         rows = deduplicateStudents([...exam.students]).sort((a, b) => b.marks - a.marks);
       }
       if (top10SortField === 'avg') { rows.sort((a, b) => top10SortAsc ? a.marks - b.marks : b.marks - a.marks); }
@@ -5739,7 +5872,6 @@
         }
       });
       STU_REGISTRY = Object.values(map).map(s => ({ name: s.name, school: s.school, gender: s.gender, apps: Object.values(s.examMap) }));
-      renderTopMovers();
     }
 
     function searchStudents() {
@@ -5876,8 +6008,6 @@
       const totalThy = Object.keys(_thyRankMap).length;
       const totalRev = Object.keys(_revRankMap).length;
       const rankTierInfo = typeof gRank === 'number' ? getRankTier(gRank, totalStudents) : null;
-      const _pctBar = buildPercentileBar(gRank, totalStudents);
-
       const stdDev = marks.length > 1 ? Math.sqrt(marks.reduce((s, m) => s + (m - avg) ** 2, 0) / marks.length) : 0;
       const consistency = marks.length > 1 ? Math.max(0, Math.round(100 - (stdDev / avg) * 100)) : 100;
 
@@ -5894,15 +6024,6 @@
         else { trendLabel = '→ Steady'; trendColor = 'var(--blue)'; }
       }
 
-      let predicted = null;
-      if (marks.length >= 3) {
-        const n = marks.length, xMean = (n - 1) / 2;
-        const num = marks.reduce((s, m, i) => s + (i - xMean) * m, 0);
-        const den = marks.reduce((s, _, i) => s + (i - xMean) ** 2, 0);
-        const slope = den ? num / den : 0;
-        const intercept = avg - slope * xMean;
-        predicted = Math.round(Math.min(100, Math.max(0, intercept + slope * n)));
-      }
 
       const aboveAvgCount = apps.filter(a => {
         const exam = EXAMS.find(e => e.id === a.exam_id);
@@ -5932,17 +6053,17 @@
 
       let archetype, archetypeDesc = '', archetypeIcon, archetypeColor;
       if (avg >= 93 && consistency >= 80) { archetype = 'Exceptional'; archetypeIcon = '🌠'; archetypeColor = '#e8a020'; }
-      else if (avg >= 90) { archetype = 'Elite Performer'; archetypeIcon = '🏆'; archetypeColor = '#e8a020'; }
+      else if (avg >= 90) { archetype = 'Elite Performer'; archetypeIcon = '◈'; archetypeColor = '#e8a020'; }
       else if (avg >= 85 && consistency < 65) { archetype = 'Volatile Talent'; archetypeIcon = '⚡'; archetypeColor = '#f59e0b'; }
-      else if (avg >= 80 && trend > 1.2) { archetype = 'Rising Force'; archetypeIcon = '🚀'; archetypeColor = '#4ade80'; }
-      else if (avg >= 80 && trend < -1.0) { archetype = 'Fading Grip'; archetypeIcon = '📉'; archetypeColor = '#f472b6'; }
+      else if (avg >= 80 && trend > 1.2) { archetype = 'Rising Force'; archetypeIcon = '↑'; archetypeColor = '#4ade80'; }
+      else if (avg >= 80 && trend < -1.0) { archetype = 'Fading Grip'; archetypeIcon = '↓'; archetypeColor = '#f472b6'; }
       else if (avg >= 80) { archetype = 'Solid Performer'; archetypeIcon = '🎯'; archetypeColor = '#60a5fa'; }
       else if (avg >= 72 && consistency >= 82) { archetype = 'The Grinder'; archetypeIcon = '⚙️'; archetypeColor = '#818cf8'; }
       else if (avg >= 72 && revTheoryGap !== null && Math.abs(revTheoryGap) > 10) { archetype = revTheoryGap > 0 ? 'Revision Specialist' : 'Theory Specialist'; archetypeIcon = revTheoryGap > 0 ? '🗂️' : '📖'; archetypeColor = 'var(--teal)'; }
-      else if (avg >= 72 && trend > 1.0) { archetype = 'Climbing'; archetypeIcon = '📈'; archetypeColor = '#4ade80'; }
+      else if (avg >= 72 && trend > 1.0) { archetype = 'Climbing'; archetypeIcon = '↑'; archetypeColor = '#4ade80'; }
       else if (avg >= 65) { archetype = 'Mid-Field'; archetypeIcon = '🌱'; archetypeColor = '#9090b0'; }
       else if (avg >= 55 && trend > 0.5) { archetype = 'Work in Progress'; archetypeIcon = '🔨'; archetypeColor = '#fb923c'; }
-      else if (avg >= 55) { archetype = 'Struggling'; archetypeIcon = '⚠️'; archetypeColor = '#f472b6'; }
+      else if (avg >= 55) { archetype = 'Struggling'; archetypeIcon = '!'; archetypeColor = '#f472b6'; }
       else { archetype = 'Critical Zone'; archetypeIcon = '🔴'; archetypeColor = 'var(--pink)'; }
 
       const name = stuData.name, school = stuData.school;
@@ -6002,13 +6123,9 @@
         <div style="margin-bottom:16px;display:flex;align-items:center;gap:8px">
           <button onclick="goBackFromProfile()" class="filter-btn" id="profile-back-btn">← Back</button>
           <button class="compare-btn ${_inCmp ? 'in-compare' : ''}" onclick="toggleCompareStudent(${_stuIdx})">⇄ ${_inCmp ? 'Remove from Compare' : 'Add to Compare'}</button>
-          <button class="export-btn" onclick="exportStudentCSV(${_stuIdx})" style="margin-left:auto" title="Export student data">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v8m0 0l-3-3m3 3 3-3M3 12h10"/></svg>
-            Export
-          </button>
+
         </div>
         ${rankBadgeHTML}
-        ${_pctBar ? _pctBar : ''}
         <div class="student-header">
           <div class="student-avatar" style="border-color:${gc};color:${gc}">${ini}</div>
           <div style="flex:1">
@@ -6030,7 +6147,7 @@
           <div>
             <div class="verdict-title" style="color:${archetypeColor}">${archetype}</div>
             <div class="verdict-text">${archetypeDesc}
-              ${predicted !== null ? ` <span style="color:var(--text3)">Projected next score:</span> <span style="color:var(--amber);font-weight:600">${predicted}</span>.` : ''}
+
             </div>
           </div>
         </div>
@@ -6069,11 +6186,11 @@
          </div>
         <div class="card" style="margin-bottom:20px">
           <div class="card-header">
-            <div class="card-title">📈 Performance Timeline</div>
+            <div class="card-title">Performance Timeline</div>
             <div style="display:flex;gap:14px;font-family:'DM Mono',monospace;font-size:10px">
               ${thyApps.length ? `<span style="color:var(--teal)">● Theory</span>` : ''}
               ${revApps.length ? `<span style="color:var(--amber)">● Revision</span>` : ''}
-              ${predicted !== null ? `<span style="color:#818cf8">⋯ Predicted</span>` : ''}
+
             </div>
           </div>
           <div class="card-body"><div style="height:240px;position:relative"><canvas id="stu-chart"></canvas></div></div>
@@ -6081,7 +6198,7 @@
 
         <div class="two-col" style="margin-bottom:24px">
           <div class="card">
-            <div class="card-header"><div class="card-title">📋 Test History</div>
+            <div class="card-header"><div class="card-title">Test History</div>
               <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)">Theory first · Impact = difficulty-adjusted z-score</div>
             </div>
             <div class="table-wrap"><table>
@@ -6095,7 +6212,7 @@
         const z = examZ(a.exam_id, a.marks);
         const zStr = (z >= 0 ? '+' : '') + z.toFixed(2) + 'σ';
         const zCol = z >= 1.5 ? '#4ade80' : z >= 0.5 ? 'var(--teal)' : z >= -0.5 ? 'var(--text2)' : z >= -1.5 ? '#fb923c' : 'var(--pink)';
-        const zLabel = z >= 2 ? '🔥 exceptional' : z >= 1 ? '✦ above avg' : z >= -0.5 ? '· average' : z >= -1.5 ? '▼ below avg' : '⚠ struggling';
+        const zLabel = z >= 2 ? 'exceptional' : z >= 1 ? 'above avg' : z >= -0.5 ? '· average' : z >= -1.5 ? '▼ below avg' : '⚠ struggling';
         return `<tr>
                   <td class="td-school">${a.exam_label}</td>
                   <td><span style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 6px;border-radius:3px;${a.exam_type === 'theory' ? 'background:rgba(45,212,191,.15);color:var(--teal)' : 'background:rgba(232,160,32,.15);color:var(--amber)'}">${a.exam_type.slice(0, 3).toUpperCase()}</span></td>
@@ -6109,7 +6226,7 @@
             </table></div>
           </div>
           <div class="card">
-            <div class="card-header"><div class="card-title">🏫 vs School Peers</div></div>
+            <div class="card-header"><div class="card-title">vs School Peers</div></div>
             <div class="card-body">
               ${rival ? `<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);margin-bottom:12px">Top classmates by average score</div>
               ${schoolMates.slice(0, 8).map((s, i) => {
@@ -6125,7 +6242,7 @@
                 <div class="score-bar-label" style="width:130px;color:var(--amber);font-weight:600">${name.split(' ')[0]} (you)</div>
                 <div class="score-bar-track"><div class="score-bar-fill" style="width:${avg / Math.max(...schoolMates.slice(0, 8).map(x => x.marks), avg) * 100}%;background:var(--amber)"></div></div>
                 <div class="score-bar-val" style="color:var(--amber)">${avgStr}</div>
-              </div>` : '<div class="empty" style="padding:24px"><div class="empty-icon">🏫</div>No classmates found</div>'}
+              </div>` : '<div class="empty" style="padding:24px">No classmates found</div>'}
             </div>
           </div>
         </div>`;
@@ -6167,12 +6284,8 @@
         });
         datasets.push({ label: 'Class Avg', data: classAvgs, borderColor: 'rgba(255,255,255,.18)', backgroundColor: 'transparent', borderWidth: 1, borderDash: [5, 4], pointRadius: 0, fill: false, tension: .3 });
 
-        if (predicted !== null) {
-          const pd = new Array(sortedMarks.length).fill(null); pd.push(predicted);
-          datasets.push({ label: 'Predicted', data: pd, borderColor: '#818cf8', backgroundColor: 'rgba(129,140,248,.18)', borderWidth: 1.5, borderDash: [3, 3], pointRadius: (ctx) => { const w = ctx.chart.width || 300; return ctx.dataIndex === sortedMarks.length ? (w < 500 ? 5 : 8) : 0; }, pointBackgroundColor: '#818cf8', fill: false });
-        }
 
-        const allLabels = [...sortedApps.map(a => a.exam_label), ...(predicted !== null ? ['Next →'] : [])];
+        const allLabels = sortedApps.map(a => a.exam_label);
         CHARTS.stuChart = new Chart(ctx, {
           type: 'line', data: { labels: allLabels, datasets },
           options: {
@@ -6184,7 +6297,6 @@
                   label: (c) => {
                     if (c.datasetIndex === 0) { const a = sortedApps[c.dataIndex]; return a ? `${a.exam_type === 'theory' ? '▸ Theory' : '▸ Revision'} · ${c.parsed.y} pts` : ''; }
                     if (c.datasetIndex === 1) return `Class avg · ${c.parsed.y}`;
-                    return `Predicted · ${c.parsed.y}`;
                   }
                 }
               }
@@ -6570,11 +6682,25 @@
     // ═══════════════════════════════════════════════════
     //  BOTTOM NAV SYNC
     // ═══════════════════════════════════════════════════
+    const BNAV_PAGES = ['dashboard','leaderboard','students','schools','analytics'];
     function updateBottomNav() {
-      const page = location.hash.replace('#','') || 'dashboard';
-      document.querySelectorAll('.bnav-item').forEach(el => {
-        el.classList.toggle('active', el.dataset.page === page);
+      const page = (_currentPage || location.hash.replace('#','') || 'dashboard');
+      const items = document.querySelectorAll('.bnav-item');
+      let activeIdx = 0;
+      items.forEach((el, i) => {
+        const isActive = el.dataset.page === page;
+        el.classList.toggle('active', isActive);
+        if (isActive) activeIdx = i;
       });
+      // Slide pill
+      const pill = document.getElementById('bnav-pill');
+      if (pill) pill.style.transform = `translateX(${activeIdx * 100}%)`;
+      // Update context chip text
+      const chip = document.getElementById('bnav-ctx-chip');
+      if (chip && typeof selectedCity !== 'undefined') {
+        const city = selectedCity ? selectedCity.charAt(0).toUpperCase() + selectedCity.slice(1) : '—';
+        chip.textContent = city + (selectedYear ? ' ' + selectedYear : '');
+      }
     }
     window.addEventListener('hashchange', updateBottomNav);
 
@@ -6708,7 +6834,8 @@
       const dock = document.getElementById('compare-dock');
       dock.classList.toggle('visible', _cmpStudents.length > 0);
       const slotsEl = document.getElementById('cmp-dock-slots');
-      slotsEl.innerHTML = _cmpStudents.map((s, i) => {
+      const onStudentsPage = (_currentPage === 'students');
+      let dockHTML = _cmpStudents.map((s, i) => {
         const c = CMP_COLORS[i];
         const ini = s.name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
         return `<div class="compare-dock-slot">
@@ -6718,6 +6845,14 @@
         </div>
         ${i < _cmpStudents.length-1 ? '<span class="compare-dock-vs">vs</span>' : ''}`;
       }).join('');
+      // If waiting for more students and we're on the students page, show a prompt
+      if (_cmpStudents.length > 0 && _cmpStudents.length < CMP_MAX && onStudentsPage) {
+        dockHTML += `<span class="compare-dock-vs" style="font-size:10px;letter-spacing:.5px;opacity:.5">+</span>
+        <div class="compare-dock-slot" style="opacity:.45;border:1px dashed var(--border2);border-radius:6px;padding:0 8px;min-width:60px;justify-content:center">
+          <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)">pick student</span>
+        </div>`;
+      }
+      slotsEl.innerHTML = dockHTML;
       const goBtn = document.getElementById('cmp-go-btn');
       if (goBtn) goBtn.disabled = _cmpStudents.length < 2;
     }
@@ -6783,11 +6918,11 @@
         const ini = d.name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
         const isWinner = i===overallWinner && students.length>=2;
         return `<div style="text-align:center;padding:12px 8px;border-bottom:1px solid var(--border)">
-          <div style="width:52px;height:52px;border-radius:50%;background:${c.bg};border:2px solid ${c.border};display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:24px;color:${c.text};margin:0 auto 8px">${ini}</div>
-          ${isWinner?'<div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--amber);letter-spacing:2px;margin-bottom:4px">★ WINNER</div>':''}
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px">${d.name}</div>
-          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)">${d.school}</div>
-          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);margin-top:4px">${wins[i]}/${metrics.length} wins</div>
+          <div style="width:52px;height:52px;border-radius:50%;background:${c.bg};border:2px solid ${c.border};display:flex;align-items:center;justify-content:center;font-family:sans-serif;font-size:24px;color:${c.text};margin:0 auto 8px">${ini}</div>
+          ${isWinner?'<div style="font-family:monospace;font-size:8px;color:var(--amber);letter-spacing:2px;margin-bottom:4px">★ WINNER</div>':''}
+          <div style="font-family:sans-serif;font-size:16px;letter-spacing:1px">${d.name}</div>
+          <div style="font-family:monospace;font-size:9px;color:var(--text3)">${d.school}</div>
+          <div style="font-family:monospace;font-size:10px;color:var(--amber);margin-top:4px">${wins[i]}/${metrics.length} wins</div>
         </div>`;
       }).join('');
 
@@ -6804,12 +6939,12 @@
             ? (Math.max(...numVals)>0 ? (typeof v==='number'?v/Math.max(...numVals)*100:0) : 50) : null;
           return `<td style="text-align:center;padding:10px 8px;position:relative">
             ${pct!==null?`<div style="position:absolute;bottom:4px;left:8%;width:84%;height:3px;background:var(--bg3);border-radius:2px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${c.border};border-radius:2px;transition:width .8s"></div></div>`:''}
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:${isWin?c.text:'var(--text2)'};${isWin?'text-shadow:0 0 16px '+c.border+'50':''}">${m.fmt(v,d)}</div>
-            ${isWin?`<div style="font-family:'DM Mono',monospace;font-size:8px;color:${c.text};letter-spacing:1px">▲ BEST</div>`:''}
+            <div style="font-family:sans-serif;font-size:22px;color:${isWin?c.text:'var(--text2)'};${isWin?'text-shadow:0 0 16px '+c.border+'50':''}">${m.fmt(v,d)}</div>
+            ${isWin?`<div style="font-family:monospace;font-size:8px;color:${c.text};letter-spacing:1px">▲ BEST</div>`:''}
           </td>`;
         }).join('');
         return `<tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:10px 14px;font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;border-right:1px solid var(--border)">${CMP_METRIC_LABELS[metrics.indexOf(m)]}</td>
+          <td style="padding:10px 14px;font-family:monospace;font-size:9px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;border-right:1px solid var(--border)">${CMP_METRIC_LABELS[metrics.indexOf(m)]}</td>
           ${cells}
         </tr>`;
       }).join('');
@@ -6830,19 +6965,19 @@
             const isTop = v===topVal;
             return `<td style="text-align:center;padding:8px;position:relative">
               <div style="height:4px;background:var(--bg3);border-radius:2px;margin-bottom:5px;overflow:hidden"><div style="height:100%;width:${v/mx*100}%;background:${c.border};transition:width .8s"></div></div>
-              <span style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:${isTop?c.text:'var(--text2)'}">${v}</span>
+              <span style="font-family:sans-serif;font-size:18px;color:${isTop?c.text:'var(--text2)'}">${v}</span>
             </td>`;
           }).join('');
           return `<tr style="border-bottom:1px solid var(--border)">
-            <td style="padding:8px 14px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text2);border-right:1px solid var(--border)">${label}</td>
+            <td style="padding:8px 14px;font-family:monospace;font-size:10px;color:var(--text2);border-right:1px solid var(--border)">${label}</td>
             ${cells}
           </tr>`;
         }).join('');
         testSection = `<div style="margin-top:20px">
-          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px">Shared Tests (${sharedExamIds.length})</div>
+          <div style="font-family:monospace;font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px">Shared Tests (${sharedExamIds.length})</div>
           <div class="table-wrap"><table style="width:100%;border-collapse:collapse">
             <thead><tr style="background:var(--bg3)"><th style="padding:8px 14px;text-align:left;font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);border-right:1px solid var(--border)">Test</th>
-              ${students.map((_,i)=>`<th style="text-align:center;padding:8px;font-family:'DM Mono',monospace;font-size:9px;color:${CMP_COLORS[i].text}">${_.name.split(' ')[0]}</th>`).join('')}
+              ${students.map((_,i)=>`<th style="text-align:center;padding:8px;font-family:monospace;font-size:9px;color:${CMP_COLORS[i].text}">${_.name.split(' ')[0]}</th>`).join('')}
             </tr></thead>
             <tbody>${testRows}</tbody>
           </table></div>
@@ -6866,11 +7001,11 @@
               <tr>
                 <th style="background:var(--bg3);padding:8px 14px;border-right:1px solid var(--border)"></th>
                 ${students.map((d,i)=>`<th style="background:var(--bg3);border-bottom:1px solid var(--border)"><div style="padding:12px 8px;text-align:center;border-bottom:1px solid var(--border)">
-                  <div style="width:48px;height:48px;border-radius:50%;background:${CMP_COLORS[i].bg};border:2px solid ${CMP_COLORS[i].border};display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:22px;color:${CMP_COLORS[i].text};margin:0 auto 6px">${d.name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase()}</div>
-                  ${i===overallWinner&&_cmpStudents.length>=2?'<div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--amber);letter-spacing:2px;margin-bottom:3px">★ WINNER</div>':''}
-                  <div style="font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px">${d.name}</div>
-                  <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)">${d.school}</div>
-                  <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);margin-top:3px">${wins[i]}/${metrics.length} wins</div>
+                  <div style="width:48px;height:48px;border-radius:50%;background:${CMP_COLORS[i].bg};border:2px solid ${CMP_COLORS[i].border};display:flex;align-items:center;justify-content:center;font-family:sans-serif;font-size:22px;color:${CMP_COLORS[i].text};margin:0 auto 6px">${d.name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase()}</div>
+                  ${i===overallWinner&&_cmpStudents.length>=2?'<div style="font-family:monospace;font-size:8px;color:var(--amber);letter-spacing:2px;margin-bottom:3px">★ WINNER</div>':''}
+                  <div style="font-family:sans-serif;font-size:15px;letter-spacing:1px">${d.name}</div>
+                  <div style="font-family:monospace;font-size:9px;color:var(--text3)">${d.school}</div>
+                  <div style="font-family:monospace;font-size:10px;color:var(--amber);margin-top:3px">${wins[i]}/${metrics.length} wins</div>
                 </div></th>`).join('')}
               </tr>
             </thead>
@@ -6890,68 +7025,114 @@
     // ═══════════════════════════════════════════════════
     //  PERCENTILE BAR HELPER
     // ═══════════════════════════════════════════════════
-    function buildPercentileBar(rank, total) {
-      if (!total || typeof rank!=='number') return '';
-      const pct = Math.round((1-(rank-1)/total)*100);
-      const pctPos = (1-(rank-1)/total)*100;
-      return `<div class="pct-bar-wrap">
-        <div class="pct-bar-label">Score Percentile</div>
-        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px">
-          <div class="pct-val-label">${pct}<span style="font-family:'DM Mono',monospace;font-size:14px;color:var(--text3)">th</span></div>
-          <div class="pct-sub">percentile · ranked #${rank} of ${total}</div>
-        </div>
-        <div class="pct-track">
-          <div class="pct-fill" style="width:${pctPos}%"></div>
-          <div class="pct-marker" style="left:${pctPos}%"></div>
-        </div>
-        <div class="pct-labels"><span>Bottom</span><span>25th</span><span>Median</span><span>75th</span><span>Top</span></div>
-      </div>`;
-    }
+
 
     // ═══════════════════════════════════════════════════
-    //  TOP MOVERS WIDGET
+    //  COOL ANIMATIONS
     // ═══════════════════════════════════════════════════
-    function renderTopMovers() {
-      const el = document.getElementById('top-movers-body');
-      if (!el || !STU_REGISTRY.length || EXAMS.length < 2) {
-        if (document.getElementById('top-movers-card')) document.getElementById('top-movers-card').style.display = 'none';
-        return;
+
+    // A) Bottom nav ripple on tap
+    document.addEventListener('click', function(e) {
+      const item = e.target.closest('.bnav-item');
+      if (!item) return;
+      const r = document.createElement('div');
+      r.className = 'bnav-ripple';
+      const rect = item.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      r.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX-rect.left-size/2}px;top:${e.clientY-rect.top-size/2}px`;
+      item.appendChild(r);
+      r.addEventListener('animationend', () => r.remove());
+    });
+
+    // B) 3D card tilt on desktop
+    (function() {
+      function addTilt(el) {
+        el.addEventListener('mousemove', function(e) {
+          const r = el.getBoundingClientRect();
+          const x = (e.clientX - r.left) / r.width  - .5;
+          const y = (e.clientY - r.top)  / r.height - .5;
+          el.style.transform = `perspective(500px) rotateY(${x*6}deg) rotateX(${-y*6}deg) translateZ(2px)`;
+        });
+        el.addEventListener('mouseleave', function() {
+          el.style.transform = '';
+        });
       }
-      // Find students with most improvement (last 2 tests they appear in, chronologically)
-      const movers = [];
-      STU_REGISTRY.forEach(s => {
-        const sorted = [...s.apps].sort((a,b) => a.exam_id.localeCompare(b.exam_id));
-        if (sorted.length < 2) return;
-        const last = sorted[sorted.length-1];
-        const prev = sorted[sorted.length-2];
-        const delta = last.marks - prev.marks;
-        if (delta !== 0) movers.push({ name:s.name, school:s.school, gender:s.gender, delta, prev:prev.marks, last:last.marks, prevLabel:prev.exam_label, lastLabel:last.exam_label });
-      });
-      const risers = movers.filter(m=>m.delta>0).sort((a,b)=>b.delta-a.delta).slice(0,5);
-      const fallers = movers.filter(m=>m.delta<0).sort((a,b)=>a.delta-b.delta).slice(0,3);
-      if (!risers.length) { document.getElementById('top-movers-card').style.display='none'; return; }
-      el.innerHTML = `<div style="display:grid;grid-template-columns:1fr${fallers.length?';1fr':''}">
-        <div style="padding:16px;border-right:${fallers.length?'1px solid var(--border)':'none'}">
-          <div style="font-family:'DM Mono',monospace;font-size:9px;color:#4ade80;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">📈 Rising</div>
-          ${risers.map((m,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);${i===risers.length-1?'border:none':''}">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#4ade80;width:36px;text-align:right;flex-shrink:0">+${m.delta}</div>
-            <div style="flex:1;min-width:0">
-              <div style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.name}</div>
-              <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)">${m.prev} → <span style="color:#4ade80">${m.last}</span></div>
-            </div>
-          </div>`).join('')}
-        </div>
-        ${fallers.length?`<div style="padding:16px">
-          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--pink);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">📉 Slipping</div>
-          ${fallers.map((m,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);${i===fallers.length-1?'border:none':''}">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--pink);width:36px;text-align:right;flex-shrink:0">${m.delta}</div>
-            <div style="flex:1;min-width:0">
-              <div style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.name}</div>
-              <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)">${m.prev} → <span style="color:var(--pink)">${m.last}</span></div>
-            </div>
-          </div>`).join('')}
-        </div>`:''}</div>`;
+      function attachTilts() {
+        document.querySelectorAll('.stat-card').forEach(el => {
+          if (!el.dataset.tilt) { el.dataset.tilt = '1'; addTilt(el); }
+        });
+      }
+      // Attach after data load
+      const _orig = window._afterRender || function(){};
+      window._attachTilts = attachTilts;
+      document.addEventListener('dekma:rendered', attachTilts);
+    })();
+
+    // C) Text scramble for page title on nav
+    (function() {
+      const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789·—';
+      function scrambleTo(el, target, dur) {
+        dur = dur || 320;
+        let frame = 0;
+        const totalFrames = Math.round(dur / 40);
+        const orig = el.textContent;
+        let id = setInterval(function() {
+          frame++;
+          const prog = frame / totalFrames;
+          const revealUpto = Math.floor(prog * target.length);
+          let out = '';
+          for (let i = 0; i < target.length; i++) {
+            if (i < revealUpto) {
+              out += target[i];
+            } else {
+              out += CHARS[Math.floor(Math.random() * CHARS.length)];
+            }
+          }
+          el.textContent = out;
+          if (frame >= totalFrames) {
+            clearInterval(id);
+            el.textContent = target;
+            el.classList.add('loaded');
+          }
+        }, 40);
+      }
+      window._scrambleTo = scrambleTo;
+    })();
+
+    // D) Stat value count-up
+    function animateCountUp(el, target, suffix) {
+      suffix = suffix || '';
+      const start = 0;
+      const dur = 600;
+      const startTime = performance.now();
+      function step(now) {
+        const elapsed = now - startTime;
+        const prog = Math.min(elapsed / dur, 1);
+        // ease-out cubic
+        const eased = 1 - Math.pow(1 - prog, 3);
+        const val = Math.round(eased * target);
+        el.textContent = val.toLocaleString() + suffix;
+        if (prog < 1) requestAnimationFrame(step);
+        else { el.textContent = target.toLocaleString() + suffix; el.classList.remove('counting'); }
+      }
+      el.classList.add('counting');
+      requestAnimationFrame(step);
     }
+    window._animateCountUp = animateCountUp;
+
+    // E) Hook page title scramble into showPage
+    const _origShowPage = showPage;
+    function showPage(page) {
+      _origShowPage(page);
+      const titleEl = document.getElementById('page-title');
+      if (titleEl && window._scrambleTo) {
+        titleEl.classList.remove('loaded');
+        window._scrambleTo(titleEl, titleEl.textContent, 280);
+      }
+    }
+
+    // F) Attach tilt on stat renders (hook into overview stats)
+    const _OrigRenderOverview = typeof renderOverviewStats === 'function' ? renderOverviewStats : null;
 
     // ═══════════════════════════════════════════════════
     //  KEYBOARD SHORTCUTS MODAL
@@ -6967,6 +7148,23 @@
     window.addEventListener('DOMContentLoaded', () => {
       loadData();
       updateBottomNav();
+      setTimeout(function(){ document.dispatchEvent(new Event('dekma:rendered')); window._attachTilts && window._attachTilts(); }, 1200);
+      // Mobile secret: tap theme-toggle 7 times within 3s
+      (function(){
+        let _tc = 0, _tt = null;
+        const el = document.getElementById('theme-toggle');
+        if (!el) return;
+        el.addEventListener('touchend', function(e){
+          _tc++;
+          clearTimeout(_tt);
+          _tt = setTimeout(function(){ _tc = 0; }, 10000);
+          if (_tc >= 7) {
+            _tc = 0;
+            sessionStorage.setItem('__adm', Date.now().toString());
+            window.location.href = 'admin.html';
+          }
+        }, { passive: true });
+      })();
     });
     // Keyboard shortcut hints in sidebar footer
 
@@ -7013,21 +7211,28 @@
 
   <!-- ══ BOTTOM NAV ══ -->
   <nav class="bottom-nav" id="bottom-nav" aria-label="Bottom navigation">
+    <div class="bottom-nav-blur"></div>
     <div class="bottom-nav-inner">
-      <div class="bnav-item" onclick="location.hash='dashboard';updateBottomNav()" data-page="dashboard">
-        <span class="bnav-icon">◈</span><span class="bnav-label">Home</span>
+      <div class="bnav-pill" id="bnav-pill"></div>
+      <div class="bnav-item" data-page="dashboard" onclick="location.hash='dashboard'">
+        <div class="bnav-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12L12 3l9 9"/><path d="M5 10v11h5v-5h4v5h5V10"/></svg></div>
+        <span class="bnav-label">Home</span>
       </div>
-      <div class="bnav-item" onclick="location.hash='leaderboard';updateBottomNav()" data-page="leaderboard">
-        <span class="bnav-icon">◉</span><span class="bnav-label">Ranks</span>
+      <div class="bnav-item" data-page="leaderboard" onclick="location.hash='leaderboard'">
+        <div class="bnav-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h8M6 10h12M4 14h16M2 18h20"/><circle cx="12" cy="4" r="2"/></svg></div>
+        <span class="bnav-label">Ranks</span>
       </div>
-      <div class="bnav-item" onclick="location.hash='students';updateBottomNav()" data-page="students">
-        <span class="bnav-icon">◎</span><span class="bnav-label">Students</span>
+      <div class="bnav-item" data-page="students" onclick="location.hash='students'">
+        <div class="bnav-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="7" r="4"/><path d="M2 21v-2a6 6 0 0 1 6-6h0"/><path d="M15 17a3 3 0 1 0 6 0 3 3 0 0 0-6 0"/><path d="M18 14v6m-3-3h6"/></svg></div>
+        <span class="bnav-label">Students</span>
       </div>
-      <div class="bnav-item" onclick="location.hash='schools';updateBottomNav()" data-page="schools">
-        <span class="bnav-icon">▤</span><span class="bnav-label">Schools</span>
+      <div class="bnav-item" data-page="schools" onclick="location.hash='schools'">
+        <div class="bnav-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 9h3v11h14V9h3z"/><rect x="9" y="14" width="6" height="7"/><path d="M12 2v7"/></svg></div>
+        <span class="bnav-label">Schools</span>
       </div>
-      <div class="bnav-item" onclick="location.hash='analytics';updateBottomNav()" data-page="analytics">
-        <span class="bnav-icon">▲</span><span class="bnav-label">Analytics</span>
+      <div class="bnav-item" data-page="analytics" onclick="location.hash='analytics'">
+        <div class="bnav-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg></div>
+        <span class="bnav-label">Stats</span>
       </div>
     </div>
   </nav>
@@ -7050,7 +7255,7 @@
       </div>
       <div class="modal-body">
         <div style="display:grid;grid-template-columns:auto 1fr;gap:8px 20px;align-items:center">
-          ${[['/', 'Focus search'],['Esc', 'Close / dismiss'],['?', 'Show this panel'],['Ctrl×3 + asoiaf', 'Secret admin']].map(([k,d])=>`
+          ${[['/', 'Focus search'],['Esc', 'Close / dismiss'],['?', 'Show this panel'],['Ctrl×3 + ?', 'Power mode']].map(([k,d])=>`
             <div style="font-family:'DM Mono',monospace;font-size:12px;padding:5px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;text-align:center;color:var(--amber);white-space:nowrap">${k}</div>
             <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text2)">${d}</div>`).join('')}
         </div>
