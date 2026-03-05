@@ -2192,267 +2192,188 @@
     }
 
     /* Loading */
-    /* ══ LOADING SCREEN ════════════════════════════════════════════════════ */
     #loading {
       position: fixed;
       inset: 0;
-      background: #000;
+      background: var(--bg);
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 2000;
+      z-index: 1000;
+      flex-direction: column;
+      gap: 16px
     }
 
-    .loading-pulse {
-      width: 8px; height: 8px;
+    .loader {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--amber);
       border-radius: 50%;
-      background: var(--amber);
-      animation: ldPulse 1.1s ease-in-out infinite;
-      box-shadow: 0 0 0 0 rgba(232,160,32,.6)
+      animation: spin .7s linear infinite
     }
 
-    @keyframes ldPulse {
-      0%   { transform: scale(1);   box-shadow: 0 0 0 0 rgba(232,160,32,.5) }
-      50%  { transform: scale(1.5); box-shadow: 0 0 0 14px rgba(232,160,32,0) }
-      100% { transform: scale(1);   box-shadow: 0 0 0 0 rgba(232,160,32,0) }
+    .loader-text {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text3);
+      letter-spacing: 2px
     }
 
     /* ══ SPLASH SCREEN ══════════════════════════════════════════════════════ */
     #splash {
       position: fixed;
       inset: 0;
-      background: #000;
+      background: var(--bg);
       z-index: 900;
-      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-y: auto;
+      animation: fadeIn .4s ease-out
     }
 
-    #splash-canvas {
-      position: absolute;
-      inset: 0;
-      width: 100%; height: 100%;
-    }
-
-    /* ── CSS wordmark — hidden until canvas fades it in ── */
-    .splash-text-reveal {
-      position: absolute;
+    .splash-bg-glow {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(232, 160, 32, .06) 0%, transparent 70%);
+      pointer-events: none;
+      top: 50%;
       left: 50%;
-      top: 38%;
       transform: translate(-50%, -50%);
+      z-index: 0
+    }
+
+    .splash-inner {
+      position: relative;
+      z-index: 1;
       text-align: center;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity .8s ease;
-      white-space: nowrap;
-    }
-
-    .splash-wordmark-css {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(72px, 14vw, 140px);
-      letter-spacing: 0.12em;
-      line-height: 1;
-      color: transparent;
-      background: linear-gradient(175deg, #f0f0f8 20%, #e8a020 55%, #f5c060 70%, #f0f0f8 90%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      text-shadow: none;
-      display: block;
-    }
-
-    .splash-wordmark-sub {
-      font-family: 'DM Mono', monospace;
-      font-size: clamp(8px, 1.2vw, 11px);
-      letter-spacing: 4px;
-      color: rgba(144,144,176,.55);
-      text-transform: uppercase;
-      margin-top: 10px;
-      display: block;
-    }
-
-    /* ── Bottom UI panel ── */
-    .splash-ui-panel {
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%) translateY(48px);
+      max-width: 520px;
       width: 100%;
-      max-width: 540px;
-      padding: 0 24px 52px;
-      box-sizing: border-box;
-      opacity: 0;
-      transition: opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1);
-      pointer-events: none;
+      padding: 48px 24px;
+      box-sizing: border-box
     }
 
-    .splash-ui-panel.visible {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-      pointer-events: all;
+    .splash-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 4px;
+      color: var(--amber);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      opacity: .7
     }
 
-    .splash-selector-grid {
-      display: grid;
-      grid-template-columns: 1fr 1px 1fr;
-      background: rgba(17,17,24,.85);
-      border: 1px solid rgba(58,58,80,.7);
-      border-radius: 18px;
-      overflow: hidden;
-      margin-bottom: 16px;
-      backdrop-filter: blur(20px);
+    .splash-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 72px;
+      letter-spacing: 8px;
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 6px
     }
 
-    .splash-col {
-      padding: 20px 18px;
-    }
-
-    .splash-col-divider {
-      background: rgba(58,58,80,.7);
-      width: 1px;
+    .splash-subtitle {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text3);
+      letter-spacing: 2px;
+      margin-bottom: 48px
     }
 
     .splash-step-label {
       font-family: 'DM Mono', monospace;
       font-size: 9px;
-      letter-spacing: 2.5px;
+      letter-spacing: 2px;
       text-transform: uppercase;
       color: var(--text3);
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .splash-step-label::before {
-      content: '';
-      width: 3px; height: 3px;
-      border-radius: 50%;
-      background: var(--amber);
-      flex-shrink: 0;
+      margin-bottom: 10px
     }
 
     .splash-options {
       display: flex;
-      gap: 7px;
+      gap: 10px;
+      justify-content: center;
       flex-wrap: wrap;
+      margin-bottom: 32px
     }
 
     .splash-opt {
-      background: transparent;
-      border: 1px solid rgba(42,42,56,.9);
-      border-radius: 7px;
-      padding: 7px 13px;
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius2);
+      padding: 14px 24px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 2px;
       color: var(--text2);
       cursor: pointer;
-      transition: all .16s;
+      transition: all .18s;
+      min-width: 90px
     }
 
     .splash-opt:hover {
       border-color: var(--border2);
       color: var(--text);
-      background: rgba(255,255,255,.04);
+      transform: translateY(-2px)
     }
 
     .splash-opt.selected {
-      background: rgba(232,160,32,.12);
-      border-color: rgba(232,160,32,.6);
+      background: rgba(232, 160, 32, .1);
+      border-color: var(--amber);
       color: var(--amber);
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px rgba(232, 160, 32, .15)
     }
 
-    .splash-opt.disabled {
-      opacity: .2;
-      pointer-events: none;
+    .splash-opt.city-opt {
+      font-size: 18px;
+      min-width: 130px
+    }
+
+    .splash-divider {
+      width: 1px;
+      height: 40px;
+      background: var(--border);
+      margin: 0 auto 32px
     }
 
     .splash-go-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      width: 100%;
       background: var(--amber);
-      color: #06060a;
+      color: #000;
       border: none;
-      border-radius: 12px;
-      padding: 14px 32px;
+      border-radius: var(--radius2);
+      padding: 14px 48px;
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 20px;
-      letter-spacing: 3.5px;
+      font-size: 22px;
+      letter-spacing: 3px;
       cursor: pointer;
-      transition: all .22s cubic-bezier(.22,1,.36,1);
+      transition: all .18s;
       opacity: 0;
       pointer-events: none;
-      transform: translateY(6px);
-    }
-
-    .splash-go-btn .go-arrow {
-      display: inline-block;
-      transition: transform .2s cubic-bezier(.22,1,.36,1);
+      transform: translateY(10px)
     }
 
     .splash-go-btn.ready {
       opacity: 1;
       pointer-events: all;
-      transform: translateY(0);
+      transform: translateY(0)
     }
 
     .splash-go-btn:hover {
       background: var(--amber2);
-      box-shadow: 0 0 40px rgba(232,160,32,.35), 0 12px 40px rgba(0,0,0,.5);
       transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(232, 160, 32, .3)
     }
-
-    .splash-go-btn:hover .go-arrow { transform: translateX(6px) }
 
     .splash-no-data {
       font-family: 'DM Mono', monospace;
-      font-size: 10px;
+      font-size: 11px;
       color: var(--pink);
-      margin-top: 10px;
-      text-align: center;
-      letter-spacing: 1px;
-      display: none;
-    }
-
-    /* ── Skip button ── */
-    .splash-skip {
-      position: absolute;
-      bottom: 20px;
-      right: 24px;
-      background: none;
-      border: 1px solid rgba(90,90,120,.4);
-      border-radius: 6px;
-      color: rgba(90,90,120,.7);
-      font-family: 'DM Mono', monospace;
-      font-size: 9px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      padding: 5px 10px;
-      cursor: pointer;
-      opacity: 0;
-      transition: opacity .3s, color .2s, border-color .2s;
-      pointer-events: none;
-    }
-
-    .splash-skip.visible {
-      opacity: 1;
-      pointer-events: all;
-    }
-
-    .splash-skip:hover {
-      color: rgba(144,144,176,.9);
-      border-color: rgba(144,144,176,.5);
-    }
-
-    /* splash exit */
-    #splash.exiting {
-      animation: splashExit .6s cubic-bezier(.4,0,1,1) forwards;
-    }
-
-    @keyframes splashExit {
-      0%   { opacity: 1; filter: brightness(1) }
-      40%  { opacity: 1; filter: brightness(1.8) }
-      100% { opacity: 0; filter: brightness(.5) }
+      margin-top: 12px;
+      display: none
     }
 
     /* ══ CONTEXT BADGE in topbar ══════════════════════════════════════════ */
@@ -3034,18 +2955,49 @@
         max-width: 100%
       }
 
-      /* Splash mobile tweaks */
-      .splash-selector-grid {
-        grid-template-columns: 1fr;
+      /* Splash: compress vertical spacing so all content fits without scrolling */
+      .splash-title {
+        font-size: 52px;
+        letter-spacing: 5px
       }
-      .splash-col-divider {
-        width: 100%; height: 1px;
+
+      .splash-subtitle {
+        font-size: 10px;
+        letter-spacing: 1.5px;
+        margin-bottom: 24px
       }
-      .splash-wordmark-css {
-        font-size: 72px;
+
+      .splash-options {
+        margin-bottom: 16px
       }
-      .splash-ui-panel {
-        padding: 0 16px 36px;
+
+      .splash-divider {
+        margin-bottom: 16px;
+        height: 28px
+      }
+
+      .splash-step-label {
+        margin-bottom: 8px
+      }
+
+      .splash-opt {
+        font-size: 18px;
+        padding: 10px 18px;
+        min-width: 80px
+      }
+
+      .splash-opt.city-opt {
+        font-size: 15px;
+        min-width: 110px
+      }
+
+      .splash-go-btn {
+        padding: 12px 36px;
+        font-size: 18px
+      }
+
+      .splash-inner {
+        padding: 36px 20px
       }
     }
 
@@ -3113,15 +3065,55 @@
         font-size: 10px
       }
 
-      .splash-wordmark-css { font-size: 56px; }
-      .splash-wordmark-sub { font-size: 8px; letter-spacing: 2.5px; }
-      .splash-col { padding: 16px 14px; }
-      .splash-opt { font-size: 10px; padding: 6px 11px; }
+      /* Splash: even tighter on small phones */
+      .splash-title {
+        font-size: 44px;
+        letter-spacing: 4px
+      }
+
+      .splash-badge {
+        font-size: 9px;
+        letter-spacing: 2px;
+        margin-bottom: 8px
+      }
+
+      .splash-subtitle {
+        font-size: 9px;
+        margin-bottom: 20px
+      }
+
+      .splash-opt {
+        font-size: 16px;
+        padding: 9px 14px;
+        min-width: 72px
+      }
+
+      .splash-opt.city-opt {
+        font-size: 13px;
+        min-width: 100px
+      }
+
+      .splash-inner {
+        padding: 28px 16px
+      }
     }
 
     @media(max-width:360px) {
-      .splash-wordmark-css { font-size: 46px; }
-      .splash-opt { font-size: 9px; padding: 5px 9px; }
+      .splash-title {
+        font-size: 38px;
+        letter-spacing: 3px
+      }
+
+      .splash-opt {
+        font-size: 14px;
+        padding: 8px 12px;
+        min-width: 64px
+      }
+
+      .splash-opt.city-opt {
+        font-size: 12px;
+        min-width: 88px
+      }
     }
   </style>
 </head>
@@ -3129,39 +3121,32 @@
 <body>
 
   <div id="loading">
-    <div class="loading-pulse"></div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;color:var(--amber)">DEKMA</div>
+    <div class="loader"></div>
+    <div class="loader-text">LOADING…</div>
   </div>
 
-  <!-- ══ SPLASH SCREEN ══ -->
+  <!-- ══ SPLASH SCREEN (first visit / no selection) ══ -->
   <div id="splash" style="display:none">
-    <canvas id="splash-canvas"></canvas>
+    <div class="splash-bg-glow"></div>
+    <div class="splash-inner">
+      <div class="splash-badge">Applied Mathematics · Results Portal</div>
+      <div class="splash-title">DEKMA</div>
+      <div class="splash-subtitle">DISTRICT EXAMINATION &amp; KNOWLEDGE METRICS ARCHIVE</div>
 
-    <!-- CSS wordmark — revealed by JS when particles converge -->
-    <div class="splash-text-reveal" id="splash-text-reveal">
-      <span class="splash-wordmark-css">DEKMA</span>
-      <span class="splash-wordmark-sub">District Examination &amp; Knowledge Metrics Archive</span>
-    </div>
+      <div class="splash-step-label">Select City</div>
+      <div class="splash-options" id="splash-cities"></div>
 
-    <!-- Bottom UI panel — slides up after animation -->
-    <div class="splash-ui-panel" id="splash-ui-panel">
-      <div class="splash-selector-grid">
-        <div class="splash-col">
-          <div class="splash-step-label">City</div>
-          <div class="splash-options" id="splash-cities"></div>
-        </div>
-        <div class="splash-col-divider"></div>
-        <div class="splash-col">
-          <div class="splash-step-label">Year</div>
-          <div class="splash-options" id="splash-years"></div>
-        </div>
-      </div>
+      <div class="splash-divider"></div>
+
+      <div class="splash-step-label">Select Year</div>
+      <div class="splash-options" id="splash-years"></div>
+
       <button class="splash-go-btn" id="splash-go-btn" onclick="splashGo()">
-        View Results <span class="go-arrow">→</span>
+        View Results →
       </button>
       <div class="splash-no-data" id="splash-no-data">⚠ No data for this combination</div>
     </div>
-
-    <button class="splash-skip" id="splash-skip" onclick="skipSplashAnim()">skip</button>
   </div>
 
   <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
@@ -3808,26 +3793,20 @@
     function showSplash() {
       document.getElementById('loading').style.display = 'none';
       document.getElementById('app').style.display = 'none';
-      const splashEl = document.getElementById('splash');
-      splashEl.style.display = 'block';
+      document.getElementById('splash').style.display = 'flex';
 
       const cities = getAvailableCities();
 
       // City options
       document.getElementById('splash-cities').innerHTML = cities.map(c =>
         `<div class="splash-opt city-opt ${c === splashCity ? 'selected' : ''}" onclick="splashPickCity('${esc(c)}')">${c}</div>`
-      ).join('') || '<div style="color:var(--text3);font-family:DM Mono,monospace;font-size:11px">No data — run parse_results.py</div>';
+      ).join('') || '<div style="color:var(--text3);font-family:DM Mono,monospace;font-size:11px">No data in results.js — run parse_results.py</div>';
 
-      // Year options
+      // Year options — all unique years across cities
       const allYears = new Set();
       cities.forEach(c => getAvailableYears(c).forEach(y => allYears.add(y)));
       const sortedYears = [...allYears].sort((a, b) => b - a);
       renderSplashYears(sortedYears);
-
-      // Fire the cinematic animation
-      requestAnimationFrame(() => {
-        if (window.startSplashAnimation) window.startSplashAnimation();
-      });
     }
 
     function renderSplashYears(years) {
@@ -3878,344 +3857,10 @@
       selectedCity = splashCity;
       selectedYear = splashYear;
       saveSelection();
-      const splashEl = document.getElementById('splash');
-      splashEl.classList.add('exiting');
-      window._splashStop && window._splashStop();
-      setTimeout(() => {
-        splashEl.style.display = 'none';
-        splashEl.classList.remove('exiting');
-        document.getElementById('app').style.display = 'flex';
-        reloadForSelection();
-      }, 560);
+      document.getElementById('splash').style.display = 'none';
+      document.getElementById('app').style.display = 'flex';
+      reloadForSelection();
     }
-
-    function skipSplashAnim() {
-      window._splashSkip && window._splashSkip();
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════
-    //  CINEMATIC SPLASH ANIMATION — particle convergence to text
-    // ═══════════════════════════════════════════════════════════════════════
-    (function() {
-      // ── Timing (ms) ────────────────────────────────────────────────────
-      const T_BURST   =  350;   // dot → explosion
-      const T_SCATTER = 1400;   // particles drifting
-      const T_PULL    = 1400;   // start pulling to targets (same as end of scatter, immediate pull)
-      const T_SETTLE  = 3600;   // fully converged
-      const T_REVEAL  = 3800;   // CSS text visible, canvas text fading
-      const T_UI      = 4000;   // UI panel slides up
-
-      // ── Colors ─────────────────────────────────────────────────────────
-      const C_AMBER  = [232, 160,  32];
-      const C_TEAL   = [ 45, 212, 191];
-      const C_SILVER = [200, 200, 222];
-      const PALETTE  = [C_AMBER, C_AMBER, C_AMBER, C_TEAL, C_SILVER];
-
-      // ── State ──────────────────────────────────────────────────────────
-      let canvas, ctx, W, H, CX, CY;
-      let particles = [];
-      let rafId = null;
-      let t0 = 0;
-      let uiRevealed = false;
-      let skipRequested = false;
-
-      // ── Canvas init ────────────────────────────────────────────────────
-      function initCanvas() {
-        canvas = document.getElementById('splash-canvas');
-        if (!canvas) return false;
-        ctx = canvas.getContext('2d');
-        resize();
-        window.addEventListener('resize', onResize);
-        return true;
-      }
-
-      function resize() {
-        W  = canvas.width  = canvas.offsetWidth  || window.innerWidth;
-        H  = canvas.height = canvas.offsetHeight || window.innerHeight;
-        CX = W / 2;
-        CY = H * 0.38;
-      }
-
-      function onResize() { resize(); }
-
-      // ── Sample DEKMA pixel positions ───────────────────────────────────
-      function sampleDEKMA() {
-        const fontSize = Math.min(W * 0.175, 148);
-        const ow = W;
-        const oh = Math.ceil(fontSize * 1.5);
-        const off = document.createElement('canvas');
-        off.width = ow; off.height = oh;
-        const oc = off.getContext('2d');
-        oc.clearRect(0, 0, ow, oh);
-        oc.fillStyle = '#ffffff';
-        oc.font = `${fontSize}px 'Bebas Neue', sans-serif`;
-        oc.textAlign = 'center';
-        oc.textBaseline = 'middle';
-        oc.fillText('DEKMA', ow / 2, oh / 2);
-
-        const imgData = oc.getImageData(0, 0, ow, oh).data;
-        const pts = [];
-        // Adaptive step: aim for ~500 points
-        const step = Math.max(3, Math.round(Math.sqrt((ow * oh) / 600)));
-
-        for (let y = 0; y < oh; y += step) {
-          for (let x = 0; x < ow; x += step) {
-            const i = (y * ow + x) * 4;
-            if (imgData[i + 3] > 80) {
-              pts.push({
-                x: x,
-                y: CY - oh / 2 + y
-              });
-            }
-          }
-        }
-        return pts;
-      }
-
-      // ── Create particles ───────────────────────────────────────────────
-      function buildParticles(targets) {
-        particles = targets.map((t) => {
-          const col = PALETTE[Math.floor(Math.random() * PALETTE.length)];
-          // Initial position: tightly packed near center (will burst outward)
-          const angle  = Math.random() * Math.PI * 2;
-          const radius = Math.random() * 30;
-          const scatterAngle  = Math.random() * Math.PI * 2;
-          const scatterRadius = 80 + Math.random() * Math.max(W, H) * 0.52;
-          return {
-            x:   CX + Math.cos(angle) * radius,
-            y:   CY + Math.sin(angle) * radius,
-            vx:  (Math.random() - .5) * 3,
-            vy:  (Math.random() - .5) * 3,
-            tx:  t.x,   // letter target x
-            ty:  t.y,   // letter target y
-            sx:  CX + Math.cos(scatterAngle) * scatterRadius,  // scatter target
-            sy:  CY + Math.sin(scatterAngle) * scatterRadius,
-            r:   Math.random() * 1.6 + 0.5,
-            col: col,
-            alpha: 0,
-            trail: [],
-            delay: Math.random() * 600, // stagger burst timing
-          };
-        });
-      }
-
-      // ── Draw faint grid ────────────────────────────────────────────────
-      function drawGrid(alpha) {
-        if (alpha <= 0.001) return;
-        const gs = 55;
-        ctx.strokeStyle = `rgba(232,160,32,${alpha})`;
-        ctx.lineWidth = 0.5;
-        ctx.beginPath();
-        for (let x = (CX % gs); x < W; x += gs) { ctx.moveTo(x, 0); ctx.lineTo(x, H); }
-        for (let y = (CY % gs); y < H; y += gs) { ctx.moveTo(0, y); ctx.lineTo(W, y); }
-        ctx.stroke();
-      }
-
-      // ── Draw origin pulse ──────────────────────────────────────────────
-      function drawOrigin(elapsed) {
-        const life = Math.min(elapsed / T_BURST, 1);
-        // Rings
-        for (let i = 0; i < 4; i++) {
-          const phase = ((elapsed * 0.00065) + i * 0.25) % 1;
-          const r = phase * Math.min(W, H) * 0.45;
-          const a = (1 - phase) * (1 - life * 0.6) * 0.22;
-          if (a < 0.005) continue;
-          ctx.beginPath();
-          ctx.arc(CX, CY, r, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(232,160,32,${a})`;
-          ctx.lineWidth = 1.2;
-          ctx.stroke();
-        }
-        // Core dot
-        const dotA = (0.3 + 0.7 * Math.sin(elapsed * 0.008)) * (1 - life);
-        if (dotA > 0.01) {
-          const g = ctx.createRadialGradient(CX, CY, 0, CX, CY, 18);
-          g.addColorStop(0, `rgba(255,220,100,${dotA})`);
-          g.addColorStop(0.4, `rgba(232,160,32,${dotA * 0.6})`);
-          g.addColorStop(1, `rgba(232,160,32,0)`);
-          ctx.beginPath();
-          ctx.arc(CX, CY, 18, 0, Math.PI * 2);
-          ctx.fillStyle = g;
-          ctx.fill();
-        }
-      }
-
-      // ── Ease functions ─────────────────────────────────────────────────
-      function easeOutExpo(t) { return t === 1 ? 1 : 1 - Math.pow(2, -10 * t); }
-      function easeInOutCubic(t) { return t < .5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; }
-
-      // ── Main animation loop ────────────────────────────────────────────
-      function frame(ts) {
-        rafId = requestAnimationFrame(frame);
-        const elapsed = ts - t0;
-
-        // Clear
-        ctx.clearRect(0, 0, W, H);
-
-        // Vignette
-        const vig = ctx.createRadialGradient(CX, CY, H * 0.1, CX, CY, H * 0.85);
-        vig.addColorStop(0, 'rgba(0,0,0,0)');
-        vig.addColorStop(1, 'rgba(0,0,0,0.7)');
-        ctx.fillStyle = vig;
-        ctx.fillRect(0, 0, W, H);
-
-        // Grid fades in during convergence
-        const gridAlpha = elapsed > T_SCATTER
-          ? Math.min((elapsed - T_SCATTER) / 1200, 1) * 0.028
-          : 0;
-        drawGrid(gridAlpha);
-
-        // Origin rings (only before scatter fully begins)
-        if (elapsed < T_BURST + 600) drawOrigin(elapsed);
-
-        // Update + draw particles
-        const pullStart = T_SCATTER;
-        const pullEnd   = T_SETTLE;
-
-        particles.forEach(p => {
-          const pElapsed = elapsed - p.delay;
-
-          if (pElapsed < 0) { return; } // not yet born
-
-          // ── Phase logic ────────────────────────────────────────────────
-          if (pElapsed < T_BURST) {
-            // ORIGIN: particles converge at center
-            p.alpha = Math.min(pElapsed / T_BURST, 1) * 0.5;
-
-          } else if (elapsed < pullStart) {
-            // SCATTER: move toward scatter position
-            const t = easeOutExpo(Math.min((pElapsed - T_BURST) / (T_SCATTER - T_BURST), 1));
-            p.x = CX + Math.cos(Math.atan2(p.sy - CY, p.sx - CX)) * t * Math.hypot(p.sx - CX, p.sy - CY) + (Math.random() - .5) * 0.4;
-            p.y = CY + Math.sin(Math.atan2(p.sy - CY, p.sx - CX)) * t * Math.hypot(p.sx - CX, p.sy - CY) + (Math.random() - .5) * 0.4;
-            p.alpha = 0.5 + t * 0.3;
-
-          } else if (elapsed <= pullEnd) {
-            // PULL: spring toward letter target
-            const dx = p.tx - p.x;
-            const dy = p.ty - p.y;
-            const k = 0.055 + (elapsed - pullStart) / (pullEnd - pullStart) * 0.04;
-            p.vx = p.vx * 0.80 + dx * k;
-            p.vy = p.vy * 0.80 + dy * k;
-            p.trail.push({ x: p.x, y: p.y });
-            if (p.trail.length > 9) p.trail.shift();
-            p.x += p.vx;
-            p.y += p.vy;
-            const pullProg = (elapsed - pullStart) / (pullEnd - pullStart);
-            p.alpha = 0.6 + pullProg * 0.4;
-
-          } else {
-            // SETTLED: snap to target, fade as CSS text takes over
-            p.x += (p.tx - p.x) * 0.25;
-            p.y += (p.ty - p.y) * 0.25;
-            p.trail = [];
-            const fade = 1 - Math.min((elapsed - T_REVEAL) / 500, 1);
-            p.alpha = Math.max(0, fade);
-          }
-
-          // ── Draw trail ─────────────────────────────────────────────────
-          if (p.trail.length > 1) {
-            for (let i = 1; i < p.trail.length; i++) {
-              const tr = p.trail[i];
-              const ta = (i / p.trail.length) * p.alpha * 0.28;
-              if (ta < 0.01) continue;
-              ctx.beginPath();
-              ctx.arc(tr.x, tr.y, p.r * 0.55, 0, Math.PI * 2);
-              ctx.fillStyle = `rgba(${p.col[0]},${p.col[1]},${p.col[2]},${ta})`;
-              ctx.fill();
-            }
-          }
-
-          // ── Draw core ──────────────────────────────────────────────────
-          if (p.alpha < 0.01) return;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${p.col[0]},${p.col[1]},${p.col[2]},${p.alpha})`;
-          ctx.fill();
-
-          // Glow on settled particles
-          if (p.alpha > 0.5 && elapsed > T_SETTLE - 400) {
-            const gr = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 5);
-            gr.addColorStop(0, `rgba(${p.col[0]},${p.col[1]},${p.col[2]},${p.alpha * 0.12})`);
-            gr.addColorStop(1, `rgba(${p.col[0]},${p.col[1]},${p.col[2]},0)`);
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.r * 5, 0, Math.PI * 2);
-            ctx.fillStyle = gr;
-            ctx.fill();
-          }
-        });
-
-        // ── Flash on crystallize ────────────────────────────────────────
-        if (elapsed > T_SETTLE && elapsed < T_REVEAL) {
-          const fp = (elapsed - T_SETTLE) / (T_REVEAL - T_SETTLE);
-          const fa = Math.sin(fp * Math.PI) * 0.06;
-          ctx.fillStyle = `rgba(232,160,32,${fa})`;
-          ctx.fillRect(0, 0, W, H);
-        }
-
-        // ── Reveal UI ──────────────────────────────────────────────────
-        if (elapsed >= T_REVEAL && !uiRevealed) {
-          uiRevealed = true;
-          // Fade in CSS wordmark
-          const reveal = document.getElementById('splash-text-reveal');
-          if (reveal) reveal.style.opacity = '1';
-          // Slide up UI panel
-          setTimeout(() => {
-            const panel = document.getElementById('splash-ui-panel');
-            if (panel) panel.classList.add('visible');
-          }, T_UI - T_REVEAL);
-        }
-
-        // ── Stop drawing particles once fully faded ─────────────────────
-        if (elapsed > T_REVEAL + 800) {
-          cancelAnimationFrame(rafId);
-          rafId = null;
-        }
-      }
-
-      // ── Skip handler ───────────────────────────────────────────────────
-      window._splashSkip = function() {
-        skipRequested = true;
-        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-        // Instantly show CSS text + UI
-        const reveal = document.getElementById('splash-text-reveal');
-        if (reveal) reveal.style.opacity = '1';
-        const panel = document.getElementById('splash-ui-panel');
-        if (panel) panel.classList.add('visible');
-        uiRevealed = true;
-        // Clear canvas
-        if (ctx) ctx.clearRect(0, 0, W, H);
-      };
-
-      window._splashStop = function() {
-        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-        window.removeEventListener('resize', onResize);
-      };
-
-      // ── Public start ───────────────────────────────────────────────────
-      window.startSplashAnimation = function() {
-        if (!initCanvas()) return;
-        // Sample text after fonts are ready
-        document.fonts.ready.then(() => {
-          const targets = sampleDEKMA();
-          if (!targets.length) {
-            // Fallback if font not available
-            window._splashSkip();
-            return;
-          }
-          buildParticles(targets);
-          uiRevealed = false;
-          t0 = performance.now();
-          if (rafId) cancelAnimationFrame(rafId);
-          rafId = requestAnimationFrame(frame);
-
-          // Show skip button after 1.5s
-          setTimeout(() => {
-            const skip = document.getElementById('splash-skip');
-            if (skip && !uiRevealed) skip.classList.add('visible');
-          }, 1500);
-        });
-      };
-    })();
 
     // ═══════════════════════════════════════════════════
     //  DATA LOADING
