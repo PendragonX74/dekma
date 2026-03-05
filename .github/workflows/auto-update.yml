@@ -14,7 +14,7 @@ permissions:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 15          # FIX: kill hung jobs
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repository
@@ -24,7 +24,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: "pip"            # FIX: cache pip packages
 
       - name: Install dependencies
         run: pip install requests
@@ -33,7 +32,6 @@ jobs:
         id: download
         run: |
           python xml_downloader_auto.py
-          # FIX: expose whether anything actually changed
           if [ -f "DEKMA RESULTS/.new_downloads" ]; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
           else
@@ -41,7 +39,7 @@ jobs:
           fi
 
       - name: Run parser
-        if: steps.download.outputs.changed == 'true'   # FIX: skip if nothing new
+        if: steps.download.outputs.changed == 'true'
         run: python parse_results.py
 
       - name: Commit and push if changes exist
