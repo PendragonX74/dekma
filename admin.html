@@ -2,480 +2,711 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>—</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg:     #0a0a0f;
-      --bg2:    #111118;
-      --bg3:    #18181f;
-      --border: #2a2a38;
-      --border2:#3a3a50;
-      --amber:  #e8a020;
-      --amber2: #f5c060;
-      --teal:   #2dd4bf;
-      --pink:   #f472b6;
-      --blue:   #60a5fa;
-      --red:    #ef4444;
-      --green:  #4ade80;
-      --text:   #e8e8f0;
-      --text2:  #9090b0;
-      --text3:  #5a5a78;
-      --radius: 8px;
-      --radius2:14px;
+      --bg:      #080810;
+      --bg2:     #0e0e1a;
+      --bg3:     #14141f;
+      --bg4:     #1c1c2a;
+      --border:  #252535;
+      --border2: #35354d;
+      --amber:   #e8a020;
+      --amber2:  #f5c060;
+      --amber3:  rgba(232,160,32,.08);
+      --teal:    #2dd4bf;
+      --pink:    #f472b6;
+      --blue:    #60a5fa;
+      --red:     #ef4444;
+      --green:   #4ade80;
+      --text:    #dcdcec;
+      --text2:   #8080a0;
+      --text3:   #4a4a68;
+      --r:       6px;
+      --r2:      12px;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0 }
-    html { scroll-behavior: smooth }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
+    html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent }
+
     body {
-      font-family: 'Crimson Pro', serif;
+      font-family: 'DM Mono', monospace;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
+      min-height: 100dvh;
       overflow-x: hidden;
     }
+
+    /* Noise overlay */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 9000; opacity: .5;
+    }
+
+    /* Scanlines */
     body::before {
       content: '';
       position: fixed; inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-      pointer-events: none; z-index: 9999; opacity: .6;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.03) 2px, rgba(0,0,0,.03) 4px);
+      pointer-events: none; z-index: 9001;
     }
-    ::-webkit-scrollbar { width: 5px }
-    ::-webkit-scrollbar-track { background: var(--bg2) }
-    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px }
 
-    /* ── GATE ── */
+    ::-webkit-scrollbar { width: 4px; height: 4px }
+    ::-webkit-scrollbar-track { background: transparent }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px }
+
+    /* ──────────────────────────────────────────
+       GATE
+    ────────────────────────────────────────── */
     #gate {
       position: fixed; inset: 0;
       background: var(--bg);
       display: flex; align-items: center; justify-content: center;
-      z-index: 500;
+      z-index: 5000;
       flex-direction: column;
       gap: 0;
     }
+
+    .gate-emblem {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 11px; letter-spacing: 6px;
+      color: var(--text3);
+      margin-bottom: 48px;
+      text-align: center;
+      line-height: 1;
+      position: relative;
+    }
+    .gate-emblem::before,
+    .gate-emblem::after {
+      content: '';
+      position: absolute;
+      top: 50%; width: 30px; height: 1px;
+      background: var(--border2);
+    }
+    .gate-emblem::before { right: calc(100% + 14px) }
+    .gate-emblem::after  { left:  calc(100% + 14px) }
+
     .gate-box {
       display: flex; flex-direction: column; align-items: center;
-      gap: 0;
+      gap: 0; width: 100%; max-width: 300px; padding: 0 24px;
     }
+
+    .gate-label {
+      font-size: 8px; letter-spacing: 3px; color: var(--text3);
+      margin-bottom: 10px; text-transform: uppercase;
+      align-self: flex-start;
+    }
+
     #gate-input {
       background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 12px 20px;
+      border: 1px solid var(--border2);
+      border-radius: var(--r);
+      padding: 14px 20px;
       font-family: 'DM Mono', monospace;
-      font-size: 15px;
-      color: var(--text);
-      width: 260px;
+      font-size: 16px;
+      color: var(--amber);
+      width: 100%;
       outline: none;
-      letter-spacing: 3px;
+      letter-spacing: 4px;
       text-align: center;
       transition: border-color .2s, box-shadow .2s;
     }
-    #gate-input:focus { border-color: var(--amber); box-shadow: 0 0 0 3px rgba(232,160,32,.08) }
+    #gate-input:focus {
+      border-color: var(--amber);
+      box-shadow: 0 0 0 3px rgba(232,160,32,.06), 0 0 24px rgba(232,160,32,.04);
+    }
     #gate-input.shake {
       animation: shake .35s ease;
-      border-color: var(--pink);
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px rgba(239,68,68,.08);
     }
     @keyframes shake {
       0%,100% { transform: translateX(0) }
-      20%      { transform: translateX(-6px) }
-      40%      { transform: translateX(6px) }
+      20%      { transform: translateX(-7px) }
+      40%      { transform: translateX(7px) }
       60%      { transform: translateX(-4px) }
       80%      { transform: translateX(4px) }
     }
     #gate-hint {
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      color: var(--text3);
-      margin-top: 10px;
-      letter-spacing: 1px;
-      opacity: 0;
-      transition: opacity .3s;
+      font-size: 9px; letter-spacing: 1.5px; color: var(--red);
+      margin-top: 12px; opacity: 0; transition: opacity .3s;
     }
     #gate-hint.visible { opacity: 1 }
 
-    /* ── APP (hidden until unlocked) ── */
-    #app { display: none; min-height: 100vh; flex-direction: column }
+    /* ──────────────────────────────────────────
+       APP SHELL
+    ────────────────────────────────────────── */
+    #app { display: none; min-height: 100vh; min-height: 100dvh; flex-direction: column }
     #app.unlocked { display: flex }
 
-    /* ── TOPBAR ── */
+    /* ──────────────────────────────────────────
+       TOPBAR
+    ────────────────────────────────────────── */
     .topbar {
-      position: sticky; top: 0; z-index: 50;
-      background: rgba(10,10,15,.9);
-      backdrop-filter: blur(16px);
+      position: sticky; top: 0; z-index: 200;
+      background: rgba(8,8,16,.92);
+      backdrop-filter: blur(20px) saturate(1.4);
       border-bottom: 1px solid var(--border);
-      padding: 14px 32px;
+      padding: 0 16px;
+      height: 52px;
       display: flex; align-items: center; justify-content: space-between;
+      gap: 10px;
+      flex-shrink: 0;
     }
-    .topbar-left { display: flex; align-items: center; gap: 14px }
+
+    .topbar-left { display: flex; align-items: center; gap: 10px; min-width: 0 }
+
     .back-btn {
-      font-family: 'DM Mono', monospace; font-size: 11px;
-      color: var(--text3); cursor: pointer;
-      padding: 6px 12px; border-radius: var(--radius);
+      font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .5px;
+      color: var(--text2); cursor: pointer;
+      padding: 7px 12px; border-radius: var(--r);
       border: 1px solid var(--border);
-      background: none; transition: all .15s; letter-spacing: .5px;
+      background: none; transition: all .15s; white-space: nowrap;
+      touch-action: manipulation;
     }
-    .back-btn:hover { color: var(--text); border-color: var(--border2) }
+    .back-btn:hover, .back-btn:active { color: var(--text); border-color: var(--border2) }
+
     .topbar-title {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 22px; letter-spacing: 3px;
-      color: var(--amber);
+      font-size: 20px; letter-spacing: 3px;
+      color: var(--amber); white-space: nowrap;
     }
+
     .topbar-badge {
-      font-family: 'DM Mono', monospace; font-size: 9px;
-      letter-spacing: 2px; text-transform: uppercase;
-      padding: 3px 10px; border-radius: 20px;
-      background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.3);
-      color: var(--red);
+      font-size: 7px; letter-spacing: 2px;
+      padding: 3px 8px; border-radius: 3px;
+      background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.25);
+      color: var(--red); white-space: nowrap;
+      display: none;
     }
-    .lock-btn {
-      font-family: 'DM Mono', monospace; font-size: 10px;
-      color: var(--text3); cursor: pointer;
-      padding: 6px 12px; border-radius: var(--radius);
+    @media(min-width:480px) { .topbar-badge { display: block } }
+
+    .topbar-right { display: flex; align-items: center; gap: 7px; flex-shrink: 0 }
+
+    #file-status {
+      font-size: 8px; letter-spacing: 1.5px;
+      padding: 4px 9px; border-radius: 3px;
+      background: rgba(74,74,100,.2); border: 1px solid var(--border);
+      color: var(--text3); white-space: nowrap;
+      display: none;
+    }
+    @media(min-width:560px) { #file-status { display: block } }
+
+    .icon-btn {
+      font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .5px;
+      color: var(--text2); cursor: pointer;
+      padding: 7px 10px; border-radius: var(--r);
       border: 1px solid var(--border);
-      background: none; transition: all .15s;
+      background: none; transition: all .15s; white-space: nowrap;
+      touch-action: manipulation; line-height: 1;
     }
-    .lock-btn:hover { color: var(--pink); border-color: rgba(244,114,182,.4) }
+    .icon-btn.amber { color: var(--amber); border-color: rgba(232,160,32,.3) }
+    .icon-btn.amber:hover { background: var(--amber3) }
+    .icon-btn:hover, .icon-btn:active { color: var(--text); border-color: var(--border2) }
+    .icon-btn.red:hover { color: var(--red); border-color: rgba(239,68,68,.35) }
 
-    /* ── CONTENT ── */
-    .content { padding: 36px 32px; flex: 1 }
+    /* ──────────────────────────────────────────
+       CONTENT AREA
+    ────────────────────────────────────────── */
+    .content {
+      flex: 1;
+      padding: 20px 16px 32px;
+      max-width: 860px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    @media(min-width:600px) { .content { padding: 28px 24px 40px } }
+    @media(min-width:900px) { .content { padding: 36px 32px 48px } }
 
-    /* ── SECTION PICKER ── */
+    /* ──────────────────────────────────────────
+       HOME — two section cards
+    ────────────────────────────────────────── */
+    .home-header {
+      margin-bottom: 28px;
+    }
+    .home-eyebrow {
+      font-size: 8px; letter-spacing: 3px; color: var(--text3);
+      text-transform: uppercase; margin-bottom: 8px;
+    }
+    .home-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(28px, 6vw, 42px);
+      letter-spacing: 3px; color: var(--text);
+      line-height: 1;
+    }
+    .home-title span { color: var(--amber) }
+
     .section-picker {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 20px; max-width: 640px; margin: 0 auto 40px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
     }
+    @media(min-width:480px) { .section-picker { grid-template-columns: 1fr 1fr } }
+
     .section-card {
-      background: var(--bg2); border: 1px solid var(--border);
-      border-radius: var(--radius2); padding: 32px 28px;
-      cursor: pointer; transition: all .2s; text-align: center;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      padding: 28px 24px;
+      cursor: pointer; transition: all .2s;
       position: relative; overflow: hidden;
+      touch-action: manipulation;
     }
     .section-card::before {
       content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
       opacity: 0; transition: opacity .2s;
     }
-    .section-card.student::before { background: var(--teal) }
-    .section-card.test::before    { background: var(--amber) }
-    .section-card:hover { border-color: var(--border2); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,.4) }
-    .section-card:hover::before { opacity: 1 }
-    .section-card.active.student { border-color: var(--teal); background: rgba(45,212,191,.05) }
-    .section-card.active.test    { border-color: var(--amber); background: rgba(232,160,32,.05) }
-    .section-card.active::before { opacity: 1 }
-    .sc-icon { font-size: 36px; margin-bottom: 14px; display: block }
+    .section-card::after {
+      content: ''; position: absolute; bottom: 0; right: 0;
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      opacity: 0.04; transition: opacity .2s;
+    }
+    .section-card.student::before { background: linear-gradient(90deg, var(--teal), transparent) }
+    .section-card.student::after  { background: var(--teal); transform: translate(20px, 20px) }
+    .section-card.test::before    { background: linear-gradient(90deg, var(--amber), transparent) }
+    .section-card.test::after     { background: var(--amber); transform: translate(20px, 20px) }
+
+    .section-card:hover, .section-card:active {
+      border-color: var(--border2);
+      transform: translateY(-2px);
+      box-shadow: 0 16px 48px rgba(0,0,0,.5);
+    }
+    .section-card:hover::before, .section-card:active::before { opacity: 1 }
+    .section-card:hover::after, .section-card:active::after   { opacity: .06 }
+
+    .sc-icon {
+      font-size: 28px; margin-bottom: 16px; display: block; line-height: 1;
+    }
     .sc-title {
       font-family: 'Bebas Neue', sans-serif; font-size: 22px;
-      letter-spacing: 2px; color: var(--text); margin-bottom: 6px;
+      letter-spacing: 2px; margin-bottom: 6px; line-height: 1;
     }
-    .sc-desc {
-      font-family: 'DM Mono', monospace; font-size: 10px;
-      color: var(--text3); letter-spacing: .5px; line-height: 1.6;
+    .section-card.student .sc-title { color: var(--teal) }
+    .section-card.test    .sc-title { color: var(--amber) }
+    .sc-desc { font-size: 10px; color: var(--text3); letter-spacing: .3px; line-height: 1.7 }
+    .sc-arrow {
+      position: absolute; bottom: 20px; right: 20px;
+      font-size: 18px; color: var(--border2); transition: color .2s, transform .2s;
     }
+    .section-card:hover .sc-arrow, .section-card:active .sc-arrow {
+      transform: translateX(3px);
+    }
+    .section-card.student:hover .sc-arrow { color: var(--teal) }
+    .section-card.test:hover    .sc-arrow { color: var(--amber) }
 
-    /* ── PANEL BASE ── */
-    .panel { display: none; animation: fadeIn .3s ease-out }
+    /* ──────────────────────────────────────────
+       PANEL BASE
+    ────────────────────────────────────────── */
+    .panel { display: none; animation: panelIn .25s ease-out }
     .panel.active { display: block }
-    @keyframes fadeIn { from { opacity:0; transform:translateY(10px) } to { opacity:1; transform:translateY(0) } }
+    @keyframes panelIn { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
 
     .panel-header {
-      display: flex; align-items: center; gap: 12px; margin-bottom: 28px;
+      display: flex; align-items: center; gap: 12px; margin-bottom: 24px;
     }
     .panel-back {
-      background: none; border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 6px 12px; font-family: 'DM Mono', monospace; font-size: 10px;
-      color: var(--text3); cursor: pointer; transition: all .15s;
+      background: none; border: 1px solid var(--border); border-radius: var(--r);
+      padding: 8px 14px; font-family: 'DM Mono', monospace; font-size: 10px;
+      color: var(--text2); cursor: pointer; transition: all .15s; letter-spacing: .5px;
+      touch-action: manipulation; flex-shrink: 0;
     }
-    .panel-back:hover { color: var(--text); border-color: var(--border2) }
+    .panel-back:hover, .panel-back:active { color: var(--text); border-color: var(--border2) }
     .panel-title {
-      font-family: 'Bebas Neue', sans-serif; font-size: 26px;
-      letter-spacing: 2px;
+      font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 2px;
     }
-    .panel-title.teal { color: var(--teal) }
+    .panel-title.teal  { color: var(--teal) }
     .panel-title.amber { color: var(--amber) }
 
-    /* ── SHARED FORM ELEMENTS ── */
+    /* ──────────────────────────────────────────
+       SHARED FORM ELEMENTS
+    ────────────────────────────────────────── */
     .field-label {
-      font-family: 'DM Mono', monospace; font-size: 9px;
-      letter-spacing: 2px; text-transform: uppercase;
-      color: var(--text3); margin-bottom: 6px; display: block;
+      font-size: 8px; letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--text3); margin-bottom: 7px; display: block;
     }
     .field-input, .field-select {
       background: var(--bg3); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 10px 14px;
-      font-family: 'DM Mono', monospace; font-size: 12px;
+      border-radius: var(--r); padding: 12px 14px;
+      font-family: 'DM Mono', monospace; font-size: 13px;
       color: var(--text); outline: none; width: 100%;
-      transition: border-color .2s;
+      transition: border-color .2s, box-shadow .2s;
+      -webkit-appearance: none;
     }
-    .field-input:focus, .field-select:focus { border-color: var(--amber) }
-    .field-select option { background: var(--bg2) }
-    .field-group { margin-bottom: 18px }
+    .field-input:focus, .field-select:focus {
+      border-color: var(--amber);
+      box-shadow: 0 0 0 2px rgba(232,160,32,.07);
+    }
+    .field-select { cursor: pointer }
+    .field-select option { background: var(--bg3) }
+    .field-select:disabled { opacity: .4; cursor: default }
+    .field-group { margin-bottom: 16px }
+
     .btn {
-      font-family: 'DM Mono', monospace; font-size: 11px;
-      letter-spacing: 1px; padding: 10px 22px;
-      border-radius: var(--radius); border: 1px solid; cursor: pointer;
-      transition: all .15s;
+      font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 1px;
+      padding: 11px 22px; border-radius: var(--r); border: 1px solid;
+      cursor: pointer; transition: all .15s; touch-action: manipulation;
+      white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;
     }
     .btn-primary {
-      background: var(--amber); border-color: var(--amber);
-      color: #000; font-weight: 500;
+      background: var(--amber); border-color: var(--amber); color: #000; font-weight: 600;
     }
-    .btn-primary:hover { background: var(--amber2); border-color: var(--amber2) }
+    .btn-primary:hover, .btn-primary:active { background: var(--amber2); border-color: var(--amber2) }
     .btn-ghost {
-      background: none; border-color: var(--border);
-      color: var(--text2);
+      background: none; border-color: var(--border); color: var(--text2);
     }
-    .btn-ghost:hover { border-color: var(--border2); color: var(--text) }
+    .btn-ghost:hover, .btn-ghost:active { border-color: var(--border2); color: var(--text) }
     .btn-danger {
-      background: rgba(239,68,68,.1); border-color: rgba(239,68,68,.3);
-      color: var(--red);
+      background: rgba(239,68,68,.08); border-color: rgba(239,68,68,.25); color: var(--red);
     }
-    .btn-danger:hover { background: rgba(239,68,68,.18); border-color: var(--red) }
+    .btn-danger:hover { background: rgba(239,68,68,.15); border-color: var(--red) }
     .btn-success {
-      background: rgba(74,222,128,.1); border-color: rgba(74,222,128,.3);
-      color: var(--green);
+      background: rgba(74,222,128,.08); border-color: rgba(74,222,128,.25); color: var(--green);
     }
-    .btn-success:hover { background: rgba(74,222,128,.18); border-color: var(--green) }
+    .btn-success:hover { background: rgba(74,222,128,.15); border-color: var(--green) }
+    .btn:disabled { opacity: .35; pointer-events: none }
 
-    /* ── EDIT STUDENT PANEL ── */
-    .search-row { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 24px }
-    .search-row .field-group { flex: 1; margin-bottom: 0 }
-    .student-result-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px }
+    /* ──────────────────────────────────────────
+       STUDENT PANEL
+    ────────────────────────────────────────── */
+    .search-bar {
+      display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .search-bar .field-group { flex: 1; min-width: 160px; margin-bottom: 0 }
+
+    .student-result-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px }
+
     .student-result-item {
       background: var(--bg2); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 12px 16px;
+      border-radius: var(--r); padding: 14px 16px;
       display: flex; align-items: center; justify-content: space-between;
-      cursor: pointer; transition: all .15s;
+      cursor: pointer; transition: all .15s; touch-action: manipulation;
     }
-    .student-result-item:hover { border-color: var(--teal); background: rgba(45,212,191,.04) }
-    .sri-name { font-size: 15px; color: var(--text) }
-    .sri-meta { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); margin-top: 2px }
-    .sri-arrow { color: var(--text3); font-size: 16px }
+    .student-result-item:hover, .student-result-item:active {
+      border-color: rgba(45,212,191,.35);
+      background: rgba(45,212,191,.04);
+      transform: translateX(2px);
+    }
+    .sri-name { font-size: 14px; color: var(--text); margin-bottom: 3px }
+    .sri-meta { font-size: 10px; color: var(--text3); letter-spacing: .3px }
+    .sri-arrow { color: var(--text3); font-size: 16px; flex-shrink: 0; margin-left: 12px }
 
-    .student-edit-form {
+    /* Edit form card */
+    .edit-card {
       background: var(--bg2); border: 1px solid var(--border);
-      border-radius: var(--radius2); padding: 24px;
+      border-radius: var(--r2); overflow: hidden;
     }
-    .sef-header {
-      display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
-      padding-bottom: 16px; border-bottom: 1px solid var(--border);
+    .edit-card-header {
+      padding: 20px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 14px;
+      background: var(--bg3);
     }
     .sef-avatar {
-      width: 52px; height: 52px; border-radius: 50%;
-      background: var(--bg3); border: 2px solid var(--border2);
+      width: 48px; height: 48px; border-radius: 50%;
+      background: var(--bg4); border: 2px solid var(--border2);
       display: flex; align-items: center; justify-content: center;
-      font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+      font-family: 'Bebas Neue', sans-serif; font-size: 20px;
       color: var(--teal); flex-shrink: 0;
     }
-    .sef-name { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 1px }
-    .sef-school { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); margin-top: 2px }
-    .sef-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px }
-    .gender-btns { display: flex; gap: 8px }
+    .sef-name { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 1px; line-height: 1.1 }
+    .sef-school { font-size: 10px; color: var(--text3); margin-top: 3px; letter-spacing: .3px }
+
+    .edit-card-body { padding: 20px }
+    .edit-grid { display: grid; grid-template-columns: 1fr; gap: 0 16px }
+    @media(min-width:480px) { .edit-grid { grid-template-columns: 1fr 1fr } }
+
+    .gender-row { display: flex; gap: 8px; margin-bottom: 20px }
     .gender-btn {
-      flex: 1; padding: 9px; text-align: center;
-      font-family: 'DM Mono', monospace; font-size: 11px;
-      border-radius: var(--radius); border: 1px solid var(--border);
+      flex: 1; padding: 11px; text-align: center;
+      font-size: 11px; letter-spacing: 1px;
+      border-radius: var(--r); border: 1px solid var(--border);
       background: var(--bg3); color: var(--text3); cursor: pointer;
-      transition: all .15s;
+      transition: all .15s; touch-action: manipulation;
     }
-    .gender-btn:hover { border-color: var(--border2); color: var(--text2) }
+    .gender-btn:active { transform: scale(.97) }
     .gender-btn.active-b { border-color: var(--blue); background: rgba(96,165,250,.1); color: var(--blue) }
     .gender-btn.active-g { border-color: var(--pink); background: rgba(244,114,182,.1); color: var(--pink) }
-    .sef-actions { display: flex; gap: 10px; justify-content: flex-end }
+    .gender-btn.active-u { border-color: var(--border2); background: var(--bg4); color: var(--text2) }
 
-    /* ── EDIT TEST PANEL ── */
-    .test-selector {
+    .edit-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap }
+
+    /* ──────────────────────────────────────────
+       TEST PANEL
+    ────────────────────────────────────────── */
+    .sel-card {
       background: var(--bg2); border: 1px solid var(--border);
-      border-radius: var(--radius2); padding: 24px; margin-bottom: 24px;
+      border-radius: var(--r2); padding: 20px; margin-bottom: 20px;
     }
-    .test-sel-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px }
-    .test-sheet-wrap {
+    .sel-card-title {
+      font-size: 8px; letter-spacing: 3px; color: var(--text3);
+      margin-bottom: 14px; text-transform: uppercase;
+    }
+    .sel-grid { display: grid; gap: 12px; grid-template-columns: 1fr }
+    @media(min-width:480px) { .sel-grid { grid-template-columns: 1fr 1fr } }
+    @media(min-width:680px) { .sel-grid { grid-template-columns: 1fr 1fr 1fr } }
+    .sel-grid .field-group { margin-bottom: 0 }
+
+    /* Score sheet */
+    .sheet-card {
       background: var(--bg2); border: 1px solid var(--border);
-      border-radius: var(--radius2); overflow: hidden;
+      border-radius: var(--r2); overflow: hidden;
     }
-    .test-sheet-header {
-      padding: 14px 20px; border-bottom: 1px solid var(--border);
+    .sheet-header {
+      padding: 14px 16px; border-bottom: 1px solid var(--border);
       display: flex; align-items: center; justify-content: space-between;
-      gap: 12px; flex-wrap: wrap;
+      gap: 12px; flex-wrap: wrap; background: var(--bg3);
     }
-    .test-sheet-title {
-      font-family: 'Bebas Neue', sans-serif; font-size: 18px;
-      letter-spacing: 1px; color: var(--text);
+    .sheet-title {
+      font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1px;
     }
-    .test-sheet-search {
-      background: var(--bg3); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 7px 12px;
-      font-family: 'DM Mono', monospace; font-size: 11px;
-      color: var(--text); outline: none; width: 220px;
+    .sheet-meta { font-size: 9px; color: var(--text3); margin-top: 1px; letter-spacing: .5px }
+    .sheet-search {
+      background: var(--bg4); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 9px 13px;
+      font-family: 'DM Mono', monospace; font-size: 12px;
+      color: var(--text); outline: none;
+      width: 100%; max-width: 220px;
       transition: border-color .2s;
     }
-    .test-sheet-search:focus { border-color: var(--amber) }
-    .test-sheet-search::placeholder { color: var(--text3) }
-    .test-table-wrap { overflow-x: auto; max-height: 480px; overflow-y: auto }
-    .test-table-wrap::-webkit-scrollbar { width: 4px; height: 4px }
-    .test-table-wrap::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px }
-    table.test-tbl { width: 100%; border-collapse: collapse }
-    table.test-tbl thead { position: sticky; top: 0; z-index: 2 }
-    table.test-tbl thead tr { background: var(--bg3) }
-    table.test-tbl thead th {
-      padding: 10px 14px; font-family: 'DM Mono', monospace;
-      font-size: 9px; color: var(--text3); letter-spacing: 1px;
-      text-transform: uppercase; text-align: left;
+    @media(max-width:560px) { .sheet-search { max-width: 100% } }
+    .sheet-search:focus { border-color: var(--amber) }
+    .sheet-search::placeholder { color: var(--text3) }
+
+    /* Desktop table */
+    .sheet-table-wrap {
+      overflow-x: auto;
+      max-height: min(70vh, 520px);
+      overflow-y: auto;
+    }
+    .sheet-table-wrap::-webkit-scrollbar { width: 4px; height: 4px }
+    .sheet-table-wrap::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px }
+
+    table.score-tbl { width: 100%; border-collapse: collapse; min-width: 440px }
+    table.score-tbl thead { position: sticky; top: 0; z-index: 2 }
+    table.score-tbl thead tr { background: var(--bg3) }
+    table.score-tbl thead th {
+      padding: 10px 14px; font-size: 8px; color: var(--text3);
+      letter-spacing: 2px; text-transform: uppercase; text-align: left;
       border-bottom: 1px solid var(--border); white-space: nowrap;
     }
-    table.test-tbl tbody tr { border-bottom: 1px solid var(--border); transition: background .1s }
-    table.test-tbl tbody tr:last-child { border-bottom: none }
-    table.test-tbl tbody tr:hover { background: var(--bg3) }
-    table.test-tbl tbody td {
-      padding: 10px 14px; font-size: 14px; color: var(--text);
+    table.score-tbl tbody tr {
+      border-bottom: 1px solid rgba(37,37,53,.8); transition: background .1s;
     }
-    .tbl-rank { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); width: 50px }
-    .tbl-marks { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--amber) }
-    .tbl-school { font-size: 12px; color: var(--text2) }
-    .edit-score-cell { display: flex; align-items: center; gap: 8px }
-    .score-edit-input {
-      background: var(--bg3); border: 1px solid var(--border);
-      border-radius: 5px; padding: 5px 10px;
-      font-family: 'Bebas Neue', monospace; font-size: 18px;
-      color: var(--amber); outline: none; width: 70px; text-align: center;
-      transition: border-color .2s;
+    table.score-tbl tbody tr:last-child { border-bottom: none }
+    table.score-tbl tbody tr:hover { background: var(--bg3) }
+    table.score-tbl tbody td { padding: 10px 14px; font-size: 13px; color: var(--text) }
+
+    .tbl-rank { font-size: 10px; color: var(--text3); white-space: nowrap }
+    .tbl-school { font-size: 11px; color: var(--text2) }
+    .tbl-gender span {
+      font-size: 9px; padding: 2px 7px; border-radius: 3px;
     }
-    .score-edit-input:focus { border-color: var(--amber) }
-    .score-save-btn {
-      background: rgba(74,222,128,.1); border: 1px solid rgba(74,222,128,.3);
-      border-radius: 5px; padding: 4px 10px;
-      font-family: 'DM Mono', monospace; font-size: 9px;
+
+    /* Score edit cell */
+    .edit-cell { display: flex; align-items: center; gap: 8px }
+    .score-inp {
+      background: var(--bg4); border: 1px solid var(--border);
+      border-radius: 5px; padding: 6px 10px;
+      font-family: 'Bebas Neue', sans-serif; font-size: 20px;
+      color: var(--amber); outline: none; width: 72px; text-align: center;
+      transition: border-color .2s; -webkit-appearance: none;
+    }
+    .score-inp:focus { border-color: var(--amber) }
+    .score-inp::-webkit-inner-spin-button,
+    .score-inp::-webkit-outer-spin-button { -webkit-appearance: none }
+    .save-btn {
+      background: rgba(74,222,128,.08); border: 1px solid rgba(74,222,128,.25);
+      border-radius: 5px; padding: 6px 12px;
+      font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 1px;
       color: var(--green); cursor: pointer; transition: all .15s;
-      letter-spacing: 1px; white-space: nowrap;
+      white-space: nowrap; touch-action: manipulation;
     }
-    .score-save-btn:hover { background: rgba(74,222,128,.18); border-color: var(--green) }
-    .score-save-btn:disabled { opacity: .35; pointer-events: none }
-    .score-saved-badge {
-      font-family: 'DM Mono', monospace; font-size: 9px;
-      color: var(--green); letter-spacing: 1px; opacity: 0;
-      transition: opacity .2s;
+    .save-btn:not(:disabled):hover { background: rgba(74,222,128,.16); border-color: var(--green) }
+    .save-btn:disabled { opacity: .3; pointer-events: none }
+    .saved-tick {
+      font-size: 9px; color: var(--green); letter-spacing: 1px;
+      opacity: 0; transition: opacity .2s; white-space: nowrap;
     }
-    .score-saved-badge.visible { opacity: 1 }
+    .saved-tick.visible { opacity: 1 }
 
-    /* placeholder / empty states */
-    .panel-empty {
-      text-align: center; padding: 60px 20px;
-      font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3);
+    /* Mobile score cards — shown below 600px instead of table */
+    .score-cards { display: none; flex-direction: column; gap: 1px }
+    @media(max-width:599px) {
+      .sheet-table-wrap { display: none }
+      .score-cards { display: flex }
     }
-    .panel-empty-icon { font-size: 36px; margin-bottom: 12px }
-
-    /* notification toast */
-    #toast {
-      position: fixed; bottom: 28px; right: 28px;
-      background: var(--bg2); border: 1px solid var(--border2);
-      border-radius: var(--radius); padding: 12px 18px;
-      font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text2);
-      box-shadow: 0 8px 32px rgba(0,0,0,.5);
-      transform: translateY(12px); opacity: 0;
-      transition: transform .25s, opacity .25s;
-      pointer-events: none; z-index: 1000; max-width: 320px;
+    .score-card {
+      padding: 14px 16px; background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
     }
-    #toast.show { transform: translateY(0); opacity: 1 }
-    #toast.success { border-color: rgba(74,222,128,.4); color: var(--green) }
-    #toast.error   { border-color: rgba(244,114,182,.4); color: var(--pink) }
+    .score-card:last-child { border-bottom: none }
+    .sc-left { flex: 1; min-width: 0 }
+    .sc-rank { font-size: 9px; color: var(--text3); letter-spacing: 1px; margin-bottom: 3px }
+    .sc-name { font-size: 14px; color: var(--text); margin-bottom: 2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+    .sc-school-tag { font-size: 10px; color: var(--text3) }
+    .sc-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0 }
 
-    /* ── GITHUB MODAL ── */
+    /* ──────────────────────────────────────────
+       EMPTY STATES
+    ────────────────────────────────────────── */
+    .empty-state {
+      text-align: center; padding: 52px 20px;
+      font-size: 11px; color: var(--text3); line-height: 1.8;
+    }
+    .empty-icon {
+      font-size: 28px; margin-bottom: 14px; opacity: .4;
+    }
+
+    /* ──────────────────────────────────────────
+       GITHUB MODAL
+    ────────────────────────────────────────── */
     #gh-modal {
       position: fixed; inset: 0;
-      background: rgba(0,0,0,.72);
-      z-index: 600;
-      display: none; align-items: center; justify-content: center;
-      backdrop-filter: blur(5px);
+      background: rgba(0,0,0,.78);
+      z-index: 1000;
+      display: none; align-items: flex-end; justify-content: center;
+      backdrop-filter: blur(6px);
+    }
+    @media(min-width:600px) {
+      #gh-modal { align-items: center }
     }
     #gh-modal.open { display: flex }
+
     .gh-modal-box {
       background: var(--bg2); border: 1px solid var(--border2);
-      border-radius: var(--radius2); padding: 32px;
-      width: min(500px, 95vw); position: relative;
+      border-radius: var(--r2) var(--r2) 0 0;
+      padding: 24px 20px 32px;
+      width: 100%; max-width: 520px;
+      position: relative;
+      max-height: 92vh; overflow-y: auto;
+      animation: slideUp .25s ease-out;
     }
+    @media(min-width:600px) {
+      .gh-modal-box {
+        border-radius: var(--r2);
+        padding: 28px 28px 28px;
+        max-height: none;
+        animation: popIn .2s ease-out;
+      }
+    }
+    @keyframes slideUp { from { transform: translateY(40px); opacity:0 } to { transform: translateY(0); opacity:1 } }
+    @keyframes popIn   { from { transform: scale(.96); opacity:0 } to { transform: scale(1); opacity:1 } }
+
+    .gh-modal-drag {
+      width: 36px; height: 4px; border-radius: 2px;
+      background: var(--border2); margin: 0 auto 20px;
+      display: block;
+    }
+    @media(min-width:600px) { .gh-modal-drag { display: none } }
+
     .gh-modal-title {
-      font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+      font-family: 'Bebas Neue', sans-serif; font-size: 20px;
       letter-spacing: 2px; color: var(--amber); margin-bottom: 4px;
     }
     .gh-modal-sub {
-      font-family: 'DM Mono', monospace; font-size: 10px;
-      color: var(--text3); margin-bottom: 22px; line-height: 1.7;
+      font-size: 10px; color: var(--text3); margin-bottom: 20px; line-height: 1.7;
     }
-    .gh-modal-sub code { color: var(--amber2) }
-    .gh-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px }
-    .gh-modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px }
+    .gh-modal-sub code { color: var(--amber2); font-family: 'DM Mono', monospace }
 
-    @media(max-width:600px) {
-      .content { padding: 20px 16px }
-      .topbar  { padding: 12px 16px }
-      .section-picker { grid-template-columns: 1fr; max-width: 100% }
-      .test-sel-grid { grid-template-columns: 1fr }
-      .sef-grid { grid-template-columns: 1fr }
-      .topbar-title { font-size: 18px }
-      .gh-two-col { grid-template-columns: 1fr }
+    .gh-two-col { display: grid; grid-template-columns: 1fr; gap: 0 14px }
+    @media(min-width:400px) { .gh-two-col { grid-template-columns: 1fr 1fr } }
+    .gh-modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; flex-wrap: wrap }
+
+    /* ──────────────────────────────────────────
+       TOAST
+    ────────────────────────────────────────── */
+    #toast {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(16px);
+      background: var(--bg3); border: 1px solid var(--border2);
+      border-radius: var(--r); padding: 11px 18px;
+      font-size: 11px; letter-spacing: .3px; color: var(--text2);
+      box-shadow: 0 8px 32px rgba(0,0,0,.6);
+      opacity: 0; transition: transform .25s, opacity .25s;
+      pointer-events: none; z-index: 2000;
+      max-width: min(360px, 90vw); text-align: center; line-height: 1.5;
     }
+    #toast.show { transform: translateX(-50%) translateY(0); opacity: 1 }
+    #toast.success { border-color: rgba(74,222,128,.4); color: var(--green) }
+    #toast.error   { border-color: rgba(244,114,182,.4); color: var(--pink) }
   </style>
 </head>
 <body>
 
 <!-- ── GATE ── -->
 <div id="gate">
+  <div class="gate-emblem">ACCESS CONTROL</div>
   <div class="gate-box">
-    <input id="gate-input" type="text" autocomplete="off" spellcheck="false" placeholder="">
-    <div id="gate-hint"></div>
+    <div class="gate-label">Authorization required</div>
+    <input id="gate-input" type="text" autocomplete="off" spellcheck="false"
+      placeholder="" inputmode="text">
+    <div id="gate-hint">ACCESS DENIED</div>
   </div>
 </div>
 
 <!-- ── APP ── -->
 <div id="app">
-
   <header class="topbar">
     <div class="topbar-left">
-      <button class="back-btn" onclick="window.location.href='index.html'">← Back</button>
+      <button class="back-btn" onclick="window.location.href='index.html'">← Main</button>
       <div class="topbar-title">ADMIN</div>
       <div class="topbar-badge">RESTRICTED</div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px">
-      <div id="file-status" style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;padding:4px 10px;border-radius:20px;background:rgba(90,90,120,.2);border:1px solid var(--border);color:var(--text3)">GITHUB NOT CONFIGURED</div>
-      <button class="lock-btn" id="gh-cfg-btn" onclick="openGhModal()" style="color:var(--amber);border-color:rgba(232,160,32,.3)">⚙ GitHub</button>
-      <button class="lock-btn" onclick="lockPanel()">Lock ⌫</button>
+    <div class="topbar-right">
+      <div id="file-status">NOT CONFIGURED</div>
+      <button class="icon-btn amber" onclick="openGhModal()">⚙ GitHub</button>
+      <button class="icon-btn red" onclick="lockPanel()" title="Lock session">⌥ Lock</button>
     </div>
   </header>
 
   <div class="content">
 
-    <!-- Section picker (home) -->
+    <!-- HOME -->
     <div id="panel-home">
+      <div class="home-header">
+        <div class="home-eyebrow">DEKMA · Admin Console</div>
+        <div class="home-title">CONTROL<br><span>PANEL</span></div>
+      </div>
       <div class="section-picker">
         <div class="section-card student" onclick="openPanel('student')">
           <span class="sc-icon">◎</span>
-          <div class="sc-title">Edit Student Data</div>
-          <div class="sc-desc">Name · School · Gender<br>and profile fields</div>
+          <div class="sc-title">Students</div>
+          <div class="sc-desc">Edit name · school<br>and gender records</div>
+          <div class="sc-arrow">›</div>
         </div>
         <div class="section-card test" onclick="openPanel('test')">
           <span class="sc-icon">▦</span>
-          <div class="sc-title">Edit Test Data</div>
+          <div class="sc-title">Test Scores</div>
           <div class="sc-desc">Find a student in a test<br>and update their score</div>
+          <div class="sc-arrow">›</div>
         </div>
       </div>
     </div>
 
-    <!-- ── Edit Student Panel ── -->
+    <!-- STUDENT PANEL -->
     <div class="panel" id="panel-student">
       <div class="panel-header">
         <button class="panel-back" onclick="openPanel('home')">← Back</button>
-        <div class="panel-title teal">Edit Student Data</div>
+        <div class="panel-title teal">Edit Students</div>
       </div>
 
-      <div class="search-row">
+      <div class="search-bar">
         <div class="field-group">
-          <label class="field-label">Student Name</label>
-          <input class="field-input" id="stu-search-q" placeholder="Type to search…" oninput="searchStudentAdmin()">
+          <label class="field-label">Student name</label>
+          <input class="field-input" id="stu-search-q"
+            placeholder="Type to search…" oninput="searchStudentAdmin()"
+            autocomplete="off" spellcheck="false">
         </div>
         <div class="field-group" style="max-width:200px">
           <label class="field-label">School</label>
           <select class="field-select" id="stu-search-school" onchange="searchStudentAdmin()">
-            <option value="">All Schools</option>
+            <option value="">All schools</option>
           </select>
         </div>
       </div>
@@ -483,98 +714,104 @@
       <div id="stu-result-list" class="student-result-list"></div>
 
       <div id="stu-edit-form" style="display:none">
-        <div class="student-edit-form">
-          <div class="sef-header">
+        <div class="edit-card">
+          <div class="edit-card-header">
             <div class="sef-avatar" id="sef-avatar"></div>
             <div>
               <div class="sef-name" id="sef-display-name"></div>
               <div class="sef-school" id="sef-display-school"></div>
             </div>
           </div>
-          <div class="sef-grid">
-            <div class="field-group">
-              <label class="field-label">Full Name</label>
-              <input class="field-input" id="sef-name" placeholder="Full name">
+          <div class="edit-card-body">
+            <div class="edit-grid">
+              <div class="field-group">
+                <label class="field-label">Full Name</label>
+                <input class="field-input" id="sef-name" placeholder="Full name"
+                  autocomplete="off" spellcheck="false">
+              </div>
+              <div class="field-group">
+                <label class="field-label">School</label>
+                <input class="field-input" id="sef-school" placeholder="School name"
+                  autocomplete="off" spellcheck="false">
+              </div>
             </div>
             <div class="field-group">
-              <label class="field-label">School</label>
-              <input class="field-input" id="sef-school" placeholder="School name">
+              <label class="field-label">Gender</label>
+              <div class="gender-row">
+                <div class="gender-btn" id="gb-b" onclick="setGender('B')">♂ Boy</div>
+                <div class="gender-btn" id="gb-g" onclick="setGender('G')">♀ Girl</div>
+                <div class="gender-btn" id="gb-u" onclick="setGender('U')">— Unknown</div>
+              </div>
             </div>
-          </div>
-          <div class="field-group">
-            <label class="field-label">Gender</label>
-            <div class="gender-btns">
-              <div class="gender-btn" id="gb-b" onclick="setGender('B')">Boy</div>
-              <div class="gender-btn" id="gb-g" onclick="setGender('G')">Girl</div>
+            <div class="edit-actions">
+              <button class="btn btn-ghost" onclick="cancelStudentEdit()">Cancel</button>
+              <button class="btn btn-primary" onclick="saveStudentEdit()">Save Changes</button>
             </div>
-          </div>
-          <div class="sef-actions">
-            <button class="btn btn-ghost" onclick="cancelStudentEdit()">Cancel</button>
-            <button class="btn btn-primary" onclick="saveStudentEdit()">Save Changes</button>
           </div>
         </div>
       </div>
 
-      <div id="stu-empty" class="panel-empty">
-        <div class="panel-empty-icon">◎</div>
+      <div id="stu-empty" class="empty-state">
+        <div class="empty-icon">◎</div>
         Search for a student above to edit their profile.
       </div>
     </div>
 
-    <!-- ── Edit Test Panel ── -->
+    <!-- TEST PANEL -->
     <div class="panel" id="panel-test">
       <div class="panel-header">
         <button class="panel-back" onclick="openPanel('home')">← Back</button>
-        <div class="panel-title amber">Edit Test Data</div>
+        <div class="panel-title amber">Test Scores</div>
       </div>
 
-      <!-- Step 1: pick test -->
-      <div class="test-selector">
-        <div class="test-sel-grid">
+      <div class="sel-card">
+        <div class="sel-card-title">Select exam</div>
+        <div class="sel-grid">
           <div class="field-group" style="margin-bottom:0">
             <label class="field-label">City</label>
             <select class="field-select" id="test-sel-city" onchange="populateTestYears()">
-              <option value="">— Select city —</option>
+              <option value="">— City —</option>
             </select>
           </div>
           <div class="field-group" style="margin-bottom:0">
             <label class="field-label">Year</label>
             <select class="field-select" id="test-sel-year" onchange="populateTestExams()" disabled>
-              <option value="">— Select year —</option>
+              <option value="">— Year —</option>
             </select>
           </div>
           <div class="field-group" style="margin-bottom:0">
             <label class="field-label">Test</label>
             <select class="field-select" id="test-sel-exam" onchange="loadTestSheet()" disabled>
-              <option value="">— Select test —</option>
+              <option value="">— Test —</option>
             </select>
           </div>
         </div>
       </div>
 
-      <!-- Step 2: score sheet -->
       <div id="test-sheet-area">
-        <div class="panel-empty">
-          <div class="panel-empty-icon">▦</div>
-          Select a city, year, and test above to load the score sheet.
+        <div class="empty-state">
+          <div class="empty-icon">▦</div>
+          Select a city, year, and test to load the score sheet.
         </div>
       </div>
     </div>
 
-  </div>
-</div>
+  </div><!-- /content -->
+</div><!-- /app -->
 
-<!-- ── GITHUB CONFIG MODAL ── -->
+<!-- GITHUB MODAL -->
 <div id="gh-modal">
   <div class="gh-modal-box">
+    <span class="gh-modal-drag"></span>
     <div class="gh-modal-title">GitHub Config</div>
     <div class="gh-modal-sub">
-      Saved for this session only — never written to disk.<br>
-      Requires a PAT with <code>Contents: Read &amp; Write</code> permission on the repo.
+      Saved in localStorage — never sent to any server except GitHub.<br>
+      Requires a PAT with <code>Contents: Read &amp; Write</code> on the repo.
     </div>
     <div class="field-group">
       <label class="field-label">Personal Access Token (PAT)</label>
-      <input class="field-input" id="gh-token" type="password" placeholder="github_pat_… or ghp_…" autocomplete="off" spellcheck="false">
+      <input class="field-input" id="gh-token" type="password"
+        placeholder="github_pat_… or ghp_…" autocomplete="off" spellcheck="false">
     </div>
     <div class="gh-two-col">
       <div class="field-group">
@@ -589,9 +826,10 @@
     <div class="gh-two-col">
       <div class="field-group">
         <label class="field-label">Branch</label>
-        <div style="display:flex;gap:6px">
+        <div style="display:flex;gap:7px">
           <input class="field-input" id="gh-branch" placeholder="main" style="flex:1">
-          <button class="btn btn-ghost" onclick="detectBranch()" id="detect-branch-btn" style="flex-shrink:0;padding:0 12px;font-size:11px" title="Auto-detect default branch from GitHub">Detect</button>
+          <button class="btn btn-ghost" onclick="detectBranch()" id="detect-branch-btn"
+            style="flex-shrink:0;padding:0 12px;font-size:11px" title="Auto-detect">Auto</button>
         </div>
       </div>
       <div class="field-group">
@@ -610,11 +848,9 @@
 
 <script>
   // ── ENTRY GUARD ──────────────────────────────────────────────────────────
-  // admin.html is only reachable if index.html wrote a fresh token (<30s old).
-  // Direct URL access or a stale/missing token bounces back to index.html.
   (function() {
     const raw = sessionStorage.getItem('__adm');
-    sessionStorage.removeItem('__adm'); // consume immediately — one-time use
+    sessionStorage.removeItem('__adm');
     if (!raw || (Date.now() - parseInt(raw, 10)) > 30000) {
       window.location.replace('index.html');
     }
@@ -622,22 +858,16 @@
 </script>
 <script src="data/results_index.js"></script>
 <script>
-  // Load all data chunks synchronously before admin boots
-  // (runs before DOMContentLoaded — chunks are small so this is fast)
   (function() {
     window.dekmaData = {};
     const chunks = window.dekmaChunks || [];
     function slug(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,''); }
     chunks.forEach(function(c) {
-      const el = document.createElement('script');
-      el.src = 'data/' + c.file;
-      // Synchronous load trick: append and the browser blocks
       document.write('<script src="data/' + c.file + '"><\/script>');
     });
   })();
 </script>
 <script>
-  // Merge all loaded chunks into window.dekmaData
   (function() {
     function slug(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,''); }
     (window.dekmaChunks || []).forEach(function(c) {
@@ -651,13 +881,8 @@
 </script>
 <script>
   // ═══════════════════════════════════════════════
-  //  GATE  —  password stored as SHA-256 hash only
-  //           (plaintext never appears in source)
+  //  GATE  —  SHA-256 password check
   // ═══════════════════════════════════════════════
-  // To change the password: compute SHA-256 of your new password and replace this constant.
-  // Quick way: open browser console, run:
-  //   crypto.subtle.digest('SHA-256', new TextEncoder().encode('yourpassword'))
-  //     .then(b => console.log([...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')))
   const PASS_HASH = '9e1779aad19fe80324cb6d070f47eede2490eb0416921255ed207d852499797c';
 
   let unlocked = false;
@@ -674,17 +899,17 @@
     const h = await sha256(gateInp.value);
     if (h === PASS_HASH) {
       unlocked = true;
-      gateEl.style.transition = 'opacity .3s';
+      gateEl.style.transition = 'opacity .35s';
       gateEl.style.opacity = '0';
       setTimeout(() => {
         gateEl.style.display = 'none';
         appEl.classList.add('unlocked');
         bootAdmin();
-      }, 300);
+      }, 350);
     }
   });
 
-  window.addEventListener('DOMContentLoaded', () => setTimeout(() => gateInp.focus(), 60));
+  window.addEventListener('DOMContentLoaded', () => setTimeout(() => gateInp.focus(), 80));
 
   function lockPanel() {
     unlocked = false;
@@ -696,22 +921,13 @@
   }
 
   // ═══════════════════════════════════════════════
-  //  GITHUB CONFIG — persisted in localStorage
+  //  GITHUB CONFIG
   // ═══════════════════════════════════════════════
-  // Config persisted in localStorage — survives page refresh and new sessions
   const GH_SESSION_KEY = '__gh_cfg';
 
-
-  // ═══════════════════════════════════════════════
-  //  GITHUB WRITE QUEUE  — serialises all pushes so
-  //  rapid back-to-back saves never race each other
-  // ═══════════════════════════════════════════════
+  // ── GitHub write queue ──
   let _ghQueue = Promise.resolve();
   function ghEnqueue(fn) {
-    // Run fn after any in-flight operation finishes.
-    // We store a "swallowed" version in _ghQueue so a failure in one fn
-    // doesn't permanently jam the queue for subsequent callers.
-    // The *returned* promise still rejects normally so callers can handle errors.
     const result = _ghQueue.then(() => fn());
     _ghQueue = result.catch(err => {
       console.warn('ghQueue: operation failed, queue continues:', err?.message || err);
@@ -719,7 +935,6 @@
     return result;
   }
 
-  // Shared helper: builds GitHub API headers from config
   function ghHeaders(token) {
     return {
       'Authorization': `Bearer ${token}`,
@@ -729,9 +944,6 @@
     };
   }
 
-  // Shared helper: resolves the branch ref, auto-detecting default branch on 404,
-  // giving a clear message on 401/403, and retrying up to `retries` times on
-  // 422 "not a fast-forward" before giving up.
   async function ghResolveRef(api, headers, branch, retries = 3) {
     for (let attempt = 0; attempt <= retries; attempt++) {
       let ref = branch;
@@ -742,7 +954,6 @@
         if (status === 401 || status === 403)
           throw new Error('Invalid or expired token. Update your PAT in ⚙ GitHub config.');
         if (status === 404) {
-          // Try to auto-detect the repo's real default branch
           const infoRes = await fetch(api, { headers });
           if (infoRes.ok) {
             const info = await infoRes.json();
@@ -752,7 +963,6 @@
               const e2 = await refRes.json().catch(() => ({}));
               throw new Error(`Branch '${ref}' not found: ${e2.message || refRes.status}. Check ⚙ GitHub config.`);
             }
-            // Persist corrected branch
             const saved = loadGhConfig();
             if (saved) { saved.branch = ref; localStorage.setItem(GH_SESSION_KEY, JSON.stringify(saved)); }
           } else {
@@ -767,47 +977,35 @@
     }
   }
 
-  // Core Git-Data-API push: creates blob → tree → commit → updates ref.
-  // Retries automatically on 422 "not a fast-forward" by re-fetching the
-  // latest SHA (happens when two saves land within seconds of each other).
   async function ghPush(api, headers, branch, filePath, contentB64, commitMsg, retries = 3) {
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         const { sha: latestSha, branch: activeBranch } = await ghResolveRef(api, headers, branch);
-
         const comRes = await fetch(`${api}/git/commits/${latestSha}`, { headers });
         if (!comRes.ok) { const e = await comRes.json().catch(()=>({})); throw new Error('Commit: '+(e.message||comRes.status)); }
         const { tree: { sha: treeSha } } = await comRes.json();
-
         const blobRes = await fetch(`${api}/git/blobs`, { method:'POST', headers, body:JSON.stringify({ content: contentB64, encoding:'base64' }) });
         if (!blobRes.ok) { const e = await blobRes.json().catch(()=>({})); throw new Error('Blob: '+(e.message||blobRes.status)); }
         const { sha: blobSha } = await blobRes.json();
-
         const newTreeRes = await fetch(`${api}/git/trees`, { method:'POST', headers, body:JSON.stringify({ base_tree:treeSha, tree:[{ path:filePath, mode:'100644', type:'blob', sha:blobSha }] }) });
         if (!newTreeRes.ok) { const e = await newTreeRes.json().catch(()=>({})); throw new Error('Tree: '+(e.message||newTreeRes.status)); }
         const { sha: newTreeSha } = await newTreeRes.json();
-
         const newComRes = await fetch(`${api}/git/commits`, { method:'POST', headers, body:JSON.stringify({ message: commitMsg, tree: newTreeSha, parents:[latestSha] }) });
         if (!newComRes.ok) { const e = await newComRes.json().catch(()=>({})); throw new Error('Commit create: '+(e.message||newComRes.status)); }
         const { sha: newComSha } = await newComRes.json();
-
         const patchRes = await fetch(`${api}/git/refs/heads/${activeBranch}`, { method:'PATCH', headers, body:JSON.stringify({ sha:newComSha }) });
         if (!patchRes.ok) {
           const e = await patchRes.json().catch(()=>({}));
-          // 422 = not a fast-forward — stale SHA, retry
           if (patchRes.status === 422 && attempt < retries) continue;
           throw new Error('Ref: '+(e.message||patchRes.status));
         }
-        return true; // success
-      } catch(e) {
-        // Only retry on fast-forward failures (caught via 422 above), rethrow everything else
-        throw e;
-      }
+        return true;
+      } catch(e) { throw e; }
     }
     throw new Error('Push failed after retries — not a fast-forward.');
   }
 
-    function loadGhConfig() {
+  function loadGhConfig() {
     try { return JSON.parse(localStorage.getItem(GH_SESSION_KEY) || 'null'); }
     catch { return null; }
   }
@@ -833,20 +1031,13 @@
     const repo   = document.getElementById('gh-repo').value.trim();
     const branch = document.getElementById('gh-branch').value.trim() || 'main';
     const path   = document.getElementById('gh-path').value.trim() || 'data/results.js';
-
-    if (!token || !owner || !repo) {
-      showToast('Token, owner, and repo are required.', 'error');
-      return;
-    }
-
-    const cfg = { token, owner, repo, branch, path };
-    localStorage.setItem(GH_SESSION_KEY, JSON.stringify(cfg));
+    if (!token || !owner || !repo) { showToast('Token, owner, and repo are required.', 'error'); return; }
+    localStorage.setItem(GH_SESSION_KEY, JSON.stringify({ token, owner, repo, branch, path }));
     closeGhModal();
     updateFileStatus(true, owner + '/' + repo);
     showToast('GitHub config saved.', 'success');
   }
 
-  // Auto-detect the default branch for the configured owner/repo/token
   async function detectBranch() {
     const token = document.getElementById('gh-token').value.trim();
     const owner = document.getElementById('gh-owner').value.trim();
@@ -864,12 +1055,9 @@
       showToast('Default branch: ' + default_branch, 'success');
     } catch(e) {
       showToast('Could not detect branch: ' + e.message, 'error');
-    } finally {
-      btn.textContent = 'Detect'; btn.disabled = false;
-    }
+    } finally { btn.textContent = 'Auto'; btn.disabled = false; }
   }
 
-  // Close modal on backdrop click
   document.getElementById('gh-modal').addEventListener('click', e => {
     if (e.target === document.getElementById('gh-modal')) closeGhModal();
   });
@@ -882,15 +1070,15 @@
       el.style.borderColor = 'rgba(74,222,128,.3)';
       el.style.color = '#4ade80';
     } else {
-      el.textContent = 'GITHUB NOT CONFIGURED';
-      el.style.background = 'rgba(90,90,120,.2)';
+      el.textContent = 'NOT CONFIGURED';
+      el.style.background = 'rgba(74,74,100,.2)';
       el.style.borderColor = 'var(--border)';
       el.style.color = 'var(--text3)';
     }
   }
 
   // ═══════════════════════════════════════════════
-  //  GITHUB — write ONE chunk (city+year) via Git Data API
+  //  GITHUB — write chunk
   // ═══════════════════════════════════════════════
   function chunkSlug(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,''); }
 
@@ -898,7 +1086,7 @@
     return ghEnqueue(async () => {
       const cfg = loadGhConfig();
       if (!cfg || !cfg.token || !cfg.owner || !cfg.repo) {
-        showToast('GitHub not configured. Click ⚙ GitHub in the toolbar.', 'error');
+        showToast('GitHub not configured. Tap ⚙ GitHub above.', 'error');
         return false;
       }
       const { token, owner, repo, branch } = cfg;
@@ -908,9 +1096,9 @@
       const headers  = ghHeaders(token);
       const payload  = ADMIN_DATA[city]?.[year];
       if (!payload) { showToast(`No data for ${city} ${year}.`, 'error'); return false; }
-      const raw       = `${varName}=${JSON.stringify(payload)};\n`;
+      const raw        = `${varName}=${JSON.stringify(payload)};\n`;
       const contentB64 = btoa(unescape(encodeURIComponent(raw)));
-      const ts        = new Date().toISOString().slice(0,16).replace('T',' ');
+      const ts         = new Date().toISOString().slice(0,16).replace('T',' ');
       try {
         await ghPush(api, headers, branch, filePath, contentB64, `admin: update ${filePath} [${ts}]`);
         return true;
@@ -921,10 +1109,6 @@
     });
   }
 
-  // ═══════════════════════════════════════════════
-  //  VERSION BUMP — increments data/version.txt so
-  //  index.html cache-busts all data files on next load
-  // ═══════════════════════════════════════════════
   async function bumpVersion() {
     return ghEnqueue(async () => {
       const cfg = loadGhConfig();
@@ -934,32 +1118,21 @@
       const headers  = ghHeaders(token);
       const filePath = 'data/version.txt';
       try {
-        // Read current version (or start at 1 if missing)
         let sha = null, current = 0;
         const getRes = await fetch(`${api}/contents/${filePath}?ref=${branch}`, { headers });
         if (getRes.ok) {
           const data = await getRes.json();
           sha = data.sha;
           current = parseInt(atob(data.content).trim(), 10) || 0;
-        } else if (getRes.status !== 404) {
-          return; // silently skip on unexpected errors
-        }
+        } else if (getRes.status !== 404) { return; }
         const next = current + 1;
-        const body = {
-          message: `admin: bump version to ${next}`,
-          content: btoa(String(next)),
-          branch
-        };
+        const body = { message: `admin: bump version to ${next}`, content: btoa(String(next)), branch };
         if (sha) body.sha = sha;
         await fetch(`${api}/contents/${filePath}`, { method:'PUT', headers, body:JSON.stringify(body) });
-        // No toast — this is a silent background operation
-      } catch(e) {
-        console.warn('Version bump failed (non-critical):', e.message);
-      }
+      } catch(e) { console.warn('Version bump failed (non-critical):', e.message); }
     });
   }
 
-    // Write multiple chunks sequentially (for student edits spanning city+years)
   async function writeChunks(pairs) {
     for (const { city, year } of pairs) {
       const ok = await writeChunk(city, year);
@@ -969,7 +1142,7 @@
   }
 
   // ═══════════════════════════════════════════════
-  //  MANUAL EDITS LOG FUNCTIONS
+  //  MANUAL EDITS LOG
   // ═══════════════════════════════════════════════
   async function loadManualEdits() {
     const cfg = loadGhConfig();
@@ -983,25 +1156,17 @@
       'X-GitHub-Api-Version': '2022-11-28',
     };
     try {
-      const url = `${api}/contents/${filePath}?ref=${branch}`;
-      const res = await fetch(url, { headers });
-      if (res.status === 404) {
-        // File doesn't exist – return empty edits
-        return { scoreEdits: [], studentRenames: [] };
-      }
+      const res = await fetch(`${api}/contents/${filePath}?ref=${branch}`, { headers });
+      if (res.status === 404) return { scoreEdits: [], studentRenames: [] };
       if (!res.ok) throw new Error(`Failed to fetch manual_edits.json: ${res.status}`);
       const data = await res.json();
-      const content = atob(data.content);
-      return JSON.parse(content);
-    } catch (e) {
+      return JSON.parse(atob(data.content));
+    } catch(e) {
       showToast('Could not load manual edits: ' + e.message, 'error');
       return { scoreEdits: [], studentRenames: [] };
     }
   }
 
-  // ── ATOMIC manual-edits append ──────────────────────────────────────────
-  // Loads the latest manual_edits.json, runs mutateFn(edits), then saves —
-  // all inside one ghEnqueue slot so concurrent saves never clobber each other.
   async function appendManualEdit(mutateFn) {
     return ghEnqueue(async () => {
       const cfg = loadGhConfig();
@@ -1013,8 +1178,6 @@
       const filePath = 'data/manual_edits.json';
       const api      = `https://api.github.com/repos/${owner}/${repo}`;
       const headers  = ghHeaders(token);
-
-      // Always fetch fresh inside the queue — this is the whole point.
       let sha = null;
       let edits = { scoreEdits: [], studentRenames: [] };
       try {
@@ -1030,23 +1193,18 @@
         }
       } catch(e) {
         if (!e.message.startsWith('Invalid') && !e.message.startsWith('Failed')) {
-          // parse error — start fresh rather than bail
           edits = { scoreEdits: [], studentRenames: [] };
         } else {
           showToast('Failed to load manual edits: ' + e.message, 'error');
           return false;
         }
       }
-
-      // Let the caller append whatever they need
       mutateFn(edits);
-
       const raw        = JSON.stringify(edits, null, 2);
       const contentB64 = btoa(unescape(encodeURIComponent(raw)));
       const body = {
         message: `admin: update manual_edits.json [${new Date().toISOString().slice(0,16).replace('T',' ')}]`,
-        content: contentB64,
-        branch
+        content: contentB64, branch
       };
       if (sha) body.sha = sha;
       try {
@@ -1065,20 +1223,18 @@
     });
   }
 
-  // Keep old signature for any future callers, but internally use appendManualEdit
   async function saveManualEdits(edits) {
     return appendManualEdit(existing => {
-      existing.scoreEdits    = edits.scoreEdits    ?? existing.scoreEdits;
+      existing.scoreEdits     = edits.scoreEdits     ?? existing.scoreEdits;
       existing.studentRenames = edits.studentRenames ?? existing.studentRenames;
     });
   }
 
-  // Legacy alias so existing calls still work (used in saveStudentEdit/saveScore below)
   async function writeResultsFile() {
     return ghEnqueue(async () => {
       const cfg = loadGhConfig();
       if (!cfg || !cfg.token || !cfg.owner || !cfg.repo) {
-        showToast('GitHub not configured. Click ⚙ GitHub in the toolbar first.', 'error');
+        showToast('GitHub not configured. Tap ⚙ GitHub above.', 'error');
         return false;
       }
       const { token, owner, repo, branch, path } = cfg;
@@ -1096,11 +1252,12 @@
       }
     });
   }
+
   // ═══════════════════════════════════════════════
   //  BOOT
   // ═══════════════════════════════════════════════
-  let ADMIN_DATA    = null;
-  let currentPanel  = 'home';
+  let ADMIN_DATA     = null;
+  let currentPanel   = 'home';
   let editingStudent = null;
   let editingGender  = '';
 
@@ -1113,16 +1270,11 @@
       populateStuSchoolFilter();
       populateTestCities();
     }
-    // Restore GitHub status badge if config exists in session
     const cfg = loadGhConfig();
-    if (cfg && cfg.owner && cfg.repo) {
-      updateFileStatus(true, cfg.owner + '/' + cfg.repo);
-    }
+    if (cfg && cfg.owner && cfg.repo) updateFileStatus(true, cfg.owner + '/' + cfg.repo);
   }
 
-  // ═══════════════════════════════════════════════
-  //  PANEL NAVIGATION
-  // ═══════════════════════════════════════════════
+  // ── PANEL NAV ──
   function openPanel(name) {
     currentPanel = name;
     document.getElementById('panel-home').style.display = name === 'home' ? 'block' : 'none';
@@ -1131,11 +1283,10 @@
       const el = document.getElementById('panel-' + name);
       if (el) el.classList.add('active');
     }
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }
 
-  // ═══════════════════════════════════════════════
-  //  DATA HELPERS
-  // ═══════════════════════════════════════════════
+  // ── DATA HELPERS ──
   function forEachStudent(cb) {
     if (!ADMIN_DATA) return;
     for (const city of Object.keys(ADMIN_DATA))
@@ -1167,9 +1318,7 @@
     });
   }
 
-  // ═══════════════════════════════════════════════
-  //  EDIT STUDENT
-  // ═══════════════════════════════════════════════
+  // ── EDIT STUDENT ──
   function populateStuSchoolFilter() {
     const el = document.getElementById('stu-search-school');
     while (el.options.length > 1) el.remove(1);
@@ -1198,14 +1347,14 @@
 
     empty.style.display = 'none';
     if (!students.length) {
-      list.innerHTML = '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--text3);padding:12px 0">No students found.</div>';
+      list.innerHTML = `<div style="font-size:11px;color:var(--text3);padding:16px 0">No students found.</div>`;
       return;
     }
     list.innerHTML = students.slice(0, 60).map((s, i) => `
       <div class="student-result-item" onclick="openStudentEdit(${i})">
         <div>
           <div class="sri-name">${esc(s.name)}</div>
-          <div class="sri-meta">${esc(s.school)} · ${s.gender === 'B' ? 'Boy' : s.gender === 'G' ? 'Girl' : '—'}</div>
+          <div class="sri-meta">${esc(s.school)} · ${s.gender === 'B' ? '♂ Boy' : s.gender === 'G' ? '♀ Girl' : '—'}</div>
         </div>
         <div class="sri-arrow">›</div>
       </div>`).join('');
@@ -1234,6 +1383,7 @@
     editingGender = g;
     document.getElementById('gb-b').className = 'gender-btn' + (g === 'B' ? ' active-b' : '');
     document.getElementById('gb-g').className = 'gender-btn' + (g === 'G' ? ' active-g' : '');
+    document.getElementById('gb-u').className = 'gender-btn' + (!g || g === 'U' ? ' active-u' : '');
   }
 
   function cancelStudentEdit() {
@@ -1252,7 +1402,6 @@
     const origName   = editingStudent.name;
     const origSchool = editingStudent.school;
 
-    // Collect all city+year pairs containing this student so we only push those chunks
     const affectedMap = new Map();
     let changed = 0;
     forEachStudent((s, exam, city, year) => {
@@ -1271,18 +1420,13 @@
     showToast(`Saving ${pairs.length} chunk${pairs.length > 1 ? 's' : ''}…`, '');
     const ok = await writeChunks(pairs);
     if (ok) {
-      // Record the rename in manual_edits.json — atomically
       await appendManualEdit(edits => {
         edits.studentRenames.push({
-          oldName:   origName,
-          oldSchool: origSchool,
-          newName:   newName,
-          newSchool: newSchool,
-          timestamp: Date.now()
+          oldName: origName, oldSchool: origSchool,
+          newName, newSchool, timestamp: Date.now()
         });
       });
-      bumpVersion(); // fire-and-forget, queued
-
+      bumpVersion();
       showToast(`Saved — ${changed} record${changed > 1 ? 's' : ''} updated on GitHub.`, 'success');
       editingStudent = { name: newName, school: newSchool, gender: newGender };
       document.getElementById('sef-display-name').textContent   = newName;
@@ -1291,9 +1435,7 @@
     }
   }
 
-  // ═══════════════════════════════════════════════
-  //  EDIT TEST SCORES
-  // ═══════════════════════════════════════════════
+  // ── EDIT TEST SCORES ──
   function populateTestCities() {
     const el = document.getElementById('test-sel-city');
     while (el.options.length > 1) el.remove(1);
@@ -1308,8 +1450,8 @@
     const city = document.getElementById('test-sel-city').value;
     const yr   = document.getElementById('test-sel-year');
     const ex   = document.getElementById('test-sel-exam');
-    yr.innerHTML = '<option value="">— Select year —</option>';
-    ex.innerHTML = '<option value="">— Select test —</option>';
+    yr.innerHTML = '<option value="">— Year —</option>';
+    ex.innerHTML = '<option value="">— Test —</option>';
     yr.disabled = true; ex.disabled = true;
     if (!city || !ADMIN_DATA[city]) return;
     Object.keys(ADMIN_DATA[city]).sort((a,b) => b - a).forEach(y => {
@@ -1324,7 +1466,7 @@
     const city = document.getElementById('test-sel-city').value;
     const year = document.getElementById('test-sel-year').value;
     const ex   = document.getElementById('test-sel-exam');
-    ex.innerHTML = '<option value="">— Select test —</option>';
+    ex.innerHTML = '<option value="">— Test —</option>';
     ex.disabled = true;
     if (!city || !year || !ADMIN_DATA[city]?.[year]) return;
     (ADMIN_DATA[city][year].exams || []).forEach(e => {
@@ -1337,9 +1479,9 @@
 
   function resetTestSheet() {
     document.getElementById('test-sheet-area').innerHTML = `
-      <div class="panel-empty">
-        <div class="panel-empty-icon">▦</div>
-        Select a city, year, and test above to load the score sheet.
+      <div class="empty-state">
+        <div class="empty-icon">▦</div>
+        Select a city, year, and test to load the score sheet.
       </div>`;
   }
 
@@ -1359,40 +1501,39 @@
   function renderTestSheet(exam) {
     const area = document.getElementById('test-sheet-area');
     area.innerHTML = `
-      <div class="test-sheet-wrap">
-        <div class="test-sheet-header">
-          <div class="test-sheet-title">${esc(exam.label)}
-            <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);margin-left:8px;text-transform:uppercase;letter-spacing:.5px">${exam.type} · ${exam.students.length} students</span>
+      <div class="sheet-card">
+        <div class="sheet-header">
+          <div>
+            <div class="sheet-title">${esc(exam.label)}</div>
+            <div class="sheet-meta">${exam.type} · ${exam.students.length} students</div>
           </div>
-          <input class="test-sheet-search" id="test-search-inp" placeholder="Search student…"
-            oninput="filterTestSheet(this.value)">
+          <input class="sheet-search" id="test-search-inp" placeholder="Search student…"
+            oninput="filterTestSheet(this.value)" autocomplete="off">
         </div>
-        <div class="test-table-wrap">
-          <table class="test-tbl">
+        <!-- Desktop table -->
+        <div class="sheet-table-wrap">
+          <table class="score-tbl">
             <thead><tr>
-              <th style="width:50px">Rank</th>
-              <th>Name</th>
-              <th>School</th>
-              <th style="width:60px">Gender</th>
-              <th style="width:180px">Score</th>
+              <th>Rank</th><th>Name</th><th>School</th><th>G</th><th>Score</th>
             </tr></thead>
             <tbody id="test-tbody"></tbody>
           </table>
         </div>
+        <!-- Mobile cards -->
+        <div class="score-cards" id="test-cards"></div>
       </div>`;
     filterTestSheet('');
     setTimeout(() => {
       const s = document.getElementById('test-search-inp');
-      if (s) s.focus();
+      if (s && window.innerWidth > 600) s.focus();
     }, 50);
   }
 
   function filterTestSheet(q) {
     const tbody = document.getElementById('test-tbody');
-    if (!tbody || !_currentExam) return;
+    const cards = document.getElementById('test-cards');
+    if ((!tbody && !cards) || !_currentExam) return;
 
-    // Sort by marks descending and compute fresh display ranks so the table
-    // always reflects in-memory scores (not the stale XML rank field).
     const allSorted = [..._currentExam.students].sort((a, b) => b.marks - a.marks);
     allSorted.forEach((s, i) => {
       s._displayRank = i > 0 && s.marks === allSorted[i-1].marks
@@ -1402,42 +1543,63 @@
     let students = allSorted;
     if (q) students = students.filter(s => s.name.toLowerCase().includes(q.toLowerCase().trim()));
 
-    tbody.innerHTML = students.map(s => {
-      const gBadge = s.gender === 'B'
-        ? `<span style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:3px;background:rgba(96,165,250,.12);color:#60a5fa">B</span>`
-        : s.gender === 'G'
-        ? `<span style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:3px;background:rgba(244,114,182,.12);color:#f472b6">G</span>`
-        : '<span style="color:var(--text3)">—</span>';
-      return `<tr>
+    const gBadge = s => s.gender === 'B'
+      ? `<span style="background:rgba(96,165,250,.12);color:#60a5fa;padding:2px 7px;border-radius:3px;font-size:9px">B</span>`
+      : s.gender === 'G'
+      ? `<span style="background:rgba(244,114,182,.12);color:#f472b6;padding:2px 7px;border-radius:3px;font-size:9px">G</span>`
+      : `<span style="color:var(--text3)">—</span>`;
+
+    // Desktop table rows
+    if (tbody) {
+      tbody.innerHTML = students.map(s => `<tr>
         <td class="tbl-rank">#${s._displayRank ?? s.rank ?? '—'}</td>
         <td style="font-weight:600">${esc(s.name)}</td>
         <td class="tbl-school">${esc(s.school)}</td>
-        <td>${gBadge}</td>
+        <td class="tbl-gender">${gBadge(s)}</td>
         <td>
-          <div class="edit-score-cell">
-            <input class="score-edit-input" type="number" min="0" max="100"
+          <div class="edit-cell">
+            <input class="score-inp" type="number" min="0" max="100"
               value="${s.marks}" data-orig="${s.marks}"
               data-name="${esc(s.name)}" data-school="${esc(s.school)}"
               oninput="markScoreDirty(this)">
-            <button class="score-save-btn" disabled onclick="saveScore(this)">Save</button>
-            <span class="score-saved-badge">✓ Saved</span>
+            <button class="save-btn" disabled onclick="saveScore(this)">SAVE</button>
+            <span class="saved-tick">✓</span>
           </div>
         </td>
-      </tr>`;
-    }).join('');
+      </tr>`).join('');
+    }
+
+    // Mobile score cards
+    if (cards) {
+      cards.innerHTML = students.map(s => `
+        <div class="score-card">
+          <div class="sc-left">
+            <div class="sc-rank">#${s._displayRank ?? s.rank ?? '—'} · ${esc(s.school)}</div>
+            <div class="sc-name">${esc(s.name)}</div>
+          </div>
+          <div class="sc-right">
+            <input class="score-inp" type="number" min="0" max="100"
+              value="${s.marks}" data-orig="${s.marks}"
+              data-name="${esc(s.name)}" data-school="${esc(s.school)}"
+              oninput="markScoreDirty(this)" style="width:64px;font-size:18px;padding:7px 8px">
+            <button class="save-btn" disabled onclick="saveScore(this)">✓</button>
+          </div>
+        </div>`).join('');
+    }
   }
 
   function markScoreDirty(inp) {
     const newVal = parseInt(inp.value, 10);
     const orig   = parseInt(inp.dataset.orig, 10);
-    const btn    = inp.closest('.edit-score-cell').querySelector('.score-save-btn');
+    const cell   = inp.closest('.edit-cell') || inp.closest('.sc-right');
+    const btn    = cell.querySelector('.save-btn');
     btn.disabled = isNaN(newVal) || newVal === orig || newVal < 0 || newVal > 100;
   }
 
   async function saveScore(btn) {
-    const cell   = btn.closest('.edit-score-cell');
-    const inp    = cell.querySelector('.score-edit-input');
-    const badge  = cell.querySelector('.score-saved-badge');
+    const cell   = btn.closest('.edit-cell') || btn.closest('.sc-right');
+    const inp    = cell.querySelector('.score-inp, input[type="number"]');
+    const tick   = cell.querySelector('.saved-tick');
     const newVal = parseInt(inp.value, 10);
     if (isNaN(newVal) || newVal < 0 || newVal > 100) return showToast('Invalid score.', 'error');
 
@@ -1445,12 +1607,13 @@
     const origSchool = inp.dataset.school;
 
     btn.disabled = true;
-    btn.textContent = 'Saving…';
+    const origTxt = btn.textContent;
+    btn.textContent = '…';
     btn.style.color = 'var(--amber)';
 
     const student = _currentExam.students.find(s => s.name === origName && s.school === origSchool);
     if (!student) {
-      btn.textContent = 'Save'; btn.style.color = ''; btn.disabled = false;
+      btn.textContent = origTxt; btn.style.color = ''; btn.disabled = false;
       return showToast('Student not found in exam data.', 'error');
     }
 
@@ -1458,47 +1621,39 @@
     student.marks = newVal;
     recomputeRanks(_currentExam);
 
-    // Only push the one chunk for this city+year — much faster
     const city = document.getElementById('test-sel-city').value;
     const year = document.getElementById('test-sel-year').value;
-    const ok = await writeChunk(city, year);
+    const ok   = await writeChunk(city, year);
 
     if (!ok) {
       student.marks = prevMarks;
       recomputeRanks(_currentExam);
-      btn.textContent = 'Save'; btn.style.color = ''; btn.disabled = false;
+      btn.textContent = origTxt; btn.style.color = ''; btn.disabled = false;
       return;
     }
 
-    // Record the score edit in manual_edits.json — atomically (load+push+save
-    // happen inside one ghEnqueue slot, so concurrent saves can't clobber each other)
-    const editCity = document.getElementById('test-sel-city').value;
     await appendManualEdit(edits => {
       edits.scoreEdits.push({
-        examId:   _currentExam.id,
-        city:     editCity,
-        student:  { name: origName, school: origSchool },
-        newMarks: newVal,
-        timestamp: Date.now()
+        examId: _currentExam.id, city,
+        student: { name: origName, school: origSchool },
+        newMarks: newVal, timestamp: Date.now()
       });
     });
-    bumpVersion(); // fire-and-forget, queued
+    bumpVersion();
 
     inp.dataset.orig = newVal;
-    btn.textContent = 'Save';
-    btn.style.color = '';
-    badge.classList.add('visible');
-    setTimeout(() => badge.classList.remove('visible'), 2400);
+    btn.textContent  = origTxt;
+    btn.style.color  = '';
+    if (tick) { tick.classList.add('visible'); setTimeout(() => tick.classList.remove('visible'), 2400); }
 
-    const rankCell = inp.closest('tr').querySelector('.tbl-rank');
-    if (rankCell) rankCell.textContent = '#' + student.rank;
+    // Update rank cell in desktop table
+    const row = inp.closest('tr');
+    if (row) { const rc = row.querySelector('.tbl-rank'); if (rc) rc.textContent = '#' + student._displayRank; }
 
-    showToast(`Saved to GitHub — ${origName}: ${prevMarks} → ${newVal}, ranks updated.`, 'success');
+    showToast(`${origName}: ${prevMarks} → ${newVal}, saved to GitHub.`, 'success');
   }
 
-  // ═══════════════════════════════════════════════
-  //  TOAST
-  // ═══════════════════════════════════════════════
+  // ── TOAST ──
   let _toastTimer;
   function showToast(msg, type = '') {
     const t = document.getElementById('toast');
@@ -1508,9 +1663,7 @@
     _toastTimer = setTimeout(() => t.className = '', 3800);
   }
 
-  // ═══════════════════════════════════════════════
-  //  UTILS
-  // ═══════════════════════════════════════════════
+  // ── UTILS ──
   function esc(s) {
     return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
   }
