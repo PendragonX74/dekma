@@ -3137,7 +3137,7 @@
     <div class="splash-stage">
       <div class="splash-eyebrow">
         <span class="spl-line" id="spl-line-l"></span>
-        <span class="spl-etext" id="spl-etext">Janaka Abeywardhana · Applied Maths</span>
+        <span class="spl-etext" id="spl-etext">Janaka · Applied Maths</span>
         <span class="spl-line" id="spl-line-r"></span>
       </div>
       <div class="splash-word">
@@ -3146,7 +3146,7 @@
       <div class="splash-rule" id="spl-rule"></div>
 
     </div>
-    <button class="splash-skip" id="splash-skip" onclick="skipSplashAnim()">skip</button>
+    <button class="splash-skip" id="splash-skip" style="display:none"></button>
   </div>
 
   <div id="picker">
@@ -3305,8 +3305,7 @@
               <div class="card-title">⭐ Top 10</div>
               <div style="display:flex;align-items:center;gap:8px">
                 <div id="top10-sel" class="tdd-wrap"></div>
-                <button class="t10-sort-btn active" id="t10-rank-btn" onclick="setTop10Sort('rank',this)">By
-                  Rank</button>
+                <button class="t10-sort-btn active" id="t10-rank-btn" onclick="setTop10Sort('rank',this)">By Rating</button>
                 <button class="t10-sort-btn" id="t10-avg-btn" onclick="setTop10Sort('avg',this)">By Avg</button>
               </div>
             </div>
@@ -3399,8 +3398,8 @@
           <div class="filter-bar">
             <div id="school-test-sel" class="tdd-wrap"></div>
             <div class="filter-btn" id="ss-count" onclick="setSchoolSort('count',this)">By Students</div>
-            <div class="filter-btn active" id="ss-avg" onclick="setSchoolSort('avg',this)">By Avg Score</div>
-            <div class="filter-btn" id="ss-top" onclick="setSchoolSort('elite',this)">By Elite Score</div>
+            <div class="filter-btn" id="ss-avg" onclick="setSchoolSort('avg',this)">By Avg Score</div>
+            <div class="filter-btn active" id="ss-top" onclick="setSchoolSort('elite',this)">By Elite Score</div>
           </div>
           <div class="two-col">
             <div class="card">
@@ -3853,7 +3852,7 @@
       // Reset all state
       lbPage = 1; lbGender = ''; lbTestSel = { mode: 'all' }; lbSortField = 'rating'; lbSortAsc = false; lbSchool = '';
       podiumTestSel = { mode: 'all' }; top10TestSel = { mode: 'all' }; top10SortField = 'rank'; top10SortAsc = true;
-      stuGender = ''; stuSchool = ''; schoolSort = 'avg'; schoolTestSel = { mode: 'all' }; schoolData = {};
+      stuGender = ''; stuSchool = ''; schoolSort = 'elite'; schoolTestSel = { mode: 'all' }; schoolData = {};
       avgType = 'all'; _schoolsExpanded = false;
 
       // Destroy all charts
@@ -4017,50 +4016,57 @@
     // ═══════════════════════════════════════════════════════════════════════
     (function(){
       let amb = null, exitTimer = null, dest = 'picker';
+      let _exitCalled = false;
 
       function Q(id){ return document.getElementById(id); }
 
       function runSeq() {
         // eyebrow lines extend
-        setTimeout(() => { Q('spl-line-l').style.width='38px'; Q('spl-line-r').style.width='38px'; }, 200);
+        setTimeout(() => { Q('spl-line-l').style.width='38px'; Q('spl-line-r').style.width='38px'; }, 100);
         // eyebrow text
-        setTimeout(() => { Q('spl-etext').style.opacity='1'; }, 420);
+        setTimeout(() => { Q('spl-etext').style.opacity='1'; }, 280);
         // letters spring in staggered
         ['sl-D','sl-E','sl-K','sl-M','sl-A'].forEach((id,i) =>
-          setTimeout(() => Q(id).classList.add('in'), 620 + i*150)
+          setTimeout(() => Q(id).classList.add('in'), 420 + i*110)
         );
         // rule draws
-        setTimeout(() => { Q('spl-rule').style.width='58%'; }, 1480);
+        setTimeout(() => { Q('spl-rule').style.width='58%'; }, 1050);
         // subtitle
-        setTimeout(() => { Q('spl-sub').classList.add('in'); }, 1820);
-        // skip button
-        setTimeout(() => { Q('splash-skip').classList.add('in'); }, 1300);
-        // AUTO-ADVANCE after 3.8s — long enough to feel proper
-        exitTimer = setTimeout(() => doExit(), 3800);
+        setTimeout(() => { Q('spl-sub').classList.add('in'); }, 1280);
+        // AUTO-ADVANCE after 2.4s — snappy but still feels intentional
+        exitTimer = setTimeout(() => doExit(), 2400);
       }
 
       function doExit() {
+        if (_exitCalled) return; // guard against double-calls
+        _exitCalled = true;
         clearTimeout(exitTimer);
         if (amb) { amb.stop(); amb = null; }
         const sp = Q('splash');
+        // Hide skip button immediately so it doesn't linger
+        const skipBtn = Q('splash-skip');
+        if (skipBtn) { skipBtn.style.opacity = '0'; skipBtn.style.pointerEvents = 'none'; }
         sp.classList.add(dest === 'app' ? 's-exit-fade' : 's-exit-up');
         setTimeout(() => {
           sp.style.display = 'none';
           sp.classList.remove('s-exit-fade','s-exit-up');
+          _exitCalled = false;
           if (dest === 'app') {
             const app = Q('app');
             app.style.display = 'flex';
             app.classList.add('app-enter');
             setTimeout(() => app.classList.remove('app-enter'), 700);
-            reloadForSelection();
+            // If preloaded, app is already rendered — just show it
+            if (!window._appPreloaded) reloadForSelection();
           } else {
             showPicker();
           }
-        }, 680);
+        }, 720);
       }
 
       window._splashSkip = function() {
         clearTimeout(exitTimer);
+        if (_exitCalled) return;
         // Snap all elements visible instantly
         Q('spl-line-l').style.cssText += ';transition:none;width:38px';
         Q('spl-line-r').style.cssText += ';transition:none;width:38px';
@@ -4072,9 +4078,8 @@
         });
         Q('spl-rule').style.cssText += ';transition:none;width:58%';
         Q('spl-sub').style.cssText  += ';transition:none;opacity:1;transform:translateY(0)';
-        Q('splash-skip').classList.remove('in');
-        // brief pause then exit
-        setTimeout(() => doExit(), 400);
+        // Exit immediately — no extra delay
+        doExit();
       };
 
       window._splashStop = function() {
@@ -4154,6 +4159,12 @@
         selectedCity = city; selectedYear = year;
         splashCity = city;   splashYear = year;
         showSplash('app');
+        // Preload: render the app in the background while the splash plays
+        // The app div is hidden so nothing is visible yet
+        setTimeout(() => {
+          reloadForSelection();
+          window._appPreloaded = true;
+        }, 80);
       } else {
         // No selection — splash exits to picker
         splashCity = ''; splashYear = '';
@@ -4306,6 +4317,7 @@
     //  NAVIGATION
     // ═══════════════════════════════════════════════════
     let _transitionsReady = false;
+    let _suppressScrollReset = false;
 
     function liquidTransition(cb) {
       const content = document.getElementById('main-content');
@@ -4353,13 +4365,17 @@
         if (onclick && onclick.includes("'" + page + "'")) n.classList.add('active');
       });
       document.getElementById('page-title').textContent = PAGE_TITLES[page] || page.toUpperCase();
-      const contentEl = document.getElementById('main-content');
-      if (contentEl) contentEl.scrollTop = 0;
-      window.scrollTo(0, 0);
+      if (!_suppressScrollReset) {
+        const contentEl = document.getElementById('main-content');
+        if (contentEl) contentEl.scrollTop = 0;
+        window.scrollTo(0, 0);
+      }
+      _suppressScrollReset = false;
       if (page === 'students') {
         // Only reset to search view if we're NOT mid-way through opening a profile
         // (_navOrigin being set means openStudentProfile is about to run)
         if (!_navOrigin) {
+          _profileStack = [];
           const fb = document.getElementById('stu-filter-bar');
           if (fb) fb.style.display = '';
           const sg = document.getElementById('stu-grid');
@@ -5045,8 +5061,12 @@
 
     // ─── TOP 10 ──────────────────────────────────────
     function setTop10Sort(field, btn) {
-      if (top10SortField === field) { top10SortAsc = !top10SortAsc; }
-      else { top10SortField = field; top10SortAsc = field === 'rank' ? true : false; }
+      // Clicking 'avg' when already on 'avg' toggles back to 'rank' (no reverse sort)
+      if (field === 'avg' && top10SortField === 'avg') {
+        top10SortField = 'rank';
+      } else {
+        top10SortField = field;
+      }
       syncTop10Btns(); renderTop10();
     }
     function syncTop10Btns() {
@@ -5065,8 +5085,9 @@
         if (!exam) { document.getElementById('top10-table').innerHTML = '<div class="empty"><div class="empty-icon">📋</div>No data</div>'; return; }
         rows = deduplicateStudents([...exam.students]).sort((a, b) => b.marks - a.marks);
       }
-      if (top10SortField === 'avg') { rows.sort((a, b) => top10SortAsc ? a.marks - b.marks : b.marks - a.marks); }
-      else { if (!isAggr) rows.sort((a, b) => top10SortAsc ? a.marks - b.marks : b.marks - a.marks); }
+      // Always sort descending by the display value — no reverse toggle in top-10
+      if (top10SortField === 'avg' && isAggr) { rows.sort((a, b) => b.marks - a.marks); }
+      else if (!isAggr) { rows.sort((a, b) => b.marks - a.marks); }
       if (rows.length > 10) {
         const scoreKey = r => isAggr ? r.rating : r.marks;
         const boundary = scoreKey(rows[9]);
@@ -5578,16 +5599,23 @@
     }
 
     function goBackFromProfile() {
+      // If there's a profile stack, pop back to the previous profile
+      if (_profileStack.length > 0) {
+        const prev = _profileStack.pop();
+        openStudentProfile(prev.idx);
+        return;
+      }
       if (_navOrigin && _navOrigin.page !== 'students') {
-        // Came from another page — navigate back there and restore scroll
+        // Came from another page — navigate back and restore scroll
         const origin = _navOrigin;
         _navOrigin = null;
+        _suppressScrollReset = true;
         location.hash = origin.page;
         setTimeout(() => {
           window.scrollTo({ top: origin.scrollY, behavior: 'instant' });
-        }, 60);
+        }, 220); // after liquidTransition's 180ms + buffer
       } else {
-        // Came from student search (or unknown) — just show the search grid
+        // Came from student search grid — return to it
         _navOrigin = null;
         document.getElementById('stu-filter-bar').style.display = '';
         document.getElementById('stu-grid').style.display = 'grid';
@@ -5595,23 +5623,36 @@
       }
     }
 
+    // Profile navigation stack — lets us go back through peer profiles to the origin page
+    let _profileStack = []; // each entry: { idx, scrollY }
+
     function navToStudent(name, school) {
       document.getElementById('search-results').classList.remove('visible');
       document.getElementById('global-search').value = '';
       const idx = STU_REGISTRY.findIndex(s => s.name === name && s.school === school);
-      // Save where we came from so the back button can return there
+      if (idx < 0) return;
+
       const currentPage = location.hash.replace('#', '') || 'dashboard';
       const pageLabelMap = { dashboard: 'Dashboard', leaderboard: 'Leaderboard', tests: 'Tests', schools: 'Schools', analytics: 'Analytics', students: 'Student Search' };
-      _navOrigin = {
-        page: currentPage,
-        scrollY: window.scrollY || document.documentElement.scrollTop,
-        label: pageLabelMap[currentPage] || currentPage
-      };
-      if (currentPage !== 'students') {
-        location.hash = 'students';
-        setTimeout(() => { if (idx >= 0) openStudentProfile(idx); }, 80);
+
+      if (currentPage === 'students' && document.getElementById('stu-profile').style.display !== 'none') {
+        // Already on a profile — push current profile onto the stack before navigating
+        _profileStack.push({ idx: _currentProfileIdx, scrollY: window.scrollY || document.documentElement.scrollTop });
+        openStudentProfile(idx);
       } else {
-        if (idx >= 0) openStudentProfile(idx);
+        // Coming from a different page or from search grid — set origin and navigate
+        _profileStack = []; // clear any stale stack
+        _navOrigin = {
+          page: currentPage,
+          scrollY: window.scrollY || document.documentElement.scrollTop,
+          label: pageLabelMap[currentPage] || currentPage
+        };
+        if (currentPage !== 'students') {
+          location.hash = 'students';
+          setTimeout(() => { openStudentProfile(idx); }, 80);
+        } else {
+          openStudentProfile(idx);
+        }
       }
     }
 
@@ -5767,11 +5808,22 @@
       document.getElementById('stu-grid').style.display = 'none';
       const pv = document.getElementById('stu-profile');
       pv.style.display = 'block';
-      // Update back button label and compare button state based on origin
+      // Always scroll to top when showing a profile
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      const contentEl = document.getElementById('main-content');
+      if (contentEl) contentEl.scrollTop = 0;
+      // Update back button label
       setTimeout(() => {
         const btn = document.getElementById('profile-back-btn');
-        if (btn && _navOrigin) {
-          btn.textContent = _navOrigin.page === 'students' ? '← Back to Search' : `← Back to ${_navOrigin.label}`;
+        if (btn) {
+          if (_profileStack.length > 0) {
+            const prevStu = STU_REGISTRY[_profileStack[_profileStack.length - 1].idx];
+            btn.textContent = prevStu ? `← ${prevStu.name.split(' ')[0]}` : '← Back';
+          } else if (_navOrigin) {
+            btn.textContent = _navOrigin.page === 'students' ? '← Back to Search' : `← Back to ${_navOrigin.label}`;
+          } else {
+            btn.textContent = '← Back';
+          }
         }
         const cmpBtn = document.getElementById('cmp-btn-profile');
         if (cmpBtn) {
@@ -5894,7 +5946,9 @@
         const w = Math.max(...schoolMates.slice(0, 8).map(x => x.marks), avg);
         const col = i === 0 ? 'var(--amber)' : i === 1 ? 'var(--blue)' : 'var(--text3)';
         return `<div class="score-bar">
-                  <div class="score-bar-label" style="width:130px">${s.name.split(' ')[0]}</div>
+                  <div class="score-bar-label" style="width:130px;cursor:pointer;transition:color .15s" 
+                    onclick="navToStudent('${_ns(s.name)}','${_ns(s.school)}')"
+                    onmouseenter="this.style.color='var(--amber)'" onmouseleave="this.style.color=''">${s.name.split(' ')[0]}</div>
                   <div class="score-bar-track"><div class="score-bar-fill" style="width:${s.marks / w * 100}%;background:${col}"></div></div>
                   <div class="score-bar-val">${s.marks}</div>
                 </div>`;
@@ -6073,7 +6127,9 @@
         <div style="margin-bottom:8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">TOP STUDENTS — personal average</div>
         ${d.topStudents.slice(0, 8).map((s, i) => `
           <div class="score-bar">
-            <div class="score-bar-label" style="width:140px">${['🥇', '🥈', '🥉', '4.', '5.', '6.', '7.', '8.'][i]} ${s.name}<span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-left:4px">(${s.tests}t)</span></div>
+            <div class="score-bar-label" style="width:140px;cursor:pointer;transition:color .15s"
+              onclick="navToStudent('${_ns(s.name)}','${esc(schoolName)}')"
+              onmouseenter="this.style.color='var(--amber)'" onmouseleave="this.style.color=''">${['🥇', '🥈', '🥉', '4.', '5.', '6.', '7.', '8.'][i]} ${s.name}<span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-left:4px">(${s.tests}t)</span></div>
             <div class="score-bar-track"><div class="score-bar-fill" style="width:${s.avg}%;background:${i < d.eliteTopN ? '#60a5fa' : 'var(--text3)'}"></div></div>
             <div class="score-bar-val" style="color:${i < d.eliteTopN ? 'var(--blue)' : 'var(--text3)'}">${s.avg.toFixed(1)}</div>
           </div>`).join('')}
@@ -6441,14 +6497,15 @@
         return i === 3 || i === 6 ? Math.min(...v) : Math.max(...v); // worst and rank: lower is better
       };
 
-      const colors = ['var(--amber)', 'var(--teal)', 'var(--blue)', 'var(--pink)'];
+      const colors = ['#e8a020', '#2dd4bf', '#60a5fa', '#f472b6'];
+      const colorVars = ['var(--amber)', 'var(--teal)', 'var(--blue)', 'var(--pink)'];
       const ini = n => n.split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
 
       let html = `<div style="display:grid;grid-template-columns:repeat(${students.length},1fr);gap:16px;margin-bottom:24px">`;
       students.forEach((s, ci) => {
-        const gc = s.gender === GEN_MALE ? 'var(--male)' : s.gender === GEN_FEMALE ? 'var(--female)' : colors[ci];
-        html += `<div style="text-align:center;padding:16px;background:var(--bg3);border-radius:12px;border:1px solid ${colors[ci]}44">
-          <div style="width:52px;height:52px;border-radius:50%;background:${colors[ci]}22;border:2px solid ${colors[ci]};display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:22px;color:${colors[ci]};margin:0 auto 10px">${ini(s.name)}</div>
+        const gc = s.gender === GEN_MALE ? 'var(--male)' : s.gender === GEN_FEMALE ? 'var(--female)' : colorVars[ci];
+        html += `<div style="text-align:center;padding:16px;background:var(--bg3);border-radius:12px;border:1px solid ${colorVars[ci]}44">
+          <div style="width:52px;height:52px;border-radius:50%;background:${colorVars[ci]}22;border:2px solid ${colorVars[ci]};display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:22px;color:${colorVars[ci]};margin:0 auto 10px">${ini(s.name)}</div>
           <div style="font-weight:600;font-size:15px;margin-bottom:4px">${s.name}</div>
           <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)">${s.school}</div>
         </div>`;
@@ -6465,7 +6522,7 @@
           const v = vals(s)[i];
           const num = parseFloat(v);
           const isBest = best !== null && num === best;
-          html += `<div style="padding:10px 14px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;color:${isBest ? colors[ci] : 'var(--text2)'};display:flex;align-items:center;justify-content:center;background:${isBest ? colors[ci] + '0d' : ''}">${v}</div>`;
+          html += `<div style="padding:10px 14px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;color:${isBest ? colorVars[ci] : 'var(--text2)'};display:flex;align-items:center;justify-content:center;background:${isBest ? colors[ci] + '0d' : ''}">${v}</div>`;
         });
         html += '</div>';
       });
@@ -6476,7 +6533,26 @@
       if (sharedExams.length) {
         html += `<div style="margin-top:24px">
           <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:12px">HEAD TO HEAD — Shared Tests (${sharedExams.length})</div>
-          <div style="height:220px;position:relative"><canvas id="compare-chart"></canvas></div>
+          <div style="height:240px;position:relative"><canvas id="compare-chart"></canvas></div>
+        </div>
+        <div style="margin-top:20px">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:10px">PER-TEST SCORES</div>
+          ${sharedExams.map(e => {
+            const maxMark = Math.max(...students.map(s => s.apps.find(a => a.exam_id === e.id)?.marks ?? 0));
+            return `<div style="margin-bottom:10px">
+              <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:4px">${e.label}</div>
+              ${students.map((s, ci) => {
+                const mark = s.apps.find(a => a.exam_id === e.id)?.marks ?? null;
+                if (mark === null) return '';
+                const pct = maxMark > 0 ? mark / maxMark * 100 : 0;
+                return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+                  <div style="width:80px;font-size:12px;color:${colorVars[ci]};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name.split(' ')[0]}</div>
+                  <div style="flex:1;height:5px;background:var(--bg3);border-radius:3px"><div style="width:${pct}%;height:100%;background:${colors[ci]};border-radius:3px"></div></div>
+                  <div style="width:32px;font-family:'DM Mono',monospace;font-size:11px;color:${colorVars[ci]};text-align:right">${mark}</div>
+                </div>`;
+              }).join('')}
+            </div>`;
+          }).join('')}
         </div>`;
       }
 
@@ -6646,16 +6722,17 @@
 
     // ═══════════════════════════════════════════════════
     //  SECRET ADMIN TRIGGER
-    //  Sequence: Ctrl × 3, then type "asoiaf"
+    //  Desktop : Ctrl × 3, then type "asoiaf"
+    //  Mobile  : Long-press the city·year context badge for 2 s
     // ═══════════════════════════════════════════════════
     (function () {
+      // ── Desktop keyboard sequence ──────────────────────
       const KONAMI_KEY = 'asoiaf';
       const CTRL_NEEDED = 3;
       let ctrlCount = 0, ctrlTimer = null;
       let seqBuf = '', seqActive = false;
 
       document.addEventListener('keydown', e => {
-        // Phase 1: count Ctrl presses (ignore if user is typing in a field)
         if (e.key === 'Control' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
           ctrlCount++;
           clearTimeout(ctrlTimer);
@@ -6667,7 +6744,6 @@
           }
           return;
         }
-        // Phase 2: collect the keyword
         if (seqActive && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
           if (e.key === 'Escape') { seqActive = false; seqBuf = ''; return; }
           if (e.key.length === 1) {
@@ -6675,12 +6751,75 @@
             if (seqBuf.length > KONAMI_KEY.length) seqBuf = seqBuf.slice(-KONAMI_KEY.length);
             if (seqBuf === KONAMI_KEY) {
               seqActive = false; seqBuf = '';
-              // Drop a short-lived token then navigate
               sessionStorage.setItem('__adm', Date.now().toString());
               window.location.href = 'admin.html';
             }
           }
         }
+      });
+
+      // ── Mobile two-step gesture ────────────────────────
+      // Step 1: hold the context badge (city·year) for 2 s → arms the sequence
+      // Step 2: open mobile search and type "asoiaf" (no enter needed)
+      // Sequence expires after 30 s if step 2 isn't completed.
+
+      const BADGE_HOLD_MS = 2000;
+      const SEQ_KEY       = 'asoiaf';
+      const SEQ_EXPIRE_MS = 30000;
+
+      let _badgeHoldTimer = null;
+      let _mobileSeqArmed = false;
+      let _mobileSeqExpiry = 0;
+      let _mobileSeqBuf = '';
+
+      function _armMobileSeq() {
+        _mobileSeqArmed = true;
+        _mobileSeqExpiry = Date.now() + SEQ_EXPIRE_MS;
+        _mobileSeqBuf = '';
+        // Auto-disarm after expiry
+        setTimeout(function () { _mobileSeqArmed = false; _mobileSeqBuf = ''; }, SEQ_EXPIRE_MS);
+      }
+
+      function _attachGesture() {
+        const badge = document.getElementById('context-badge');
+        if (!badge) return;
+
+        // Step 1 — hold the badge for 2 s
+        badge.addEventListener('touchstart', function () {
+          _badgeHoldTimer = setTimeout(_armMobileSeq, BADGE_HOLD_MS);
+        }, { passive: true });
+
+        badge.addEventListener('touchend', function () {
+          clearTimeout(_badgeHoldTimer);
+        }, { passive: true });
+
+        badge.addEventListener('touchmove', function () {
+          clearTimeout(_badgeHoldTimer);
+        }, { passive: true });
+
+        // Step 2 — watch the mobile search input for "asoiaf"
+        // initMobileSearch() is called later; we hook via document-level input capture
+        document.addEventListener('input', function (e) {
+          const inp = document.getElementById('mobile-search-input');
+          if (!inp || e.target !== inp) return;
+          if (!_mobileSeqArmed || Date.now() > _mobileSeqExpiry) return;
+
+          _mobileSeqBuf = inp.value.toLowerCase().replace(/[^a-z]/g, '');
+          // Check if the typed text ends with the key (handles paste / autocorrect too)
+          if (_mobileSeqBuf.endsWith(SEQ_KEY)) {
+            _mobileSeqArmed = false;
+            _mobileSeqBuf = '';
+            // Close search silently before navigating
+            closeMobileSearch();
+            sessionStorage.setItem('__adm', Date.now().toString());
+            window.location.href = 'admin.html';
+          }
+        }, true); // capture phase so it fires before the search handler
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        _attachGesture();
+        setTimeout(_attachGesture, 1500);
       });
     })();
   </script>
