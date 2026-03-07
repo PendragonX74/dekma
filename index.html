@@ -5,63 +5,92 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DEKMA Results</title>
+  <meta name="description" content="DEKMA Applied Maths results portal — explore leaderboards, scores, and school rankings by city and year.">
+
+  <!-- DNS prefetch & preconnect for external resources -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
   <link
     href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap"
     rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
-  <!-- ========== VERSION‑BASED CACHE BUSTING ========== -->
+  <!-- Chart.js: defer so it doesn't block HTML parsing -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+  <!-- ========== ASYNC VERSION-BASED DATA LOADER ========== -->
+  <!-- Replaces synchronous XHR + document.write() with a non-blocking
+       async chain: version.txt → results_index.js → data chunks.
+       loadData() is called once all scripts are ready and DOM is parsed. -->
   <script>
-    // Fetch the current version from data/version.txt synchronously.
-    // This tiny request blocks page rendering only briefly.
-    var version = '0'; // fallback
-    (function() {
-      var xhr = new XMLHttpRequest();
-      // Add a cache‑buster for the version file itself (but it's tiny)
-      xhr.open('GET', 'data/version.txt?_=' + Date.now(), false);
-      try {
-        xhr.send();
-        if (xhr.status === 200) {
-          version = xhr.responseText.trim();
-        }
-      } catch (e) {
-        console.warn('Could not load version.txt, using fallback', e);
+    (function () {
+      'use strict';
+
+      function loadScript(src) {
+        return new Promise(function (resolve, reject) {
+          var s = document.createElement('script');
+          s.src = src;
+          s.onload = resolve;
+          s.onerror = function () { reject(new Error('Failed to load: ' + src)); };
+          document.head.appendChild(s);
+        });
       }
-    })();
-  </script>
 
-  <script>
-    // Load results_index.js with the version number
-    document.write('<script src="data/results_index.js?v=' + version + '"><\/script>');
-  </script>
+      function slug(s) {
+        return s.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+      }
 
-  <script>
-    // Load all data chunks with the same version number
-    (function () {
-      window.dekmaData = {};
-      var chunks = window.dekmaChunks || [];
-      function slug(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, ''); }
-      chunks.forEach(function (c) {
-        document.write('<script src="data/' + c.file + '?v=' + version + '"><\/script>');
-      });
-    })();
-  </script>
-  <!-- =============================================== -->
+      function mergeChunks() {
+        window.dekmaData = window.dekmaData || {};
+        (window.dekmaChunks || []).forEach(function (c) {
+          var key = 'dekmaChunk_' + slug(c.city) + '_' + c.year;
+          if (window[key]) {
+            if (!window.dekmaData[c.city]) window.dekmaData[c.city] = {};
+            window.dekmaData[c.city][c.year] = window[key];
+          }
+        });
+      }
 
-  <script>
-    // Merge loaded chunks into window.dekmaData
-    (function () {
-      function slug(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, ''); }
-      (window.dekmaChunks || []).forEach(function (c) {
-        var key = 'dekmaChunk_' + slug(c.city) + '_' + c.year;
-        if (window[key]) {
-          if (!window.dekmaData[c.city]) window.dekmaData[c.city] = {};
-          window.dekmaData[c.city][c.year] = window[key];
+      async function bootstrap() {
+        // Step 1: fetch version asynchronously — zero render-blocking
+        var version = '0';
+        try {
+          var res = await fetch('data/version.txt?_=' + Date.now());
+          if (res.ok) version = (await res.text()).trim();
+        } catch (e) {
+          console.warn('Could not load version.txt, using fallback.', e);
         }
-      });
+
+        // Step 2: load the index script (defines window.dekmaChunks)
+        try {
+          await loadScript('data/results_index.js?v=' + version);
+        } catch (e) {
+          console.warn('Could not load results_index.js', e);
+        }
+
+        // Step 3: load all data chunks in parallel
+        var chunks = window.dekmaChunks || [];
+        await Promise.all(chunks.map(function (c) {
+          return loadScript('data/' + c.file + '?v=' + version).catch(function (e) {
+            console.warn('Failed to load chunk:', c.file, e);
+          });
+        }));
+
+        // Step 4: merge chunk globals into window.dekmaData
+        mergeChunks();
+
+        // Step 5: invoke app boot once DOM is ready
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', function () { loadData(); });
+        } else {
+          loadData();
+        }
+      }
+
+      bootstrap();
     })();
   </script>
+  <!-- ===================================================== -->
   <style>
     :root {
       --bg: #0a0a0f;
@@ -110,7 +139,11 @@
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
       pointer-events: none;
       z-index: 9999;
-      opacity: .6
+      opacity: .6;
+      /* Promote to its own GPU layer so scrolling/animations
+         on the main content don't trigger a repaint here */
+      will-change: opacity;
+      transform: translateZ(0)
     }
 
     ::-webkit-scrollbar {
@@ -6716,18 +6749,30 @@
     }
 
     // ═══════════════════════════════════════════════════
-    //  BOOT
+    //  BOOT — called by the async data bootstrap in <head>
+    //  once version.txt, results_index.js, and all chunks
+    //  have finished loading (non-blocking).
     // ═══════════════════════════════════════════════════
-    window.addEventListener('DOMContentLoaded', loadData);
+    // window.addEventListener('DOMContentLoaded', loadData);
+    // ↑ Removed: the async bootstrap (head) now calls loadData()
+    //   after all data scripts are ready, so this listener is
+    //   no longer needed and would fire too early.
 
     // ═══════════════════════════════════════════════════
     //  SECRET ADMIN TRIGGER
-    //  Desktop : Ctrl × 3, then type "asoiaf"
+    //  Desktop : Ctrl × 3, then type the key phrase
     //  Mobile  : Long-press the city·year context badge for 2 s
     // ═══════════════════════════════════════════════════
     (function () {
+      // Key is stored as a reversed, base64-encoded string to avoid
+      // it being trivially visible as plaintext in page source.
+      // NOTE: for production, admin auth should be server-side.
+      function _dk() {
+        try { return atob('Zmlhb3Nh').split('').reverse().join(''); } catch(e) { return ''; }
+      }
+
       // ── Desktop keyboard sequence ──────────────────────
-      const KONAMI_KEY = 'asoiaf';
+      const KONAMI_KEY = _dk();
       const CTRL_NEEDED = 3;
       let ctrlCount = 0, ctrlTimer = null;
       let seqBuf = '', seqActive = false;
@@ -6760,11 +6805,11 @@
 
       // ── Mobile two-step gesture ────────────────────────
       // Step 1: hold the context badge (city·year) for 2 s → arms the sequence
-      // Step 2: open mobile search and type "asoiaf" (no enter needed)
+      // Step 2: open mobile search and type the key phrase (no enter needed)
       // Sequence expires after 30 s if step 2 isn't completed.
 
       const BADGE_HOLD_MS = 2000;
-      const SEQ_KEY       = 'asoiaf';
+      const SEQ_KEY       = _dk();
       const SEQ_EXPIRE_MS = 30000;
 
       let _badgeHoldTimer = null;
@@ -6797,7 +6842,7 @@
           clearTimeout(_badgeHoldTimer);
         }, { passive: true });
 
-        // Step 2 — watch the mobile search input for "asoiaf"
+        // Step 2 — watch the mobile search input for the key phrase
         // initMobileSearch() is called later; we hook via document-level input capture
         document.addEventListener('input', function (e) {
           const inp = document.getElementById('mobile-search-input');
