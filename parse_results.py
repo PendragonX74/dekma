@@ -19,6 +19,7 @@ ROOT_FOLDER = Path("DEKMA RESULTS")
 OUTPUT_DIR = Path("data")
 MANUAL_EDITS_FILE = OUTPUT_DIR / "manual_edits.json"
 VERSION_FILE = OUTPUT_DIR / "version.txt"
+EXAM_MANIFEST_FILE = OUTPUT_DIR / "exam_manifest.json"
 
 CENTERS = ["Galle", "Matara", "Hambanthota"]
 NS = "http://schemas.datacontract.org/2004/07/DTO"
@@ -168,6 +169,58 @@ def build_index():
     chunks.sort(key=lambda c: (c['city'], -c['year']))
     return chunks
 
+def load_exam_manifest():
+    """Load the previous-run exam ID manifest from disk."""
+    if not EXAM_MANIFEST_FILE.exists():
+        return {}
+    try:
+        with open(EXAM_MANIFEST_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"[WARN] Could not load exam_manifest.json: {e}")
+        return {}
+
+def save_exam_manifest(city_year_exams):
+    """Persist current exam IDs so the next run can diff against them."""
+    manifest = {}
+    for (city, year), exams in city_year_exams.items():
+        key = f"{slug(city)}_{year}"
+        manifest[key] = [e["id"] for e in exams]
+    try:
+        EXAM_MANIFEST_FILE.write_text(
+            json.dumps(manifest, ensure_ascii=False, separators=(',', ':')),
+            encoding="utf-8"
+        )
+    except Exception as e:
+        print(f"[WARN] Could not save exam_manifest.json: {e}")
+
+def write_new_exams(city_year_exams, old_manifest):
+    """
+    Diff current exams against old_manifest and write data/new_exams.js.
+    Format: window.dekmaNewExams = {"galle":{"2025":["T-2025-003"]}}
+    Empty object means nothing is new.
+    """
+    new_exams = {}
+    for (city, year), exams in city_year_exams.items():
+        city_key = slug(city)
+        old_ids = set(old_manifest.get(f"{city_key}_{year}", []))
+        fresh = [e["id"] for e in exams if e["id"] not in old_ids]
+        if fresh:
+            new_exams.setdefault(city_key, {})[str(year)] = fresh
+
+    js = ("window.dekmaNewExams="
+          + json.dumps(new_exams, ensure_ascii=False, separators=(',', ':'))
+          + ";\n")
+    (OUTPUT_DIR / "new_exams.js").write_text(js, encoding="utf-8")
+
+    total = sum(len(ids) for city in new_exams.values() for ids in city.values())
+    if total:
+        print(f"New exams detected: {total} — written to new_exams.js")
+    else:
+        print("No new exams detected (new_exams.js cleared).")
+    return new_exams
+
+
 def bump_version():
     """Increment data/version.txt so index.html cache-busts data files on next load."""
     try:
@@ -194,6 +247,9 @@ def main():
     if edits["studentRenames"] or edits["scoreEdits"]:
         print(f"Loaded {len(edits['studentRenames'])} rename(s) and "
               f"{len(edits['scoreEdits'])} score edit(s) from manual_edits.json")
+
+    # Load exam manifest (tracks which exam IDs existed on last run)
+    old_manifest = load_exam_manifest()
 
     # --- First pass: gather all XML files per city/year ---
     city_year_exams = {}  # key: (city, year) -> list of exam objects from XML
@@ -261,6 +317,11 @@ def main():
     json_str = json.dumps(chunks, ensure_ascii=False, separators=(',', ':'))
     index_file.write_text(f"window.dekmaChunks={json_str};\n", encoding="utf-8")
     print(f"\nWrote index {index_file} ({len(chunks)} chunks)")
+
+    # --- Diff against previous run → new_exams.js ---
+    write_new_exams(city_year_exams, old_manifest)
+    # Update manifest so next run diffs against today's state
+    save_exam_manifest(city_year_exams)
 
     # Summary statistics
     total_exams = sum(len(yd) for yd in city_year_exams.values())
