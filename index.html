@@ -3177,6 +3177,7 @@
         <span class="sl" id="sl-D">D</span><span class="sl" id="sl-E">E</span><span class="sl" id="sl-K">K</span><span class="sl" id="sl-M">M</span><span class="sl" id="sl-A">A</span>
       </div>
       <div class="splash-rule" id="spl-rule"></div>
+      <div class="splash-sub" id="spl-sub">Applied Mathematics</div>
 
     </div>
     <button class="splash-skip" id="splash-skip" style="display:none"></button>
@@ -3293,7 +3294,7 @@
         </div>
         <!-- Mobile inline search expand -->
         <div class="mobile-search-expand" id="mobile-search-expand">
-          <input class="mobile-search-field" id="mobile-search-input" placeholder="Search students…" autocomplete="off">
+          <input class="mobile-search-field" id="mobile-search-input" placeholder="Search students…" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
           <button class="mobile-search-cancel" onclick="closeMobileSearch()">Cancel</button>
         </div>
       </header>
@@ -6768,7 +6769,7 @@
       // it being trivially visible as plaintext in page source.
       // NOTE: for production, admin auth should be server-side.
       function _dk() {
-        try { return atob('Zmlhb3Nh').split('').reverse().join(''); } catch(e) { return ''; }
+        try { return atob('ZmFpb3Nh').split('').reverse().join(''); } catch(e) { return ''; }
       }
 
       // ── Desktop keyboard sequence ──────────────────────
@@ -6804,11 +6805,7 @@
       });
 
       // ── Mobile two-step gesture ────────────────────────
-      // Step 1: hold the context badge (city·year) for 2 s → arms the sequence
-      // Step 2: open mobile search and type the key phrase (no enter needed)
-      // Sequence expires after 30 s if step 2 isn't completed.
-
-      const BADGE_HOLD_MS = 2000;
+      const BADGE_HOLD_MS = 800;
       const SEQ_KEY       = _dk();
       const SEQ_EXPIRE_MS = 30000;
 
@@ -6816,50 +6813,73 @@
       let _mobileSeqArmed = false;
       let _mobileSeqExpiry = 0;
       let _mobileSeqBuf = '';
+      let _longPressTriggered = false;
+      let _gestureAttached = false;
+      let _pStartX = 0, _pStartY = 0;
 
       function _armMobileSeq() {
         _mobileSeqArmed = true;
         _mobileSeqExpiry = Date.now() + SEQ_EXPIRE_MS;
         _mobileSeqBuf = '';
-        // Auto-disarm after expiry
+        _longPressTriggered = true;
         setTimeout(function () { _mobileSeqArmed = false; _mobileSeqBuf = ''; }, SEQ_EXPIRE_MS);
       }
 
+      function _cancelBadgeTimer() {
+        clearTimeout(_badgeHoldTimer);
+        _badgeHoldTimer = null;
+      }
+
       function _attachGesture() {
-        const badge = document.getElementById('context-badge');
+        if (_gestureAttached) return;
+        var badge = document.getElementById('context-badge');
         if (!badge) return;
+        _gestureAttached = true;
 
-        // Step 1 — hold the badge for 2 s
-        badge.addEventListener('touchstart', function () {
+        // Suppress the browser context menu that appears on long-press
+        badge.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+        badge.addEventListener('pointerdown', function (e) {
+          _longPressTriggered = false;
+          _cancelBadgeTimer();
+          _pStartX = e.clientX;
+          _pStartY = e.clientY;
           _badgeHoldTimer = setTimeout(_armMobileSeq, BADGE_HOLD_MS);
-        }, { passive: true });
+        });
 
-        badge.addEventListener('touchend', function () {
-          clearTimeout(_badgeHoldTimer);
-        }, { passive: true });
+        badge.addEventListener('pointerup', function () { _cancelBadgeTimer(); });
+        badge.addEventListener('pointercancel', function () { _cancelBadgeTimer(); });
 
-        badge.addEventListener('touchmove', function () {
-          clearTimeout(_badgeHoldTimer);
-        }, { passive: true });
+        // Cancel only if finger actually drifted > 10 px
+        badge.addEventListener('pointermove', function (e) {
+          if (!_badgeHoldTimer) return;
+          var dx = e.clientX - _pStartX, dy = e.clientY - _pStartY;
+          if (dx * dx + dy * dy > 100) _cancelBadgeTimer();
+        });
 
-        // Step 2 — watch the mobile search input for the key phrase
-        // initMobileSearch() is called later; we hook via document-level input capture
+        // Swallow the click so the dropdown doesn't open after a successful hold
+        badge.addEventListener('click', function (e) {
+          if (_longPressTriggered) {
+            _longPressTriggered = false;
+            e.stopImmediatePropagation();
+            e.preventDefault();
+          }
+        }, true);
+
+        // Step 2 — watch mobile search input
         document.addEventListener('input', function (e) {
-          const inp = document.getElementById('mobile-search-input');
+          var inp = document.getElementById('mobile-search-input');
           if (!inp || e.target !== inp) return;
           if (!_mobileSeqArmed || Date.now() > _mobileSeqExpiry) return;
-
           _mobileSeqBuf = inp.value.toLowerCase().replace(/[^a-z]/g, '');
-          // Check if the typed text ends with the key (handles paste / autocorrect too)
           if (_mobileSeqBuf.endsWith(SEQ_KEY)) {
             _mobileSeqArmed = false;
             _mobileSeqBuf = '';
-            // Close search silently before navigating
             closeMobileSearch();
             sessionStorage.setItem('__adm', Date.now().toString());
             window.location.href = 'admin.html';
           }
-        }, true); // capture phase so it fires before the search handler
+        }, true);
       }
 
       document.addEventListener('DOMContentLoaded', function () {
