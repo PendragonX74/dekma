@@ -3930,7 +3930,8 @@
 
     function splashPickCity(city) {
       splashCity = city;
-      splashYear = ''; // reset year when city changes
+      // Only reset year if it's not available for the newly selected city
+      if (splashYear && !hasData(splashCity, splashYear)) splashYear = '';
       document.querySelectorAll('#splash-cities .splash-opt').forEach(el => {
         el.classList.toggle('selected', el.textContent === city);
       });
