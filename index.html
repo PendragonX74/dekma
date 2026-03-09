@@ -5788,17 +5788,17 @@
       let archetype, archetypeDesc = '', archetypeIcon, archetypeColor;
       if (avg >= 93 && consistency >= 80) { archetype = 'Exceptional'; archetypeIcon = '🌠'; archetypeColor = '#e8a020'; }
       else if (avg >= 90) { archetype = 'Elite Performer'; archetypeIcon = '🏆'; archetypeColor = '#e8a020'; }
-      else if (avg >= 85 && consistency < 65) { archetype = 'Volatile Talent'; archetypeIcon = '⚡'; archetypeColor = '#f59e0b'; }
+      else if (avg >= 85 && consistency < 65) { archetype = 'Varied Results'; archetypeIcon = '⚡'; archetypeColor = '#f59e0b'; }
       else if (avg >= 80 && trend > 1.2) { archetype = 'Rising Force'; archetypeIcon = '🚀'; archetypeColor = '#4ade80'; }
-      else if (avg >= 80 && trend < -1.0) { archetype = 'Fading Grip'; archetypeIcon = '📉'; archetypeColor = '#f472b6'; }
+      else if (avg >= 80 && trend < -1.0) { archetype = 'Trending Down'; archetypeIcon = '📉'; archetypeColor = '#9090b0'; }
       else if (avg >= 80) { archetype = 'Solid Performer'; archetypeIcon = '🎯'; archetypeColor = '#60a5fa'; }
       else if (avg >= 72 && consistency >= 82) { archetype = 'The Grinder'; archetypeIcon = '⚙️'; archetypeColor = '#818cf8'; }
       else if (avg >= 72 && revTheoryGap !== null && Math.abs(revTheoryGap) > 10) { archetype = revTheoryGap > 0 ? 'Revision Specialist' : 'Theory Specialist'; archetypeIcon = revTheoryGap > 0 ? '🗂️' : '📖'; archetypeColor = 'var(--teal)'; }
       else if (avg >= 72 && trend > 1.0) { archetype = 'Climbing'; archetypeIcon = '📈'; archetypeColor = '#4ade80'; }
       else if (avg >= 65) { archetype = 'Mid-Field'; archetypeIcon = '🌱'; archetypeColor = '#9090b0'; }
-      else if (avg >= 55 && trend > 0.5) { archetype = 'Work in Progress'; archetypeIcon = '🔨'; archetypeColor = '#fb923c'; }
-      else if (avg >= 55) { archetype = 'Struggling'; archetypeIcon = '⚠️'; archetypeColor = '#f472b6'; }
-      else { archetype = 'Critical Zone'; archetypeIcon = '🔴'; archetypeColor = 'var(--pink)'; }
+      else if (avg >= 55 && trend > 0.5) { archetype = 'Developing'; archetypeIcon = '🌱'; archetypeColor = '#9090b0'; }
+      else if (avg >= 55) { archetype = ''; archetypeIcon = ''; archetypeColor = 'var(--text3)'; }
+      else { archetype = ''; archetypeIcon = ''; archetypeColor = 'var(--text3)'; }
 
       const name = stuData.name, school = stuData.school;
       const ini = name.split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
@@ -5893,13 +5893,13 @@
             </div>
           </div>
         </div>
-        <div class="verdict-box" style="border-color:${archetypeColor}33;background:${archetypeColor}08">
+        ${archetype ? `<div class="verdict-box" style="border-color:${archetypeColor}33;background:${archetypeColor}08">
           <div class="verdict-icon">${archetypeIcon}</div>
           <div>
             <div class="verdict-title" style="color:${archetypeColor}">${archetype}</div>
             <div class="verdict-text">${archetypeDesc}</div>
           </div>
-        </div>
+        </div>` : ''}
          <div class="insight-grid">
            <div class="insight-card amber" style="animation-delay:.05s">
              <div class="insight-label">Consistency</div>
@@ -5960,7 +5960,7 @@
         const z = examZ(a.exam_id, a.marks);
         const zStr = (z >= 0 ? '+' : '') + z.toFixed(2) + 'σ';
         const zCol = z >= 1.5 ? '#4ade80' : z >= 0.5 ? 'var(--teal)' : z >= -0.5 ? 'var(--text2)' : z >= -1.5 ? '#fb923c' : 'var(--pink)';
-        const zLabel = z >= 2 ? '🔥 exceptional' : z >= 1 ? '✦ above avg' : z >= -0.5 ? '· average' : z >= -1.5 ? '▼ below avg' : '⚠ struggling';
+        const zLabel = z >= 2 ? '🔥 exceptional' : z >= 1 ? '✦ above avg' : z >= -0.5 ? '· average' : z >= -1.5 ? '▼ below avg' : '▼ below avg';
         return `<tr>
                   <td class="td-school">${a.exam_label}</td>
                   <td><span style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 6px;border-radius:3px;${a.exam_type === 'theory' ? 'background:rgba(45,212,191,.15);color:var(--teal)' : 'background:rgba(232,160,32,.15);color:var(--amber)'}">${a.exam_type.slice(0, 3).toUpperCase()}</span></td>
