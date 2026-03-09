@@ -68,11 +68,6 @@
           console.warn('Could not load results_index.js', e);
         }
 
-        // Step 2b: load new-exam indicators (non-critical, ignore failure)
-        loadScript('data/new_exams.js?v=' + version).catch(function () {
-          window.dekmaNewExams = window.dekmaNewExams || {};
-        });
-
         // Step 3: load all data chunks in parallel
         var chunks = window.dekmaChunks || [];
         await Promise.all(chunks.map(function (c) {
@@ -3288,7 +3283,7 @@
           </button>
           <div class="page-title" id="page-title">DASHBOARD</div>
           <div class="context-badge" id="context-badge" onclick="toggleTopbarSelector(event)"
-            role="button" aria-label="Change year and city"><span id="context-badge-text">Select City · Year</span><span id="ctx-new-dot" style="display:none;width:5px;height:5px;border-radius:50%;background:var(--amber);opacity:.75;flex-shrink:0"></span><span
+            role="button" aria-label="Change year and city"><span id="context-badge-text">Select City · Year</span><span
               class="context-badge-arrow">▾</span></div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
@@ -3750,69 +3745,6 @@
     }
 
     // ═══════════════════════════════════════════════════
-    //  NEW EXAM INDICATORS
-    //  new_exams.js sets window.dekmaNewExams = { "galle": { "2025": ["T-2025-3"] } }
-    //  localStorage tracks which combos the user has already visited.
-    //  "Seen" list resets whenever version.txt changes (new data arrived).
-    // ═══════════════════════════════════════════════════
-    function _newExamsSeen() {
-      try {
-        var stored = JSON.parse(localStorage.getItem('dekma_new_seen') || 'null');
-        var ver = window._dataVersion || '0';
-        if (!stored || stored.v !== ver) return new Set();
-        return new Set(stored.keys || []);
-      } catch (e) { return new Set(); }
-    }
-
-    function _saveNewExamsSeen(seenSet) {
-      try {
-        localStorage.setItem('dekma_new_seen', JSON.stringify({
-          v: window._dataVersion || '0',
-          keys: [...seenSet]
-        }));
-      } catch (e) {}
-    }
-
-    function _isNew(city, year) {
-      if (!window.dekmaNewExams) return false;
-      var cityKey = city.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/, '');
-      var nb = (window.dekmaNewExams[cityKey] || {})[String(year)];
-      if (!nb || !nb.length) return false;
-      var seen = _newExamsSeen();
-      return !seen.has(cityKey + '_' + year);
-    }
-
-    function _cityHasNew(city) {
-      if (!window.dekmaNewExams) return false;
-      var cityKey = city.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/, '');
-      var years = window.dekmaNewExams[cityKey];
-      if (!years) return false;
-      var seen = _newExamsSeen();
-      return Object.keys(years).some(function (y) {
-        return (years[y] || []).length && !seen.has(cityKey + '_' + y);
-      });
-    }
-
-    function _markSeen(city, year) {
-      if (!city || !year) return;
-      var cityKey = city.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/, '');
-      var seen = _newExamsSeen();
-      seen.add(cityKey + '_' + year);
-      _saveNewExamsSeen(seen);
-      _updateBadgeDot();
-    }
-
-    // Small amber dot injected into dropdown items
-    var _DOT = '<span style="display:inline-block;width:5px;height:5px;border-radius:50%;'
-      + 'background:var(--amber);margin-left:6px;vertical-align:middle;opacity:.75;flex-shrink:0"></span>';
-
-    function _updateBadgeDot() {
-      var dot = document.getElementById('ctx-new-dot');
-      if (!dot) return;
-      dot.style.display = _isNew(selectedCity, selectedYear) ? 'inline-block' : 'none';
-    }
-
-    // ═══════════════════════════════════════════════════
     //  LOGO DROPDOWNS
     // ═══════════════════════════════════════════════════
     function toggleLogoDrop(which) {
@@ -3842,7 +3774,7 @@
         const cities = getAvailableCities();
         panel.innerHTML = cities.map(c => `
           <div class="logo-drop-item ${c === selectedCity ? 'selected' : ''}" onclick="switchCity('${esc(c)}')">
-            <span>${c}</span>${_cityHasNew(c) ? _DOT : ''}
+            <span>${c}</span>
             <span class="logo-drop-check">✓</span>
           </div>`).join('') || '<div class="logo-drop-item disabled">No data loaded</div>';
       } else {
@@ -3856,7 +3788,7 @@
           return `<div class="logo-drop-item ${y === selectedYear ? 'selected' : ''} ${!exists ? 'disabled' : ''}"
             onclick="${exists ? `switchYear('${y}')` : ''}"
             title="${!exists ? 'No data for ' + selectedCity + ' ' + y : ''}">
-            <span>${y}</span>${exists && _isNew(selectedCity, y) ? _DOT : ''}
+            <span>${y}</span>
             <span class="logo-drop-meta">${exists ? '' : 'no data'}</span>
             <span class="logo-drop-check">✓</span>
           </div>`;
@@ -3874,7 +3806,6 @@
         selectedYear = yrs[0] || '';
       }
       saveSelection();
-      _markSeen(selectedCity, selectedYear);
       reloadForSelection();
     }
 
@@ -3883,7 +3814,6 @@
       if (year === selectedYear) return;
       selectedYear = year;
       saveSelection();
-      _markSeen(selectedCity, selectedYear);
       reloadForSelection();
     }
 
@@ -3903,12 +3833,12 @@
         drop.innerHTML =
           '<div style="padding:6px 12px 4px;font-family:DM Mono,monospace;font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase">City</div>' +
           cities.map(c => `<div class="logo-drop-item ${c === selectedCity ? 'selected' : ''}" onclick="switchCity('${esc(c)}')">
-            <span>${c}</span>${_cityHasNew(c) ? _DOT : ''}<span class="logo-drop-check">✓</span></div>`).join('') +
+            <span>${c}</span><span class="logo-drop-check">✓</span></div>`).join('') +
           '<div style="padding:8px 12px 4px;font-family:DM Mono,monospace;font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;border-top:1px solid var(--border);margin-top:4px">Year</div>' +
           sortedYears.map(y => {
             const exists = hasData(selectedCity, y);
             return `<div class="logo-drop-item ${y === selectedYear ? 'selected' : ''} ${!exists ? 'disabled' : ''}" onclick="${exists ? `switchYear('${y}')` : ''}">
-              <span>${y}</span>${exists && _isNew(selectedCity, y) ? _DOT : ''}<span class="logo-drop-meta">${exists ? '' : 'no data'}</span><span class="logo-drop-check">✓</span></div>`;
+              <span>${y}</span><span class="logo-drop-meta">${exists ? '' : 'no data'}</span><span class="logo-drop-check">✓</span></div>`;
           }).join('');
         const rect = badge.getBoundingClientRect();
         const W = Math.min(220, window.innerWidth - 16);
@@ -3952,7 +3882,6 @@
       if (badgeText) badgeText.textContent = dispCity + ' · ' + selectedYear;
       else badge.textContent = dispCity + ' · ' + selectedYear;
       badge.style.display = 'inline-flex';
-      _updateBadgeDot();
       document.title = `DEKMA ${dispCity} ${selectedYear}`;
 
       // Reset all state
@@ -4034,7 +3963,6 @@
       if (!splashCity || !splashYear || !hasData(splashCity, splashYear)) return;
       selectedCity = splashCity; selectedYear = splashYear;
       saveSelection();
-      _markSeen(selectedCity, selectedYear);
       const pk = document.getElementById('picker');
       pk.classList.add('p-exit');
       setTimeout(() => {
