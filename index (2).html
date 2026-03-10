@@ -5012,7 +5012,7 @@
       if (!st) return 0;
       return (mark - st.mean) / st.stdev;
     }
-    function zToRating(z) { return Math.round(Math.min(100, Math.max(0, 50 + z * 15)) * 10) / 10; }
+    function zToRating(z) { return Math.round(Math.min(100, Math.max(0, 50 + z * 15)) * 100) / 100; }
     function _ns(s) { return String(s).replace(/\\/g, '\\\\').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/\n/g, '\\n'); }
 
     // ─── Posterior skill estimate ────────────────────────────────────────────
@@ -6957,11 +6957,11 @@
       'rating': {
         title: 'About the Rating',
         html: `
-          <p style="margin-bottom:10px">The <strong>Rating</strong> is a conservative estimate of a student's skill level. It provides a cross-test ranking that accounts for inconsistency.</p>
+          <p style="margin-bottom:10px">The <strong>Rating</strong> is a conservative estimate of a student's skill level. It's designed to be a fair cross-test ranking that penalises inconsistency.</p>
           <div class="info-sep"></div>
           <p style="margin-bottom:8px"><strong>How it's calculated:</strong></p>
           <div class="info-row"><span class="info-key">Mean Rating</span><span class="info-val">The average of all difficulty-adjusted scores (z-scores rescaled to a 0–100 range) across every test taken.</span></div>
-          <div class="info-row"><span class="info-key">Rating</span><span class="info-val">A <em>lower-bound</em> estimate — the mean minus a fraction of the standard deviation. This rewards consistency and prevents a single strong result from inflating the overall rating.</span></div>
+          <div class="info-row"><span class="info-key">Rating</span><span class="info-val">A <em>lower-bound</em> estimate — the mean minus a fraction of the standard deviation. This rewards consistency and prevents one great test from inflating the rating.</span></div>
           <div class="info-sep"></div>
           <p style="margin-bottom:8px">The two numbers shown are:<br><strong>Rating / Mean Rating</strong></p>
           <p style="color:var(--text3);font-size:11px">A student with Rating 82 / 88 has a skill mean of 88 but a conservative floor of 82 — they occasionally underperform. A student with 85 / 86 is very consistent.</p>
@@ -6971,7 +6971,7 @@
       'rank-tiers': {
         title: 'Rank Tiers Explained',
         html: `
-          <p style="margin-bottom:10px">The <strong>Overall Rank</strong> is calculated by sorting all unique students by their Rating (difficulty-adjusted score). The tier label indicates standing within the entire cohort.</p>
+          <p style="margin-bottom:10px">The <strong>Overall Rank</strong> is calculated by sorting all unique students by their Rating (difficulty-adjusted score). The tier label shows where you stand in the entire cohort.</p>
           <div class="info-sep"></div>
           <div class="info-row"><span class="info-key" style="color:#ffd700">⭐ Elite</span><span class="info-val">Top 1% — exceptional across all tests.</span></div>
           <div class="info-row"><span class="info-key" style="color:var(--amber)">🏆 Gold</span><span class="info-val">Top 5% — consistently high performance.</span></div>
