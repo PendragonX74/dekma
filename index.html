@@ -2600,6 +2600,144 @@
       display: flex !important
     }
 
+    /* ── MOBILE SCHOOL DETAIL DRAWER ── */
+    .school-drawer-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(4px);
+      z-index: 300;
+      touch-action: none
+    }
+    .school-drawer-overlay.open { display: block }
+
+    .school-drawer {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--bg2);
+      border-top: 1px solid var(--border2);
+      border-radius: 18px 18px 0 0;
+      z-index: 301;
+      max-height: 82vh;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform .32s cubic-bezier(.22,1,.36,1);
+      padding-bottom: max(16px, env(safe-area-inset-bottom))
+    }
+    .school-drawer.open { transform: translateY(0) }
+
+    .school-drawer-handle {
+      width: 36px; height: 4px; border-radius: 2px;
+      background: var(--border2); margin: 10px auto 0;
+      flex-shrink: 0
+    }
+
+    .school-drawer-header {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px 10px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0
+    }
+
+    .school-drawer-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px; letter-spacing: 2px; color: var(--text);
+      flex: 1; min-width: 0; overflow: hidden;
+      text-overflow: ellipsis; white-space: nowrap
+    }
+
+    .school-drawer-close {
+      background: none; border: none;
+      color: var(--text3); font-size: 20px;
+      cursor: pointer; padding: 2px 6px;
+      flex-shrink: 0
+    }
+
+    .school-drawer-body {
+      overflow-y: auto; overflow-x: hidden;
+      padding: 16px 20px;
+      flex: 1; min-height: 0;
+      overscroll-behavior: contain
+    }
+
+    /* ── INFO POPOVER ── */
+    .info-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: rgba(144,144,176,.12); border: 1px solid var(--border2);
+      color: var(--text3); font-size: 9px; font-family: 'DM Mono', monospace;
+      cursor: pointer; transition: all .15s; flex-shrink: 0;
+      vertical-align: middle; line-height: 1; user-select: none
+    }
+    .info-btn:hover { background: rgba(232,160,32,.15); border-color: var(--amber); color: var(--amber) }
+
+    .info-popover {
+      position: fixed; background: var(--bg2);
+      border: 1px solid var(--border2); border-radius: var(--radius2);
+      z-index: 9500; box-shadow: 0 16px 48px rgba(0,0,0,.75);
+      max-width: min(340px,90vw); min-width: 240px;
+      padding: 16px 18px; display: none;
+      animation: popIn .18s ease-out
+    }
+    .info-popover.open { display: block }
+    .info-popover-title {
+      font-family: 'DM Mono', monospace; font-size: 10px;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--amber); margin-bottom: 10px
+    }
+    .info-popover-body { font-size: 12.5px; color: var(--text2); line-height: 1.7 }
+    .info-popover-body strong { color: var(--text); font-weight: 600 }
+    .info-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px }
+    .info-key { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--teal); white-space: nowrap; flex-shrink: 0 }
+    .info-val { font-size: 12px; color: var(--text3) }
+    .info-sep { height: 1px; background: var(--border); margin: 10px 0 }
+
+    /* ── KEYBOARD SHORTCUTS ── */
+    .kbd-hint {
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500;
+      color: var(--text3); cursor: pointer;
+      width: 34px; height: 34px; flex-shrink: 0;
+      border-radius: var(--radius); border: 1px solid var(--border);
+      background: var(--bg3); transition: all .15s; user-select: none
+    }
+    .kbd-hint:hover { border-color: var(--border2); color: var(--text2) }
+    .kbd-hint.active { border-color: var(--amber); color: var(--amber); background: rgba(232,160,32,.08) }
+    .kbd-hint kbd {
+      background: none; border: none; padding: 0;
+      font-family: inherit; font-size: inherit; color: inherit; pointer-events: none
+    }
+    .kbd-panel {
+      position: fixed; background: var(--bg2);
+      border: 1px solid var(--border2); border-radius: var(--radius2);
+      z-index: 9500; box-shadow: 0 16px 48px rgba(0,0,0,.75);
+      min-width: 268px; padding: 16px 18px;
+      display: none; animation: popIn .18s ease-out
+    }
+    .kbd-panel.open { display: block }
+    .kbd-panel-title {
+      font-family: 'DM Mono', monospace; font-size: 10px;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--amber); margin-bottom: 12px
+    }
+    .kbd-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 5px 0; border-bottom: 1px solid rgba(42,42,56,.5)
+    }
+    .kbd-row:last-child { border-bottom: none }
+    .kbd-desc { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3) }
+    .kbd-keys { display: flex; gap: 4px }
+    .kbd-key {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--bg3); border: 1px solid var(--border2);
+      border-radius: 4px; padding: 2px 7px; min-width: 22px;
+      font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text2)
+    }
+    @media(max-width:768px) { .kbd-hint,.kbd-panel { display:none !important } }
+
     .card-dist {
       display: flex;
       flex-direction: column
@@ -3292,6 +3430,7 @@
             <input class="search-input" id="global-search" placeholder="Search… (/ to focus)" autocomplete="off">
             <div class="search-results" id="search-results"></div>
           </div>
+          <div class="kbd-hint" id="kbd-hint-btn" onclick="toggleKbdPanel(event)" title="Keyboard shortcuts"><kbd>?</kbd></div>
         </div>
         <!-- Mobile inline search expand -->
         <div class="mobile-search-expand" id="mobile-search-expand">
@@ -3440,7 +3579,9 @@
             <div class="card">
               <div class="card-header">
                 <div class="card-title">School Rankings</div>
-                <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)">Avg is Bayesian-adjusted
+                <div style="display:flex;align-items:center;gap:6px">
+                  <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)">Avg is Bayesian-adjusted</div>
+                  <button class="info-btn" onclick="showInfoPopover(this,'school-ranking')" title="About school rankings">ℹ</button>
                 </div>
               </div>
               <div class="card-body" style="max-height:560px;overflow-y:auto" id="school-list"></div>
@@ -3561,7 +3702,35 @@
     </div>
   </div>
 
-  <!-- Logo dropdowns (appended to body so they're not clipped by sidebar) -->
+  <!-- Mobile School Detail Drawer -->
+  <div class="school-drawer-overlay" id="school-drawer-overlay" onclick="closeSchoolDrawer()"></div>
+  <div class="school-drawer" id="school-drawer">
+    <div class="school-drawer-handle"></div>
+    <div class="school-drawer-header">
+      <div class="school-drawer-title" id="school-drawer-title">School Detail</div>
+      <button class="school-drawer-close" onclick="closeSchoolDrawer()">✕</button>
+    </div>
+    <div class="school-drawer-body" id="school-drawer-body"></div>
+  </div>
+
+  <!-- Info Popover (shared, positioned by JS) -->
+  <div class="info-popover" id="info-popover"></div>
+
+  <!-- Keyboard Shortcuts Panel -->
+  <div class="kbd-panel" id="kbd-panel">
+    <div class="kbd-panel-title">Keyboard Shortcuts</div>
+    <div class="kbd-row"><span class="kbd-desc">Focus search</span><div class="kbd-keys"><span class="kbd-key">/</span></div></div>
+    <div class="kbd-row"><span class="kbd-desc">Dashboard</span><div class="kbd-keys"><span class="kbd-key">1</span></div></div>
+    <div class="kbd-row"><span class="kbd-desc">All Tests</span><div class="kbd-keys"><span class="kbd-key">2</span></div></div>
+    <div class="kbd-row"><span class="kbd-desc">Leaderboard</span><div class="kbd-keys"><span class="kbd-key">3</span></div></div>
+    <div class="kbd-row"><span class="kbd-desc">Student Lookup</span><div class="kbd-keys"><span class="kbd-key">4</span></div></div>
+    <div class="kbd-row"><span class="kbd-desc">Schools</span><div class="kbd-keys"><span class="kbd-key">5</span></div></div>
+    <div class="kbd-row"><span class="kbd-desc">Analytics</span><div class="kbd-keys"><span class="kbd-key">6</span></div></div>
+    <div class="kbd-row"><span class="kbd-desc">Go back / Close</span><div class="kbd-keys"><span class="kbd-key">Esc</span></div></div>
+    <div class="kbd-row"><span class="kbd-desc">This panel</span><div class="kbd-keys"><span class="kbd-key">?</span></div></div>
+  </div>
+
+
   <div class="logo-drop" id="year-drop"></div>
   <div class="logo-drop" id="city-drop"></div>
   <div class="logo-drop" id="topbar-drop" style="min-width:200px"></div>
@@ -5887,6 +6056,7 @@
               <div class="pill gold">Best: ${best}</div>
               <div class="pill teal">Avg: ${avgStr}</div>
               <div class="pill" style="background:rgba(74,222,128,.1);border-color:#4ade80;color:#4ade80" title="Rank rating: conservative lower-bound estimate. Skill estimate: ${meanRating}">Rating: ${rating}<span style="opacity:.5;font-size:9px;margin-left:4px">/ ${meanRating}</span></div>
+              <button class="info-btn" style="margin-top:2px" onclick="showInfoPopover(this,'rating')" title="About the rating">ℹ</button>
               <div class="pill">Worst: ${worst}</div>
               <div class="pill">Best Rank: #${bestRank}</div>
               <div class="pill">${apps.length} test${apps.length > 1 ? 's' : ''}</div>
@@ -5948,7 +6118,7 @@
         <div class="two-col" style="margin-bottom:24px">
           <div class="card">
             <div class="card-header"><div class="card-title">📋 Test History</div>
-              <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)">Theory first · Impact = difficulty-adjusted z-score</div>
+              <button class="info-btn" onclick="showInfoPopover(this,'test-history')" title="How this works">ℹ</button>
             </div>
             <div class="table-wrap"><table>
               <thead><tr><th>Test</th><th>Type</th><th>Marks</th><th>Rank</th><th>vs Class</th><th title="How exceptional relative to class spread">Impact</th></tr></thead>
@@ -6149,8 +6319,7 @@
         byExam[r.exam_id].marks.push(r.marks);
       });
       const examRows = Object.values(byExam).map(ex => ({ label: ex.label, type: ex.type, avg: +(ex.marks.reduce((a, b) => a + b, 0) / ex.marks.length).toFixed(1), count: ex.marks.length })).sort((a, b) => a.type === b.type ? 0 : a.type === 'theory' ? -1 : 1);
-      document.getElementById('school-detail-title').textContent = schoolName;
-      document.getElementById('school-detail').innerHTML = `
+      const detailHTML = `
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
           <div class="insight-card amber" style="padding:12px"><div class="insight-label">Unique Students</div><div class="insight-value amber" style="font-size:26px">${d.uniqueCount}</div><div class="insight-sub">${d.totalEntries} total entries</div></div>
           <div class="insight-card teal" style="padding:12px"><div class="insight-label">Adj. Avg Score</div><div class="insight-value teal" style="font-size:26px">${d.bayesAvg}</div><div class="insight-sub">raw avg ${d.rawAvg}</div></div>
@@ -6164,7 +6333,7 @@
         ${d.topStudents.slice(0, 8).map((s, i) => `
           <div class="score-bar">
             <div class="score-bar-label" style="width:140px;cursor:pointer;transition:color .15s"
-              onclick="navToStudent('${_ns(s.name)}','${esc(schoolName)}')"
+              onclick="${window.innerWidth <= 768 ? 'closeSchoolDrawer();' : ''}navToStudent('${_ns(s.name)}','${esc(schoolName)}')"
               onmouseenter="this.style.color='var(--amber)'" onmouseleave="this.style.color=''">${['🥇', '🥈', '🥉', '4.', '5.', '6.', '7.', '8.'][i]} ${s.name}<span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-left:4px">(${s.tests}t)</span></div>
             <div class="score-bar-track"><div class="score-bar-fill" style="width:${s.avg}%;background:${i < d.eliteTopN ? '#60a5fa' : 'var(--text3)'}"></div></div>
             <div class="score-bar-val" style="color:${i < d.eliteTopN ? 'var(--blue)' : 'var(--text3)'}">${s.avg.toFixed(1)}</div>
@@ -6176,6 +6345,14 @@
             <div class="score-bar-track"><div class="score-bar-fill" style="width:${ex.avg}%;background:${ex.type === 'theory' ? 'var(--teal)' : 'var(--amber)'}"></div></div>
             <div class="score-bar-val">${ex.avg}</div>
           </div>`).join('')}` : ''}`;
+
+      // On mobile: show in slide-up drawer. On desktop: render in sidebar panel.
+      if (window.innerWidth <= 768) {
+        openSchoolDrawer(schoolName, detailHTML);
+      } else {
+        document.getElementById('school-detail-title').textContent = schoolName;
+        document.getElementById('school-detail').innerHTML = detailHTML;
+      }
     }
 
     // ═══════════════════════════════════════════════════
@@ -6762,7 +6939,211 @@
     //   no longer needed and would fire too early.
 
     // ═══════════════════════════════════════════════════
-    //  SECRET ADMIN TRIGGER
+    //  INFO POPOVER SYSTEM
+    // ═══════════════════════════════════════════════════
+    const INFO_CONTENT = {
+      'test-history': {
+        title: 'Impact Score (σ)',
+        html: `
+          <p style="margin-bottom:10px"><strong>Impact</strong> measures how exceptional a score is relative to the difficulty of that specific test — a 75 on a brutal test can outweigh an 85 on an easy one.</p>
+          <p style="margin-bottom:8px">Formula: <strong>(score − class mean) ÷ class std deviation</strong></p>
+          <div class="info-sep"></div>
+          <div class="info-row"><span class="info-key">+2σ 🔥</span><span class="info-val">Exceptional — top ~2% of that test</span></div>
+          <div class="info-row"><span class="info-key">+1σ ✦</span><span class="info-val">Above average</span></div>
+          <div class="info-row"><span class="info-key">0σ ·</span><span class="info-val">Around class mean</span></div>
+          <div class="info-row"><span class="info-key">−1σ ▼</span><span class="info-val">Below average for that test</span></div>
+        `
+      },
+      'rating': {
+        title: 'About the Rating',
+        html: `
+          <p style="margin-bottom:10px">The <strong>Rating</strong> is a conservative estimate of a student's skill level. It's designed to be a fair cross-test ranking that penalises inconsistency.</p>
+          <div class="info-sep"></div>
+          <p style="margin-bottom:8px"><strong>How it's calculated:</strong></p>
+          <div class="info-row"><span class="info-key">Mean Rating</span><span class="info-val">The average of all difficulty-adjusted scores (z-scores rescaled to a 0–100 range) across every test taken.</span></div>
+          <div class="info-row"><span class="info-key">Rating</span><span class="info-val">A <em>lower-bound</em> estimate — the mean minus a fraction of the standard deviation. This rewards consistency and prevents one great test from inflating the rating.</span></div>
+          <div class="info-sep"></div>
+          <p style="margin-bottom:8px">The two numbers shown are:<br><strong>Rating / Mean Rating</strong></p>
+          <p style="color:var(--text3);font-size:11px">A student with Rating 82 / 88 has a skill mean of 88 but a conservative floor of 82 — they occasionally underperform. A student with 85 / 86 is very consistent.</p>
+          <p style="color:var(--text3);font-size:11px;margin-top:8px">Rating is used for the Overall Rank and the Leaderboard "All Tests" view.</p>
+        `
+      },
+      'rank-tiers': {
+        title: 'Rank Tiers Explained',
+        html: `
+          <p style="margin-bottom:10px">The <strong>Overall Rank</strong> is calculated by sorting all unique students by their Rating (difficulty-adjusted score). The tier label shows where you stand in the entire cohort.</p>
+          <div class="info-sep"></div>
+          <div class="info-row"><span class="info-key" style="color:#ffd700">⭐ Elite</span><span class="info-val">Top 1% — exceptional across all tests.</span></div>
+          <div class="info-row"><span class="info-key" style="color:var(--amber)">🏆 Gold</span><span class="info-val">Top 5% — consistently high performance.</span></div>
+          <div class="info-row"><span class="info-key" style="color:var(--teal)">🥈 Silver</span><span class="info-val">Top 15% — well above average.</span></div>
+          <div class="info-row"><span class="info-key" style="color:var(--blue)">🥉 Bronze</span><span class="info-val">Top 30% — above average performer.</span></div>
+          <div class="info-row"><span class="info-key" style="color:#a78bfa">◈ Rising</span><span class="info-val">Top 55% — above the midpoint.</span></div>
+          <div class="info-row"><span class="info-key">· Standard</span><span class="info-val">Remaining participants.</span></div>
+          <div class="info-sep"></div>
+          <p style="color:var(--text3);font-size:11px">The <strong>Theory</strong> and <strong>Revision</strong> rank chips show separate rankings using only the respective test type — useful for identifying type specialists.</p>
+          <p style="color:var(--text3);font-size:11px;margin-top:6px">The percentile (e.g. "93rd pct") shows what fraction of students this person outperforms.</p>
+        `
+      },
+      'school-ranking': {
+        title: 'Bayesian-Adjusted Average',
+        html: `
+          <p style="margin-bottom:10px">A small school with only 2 students both scoring 95 would rank top by raw average. But that's a fluke of tiny sample size. The Bayesian adjustment <strong>shrinks</strong> each school's average toward the global mean in proportion to how few students it has. More data = less shrinkage</p>
+          <p style="color:var(--text3);font-size:11px">Formula: <strong>(sum of scores + k × global_mean) ÷ (n + k)</strong> where k is calibrated from the data spread.</p>
+        `
+      }
+    };
+
+    let _activeInfoTarget = null;
+
+    function showInfoPopover(btn, key) {
+      const pop = document.getElementById('info-popover');
+      const content = INFO_CONTENT[key];
+      if (!content) return;
+
+      // Toggle off if same button
+      if (_activeInfoTarget === btn && pop.classList.contains('open')) {
+        closeInfoPopover(); return;
+      }
+      _activeInfoTarget = btn;
+      pop.innerHTML = `<div class="info-popover-title">${content.title}</div><div class="info-popover-body">${content.html}</div>`;
+      // Make visible but off-screen to measure true height
+      pop.style.cssText = 'left:-9999px;top:-9999px;max-width:320px;max-height:none;overflow-y:visible;display:block';
+      pop.classList.add('open');
+
+      const rect = btn.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const margin = 10;
+      const pw = Math.min(320, vw - margin * 2);
+      const ph = Math.min(pop.offsetHeight, vh - margin * 2);
+
+      // Horizontal: prefer right-of-left-edge of button, flip if it clips right edge
+      let left = rect.left;
+      if (left + pw > vw - margin) left = vw - pw - margin;
+      if (left < margin) left = margin;
+
+      // Vertical: prefer below button, flip above if not enough room
+      let top, useScroll = false;
+      const spaceBelow = vh - rect.bottom - margin;
+      const spaceAbove = rect.top - margin;
+      if (spaceBelow >= ph) {
+        top = rect.bottom + 6;
+      } else if (spaceAbove >= ph) {
+        top = rect.top - ph - 6;
+      } else {
+        // Neither fits — place below and add scroll
+        top = rect.bottom + 6;
+        if (top + ph > vh - margin) top = margin;
+        useScroll = true;
+      }
+
+      pop.style.cssText = `left:${left}px;top:${top}px;max-width:${pw}px;max-height:${ph}px;overflow-y:${useScroll ? 'auto' : 'visible'}`;
+    }
+
+    function closeInfoPopover() {
+      document.getElementById('info-popover')?.classList.remove('open');
+      _activeInfoTarget = null;
+    }
+
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.info-btn') && !e.target.closest('#info-popover')) closeInfoPopover();
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeInfoPopover(); }, true);
+
+    // ═══════════════════════════════════════════════════
+    //  MOBILE SCHOOL DETAIL DRAWER
+    // ═══════════════════════════════════════════════════
+    function openSchoolDrawer(title, html) {
+      document.getElementById('school-drawer-title').textContent = title;
+      document.getElementById('school-drawer-body').innerHTML = html;
+      document.getElementById('school-drawer-overlay').classList.add('open');
+      // Small delay so the display:block renders before transform
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          document.getElementById('school-drawer').classList.add('open');
+        });
+      });
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeSchoolDrawer() {
+      document.getElementById('school-drawer').classList.remove('open');
+      document.getElementById('school-drawer-overlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  KEYBOARD SHORTCUTS
+    // ═══════════════════════════════════════════════════
+    const PAGE_KEYS = { '1':'dashboard','2':'tests','3':'leaderboard','4':'students','5':'schools','6':'analytics' };
+
+    function toggleKbdPanel(e) {
+      if (e) e.stopPropagation();
+      const panel = document.getElementById('kbd-panel');
+      const btn = document.getElementById('kbd-hint-btn');
+      const isOpen = panel.classList.contains('open');
+      if (isOpen) { panel.classList.remove('open'); btn.classList.remove('active'); return; }
+      const rect = btn.getBoundingClientRect();
+      panel.style.cssText = `right:${window.innerWidth - rect.right}px;top:${rect.bottom + 6}px`;
+      panel.classList.add('open');
+      btn.classList.add('active');
+    }
+
+    function closeKbdPanel() {
+      document.getElementById('kbd-panel')?.classList.remove('open');
+      document.getElementById('kbd-hint-btn')?.classList.remove('active');
+    }
+
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#kbd-hint-btn') && !e.target.closest('#kbd-panel')) closeKbdPanel();
+    });
+
+    document.addEventListener('keydown', e => {
+      const tag = document.activeElement?.tagName;
+      const inInput = tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable;
+
+      // Escape: close panels, go back from student profile
+      if (e.key === 'Escape') {
+        closeKbdPanel();
+        closeInfoPopover();
+        closeSchoolDrawer();
+        // Close any open modal
+        const mo = document.getElementById('modal-overlay');
+        if (mo?.classList.contains('open')) { closeModal(); return; }
+        const co = document.getElementById('compare-overlay');
+        if (co?.classList.contains('open')) { closeCompare(); return; }
+        // If in student profile, go back
+        const sp = document.getElementById('stu-profile');
+        if (sp && sp.style.display !== 'none') { goBackFromProfile(); }
+        return;
+      }
+
+      if (inInput) return;
+
+      // / to focus search
+      if (e.key === '/') {
+        e.preventDefault();
+        const si = document.getElementById('global-search');
+        if (si) { si.focus(); si.select(); }
+        return;
+      }
+
+      // ? to toggle keyboard panel
+      if (e.key === '?') {
+        e.preventDefault();
+        const btn = document.getElementById('kbd-hint-btn');
+        if (btn) toggleKbdPanel({ stopPropagation: () => {} });
+        return;
+      }
+
+      // 1–6: page navigation (plain number only — not Ctrl/Meta/Alt+number)
+      if (PAGE_KEYS[e.key] && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        location.hash = PAGE_KEYS[e.key];
+      }
+    });
+
+
     //  Desktop : Ctrl × 3, then type the key phrase
     //  Mobile  : Long-press the city·year context badge for 2 s
     // ═══════════════════════════════════════════════════
