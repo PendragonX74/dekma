@@ -1839,9 +1839,10 @@
 
   async function executeDangerAction() {
     if (!_dangerAction) return;
+    const action = _dangerAction;   // snapshot before closeDangerModal nulls _dangerAction
     closeDangerModal();
-    if (_dangerAction.type === 'score')   await _execDeleteScore(_dangerAction);
-    else if (_dangerAction.type === 'profile') await _execWipeProfile(_dangerAction);
+    if (action.type === 'score')   await _execDeleteScore(action);
+    else if (action.type === 'profile') await _execWipeProfile(action);
   }
 
   document.getElementById('danger-modal').addEventListener('click', e => {
