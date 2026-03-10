@@ -181,6 +181,17 @@
         "school": "Richmond College"
       },
       "timestamp": 1773159378852
+    },
+    {
+      "type": "scoreEntry",
+      "examId": "T-2027-005",
+      "city": "galle",
+      "year": "2027",
+      "student": {
+        "name": "Lokitha Kodikara",
+        "school": "Richmond College"
+      },
+      "timestamp": 1773159602906
     }
   ]
 }
