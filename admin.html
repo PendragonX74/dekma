@@ -635,6 +635,126 @@
     #toast.show { transform: translateX(-50%) translateY(0); opacity: 1 }
     #toast.success { border-color: rgba(74,222,128,.4); color: var(--green) }
     #toast.error   { border-color: rgba(244,114,182,.4); color: var(--pink) }
+
+    /* ──────────────────────────────────────────
+       DANGER CONFIRM MODAL
+    ────────────────────────────────────────── */
+    #danger-modal {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.88);
+      z-index: 3000;
+      display: none; align-items: center; justify-content: center;
+      backdrop-filter: blur(8px);
+      padding: 16px;
+    }
+    #danger-modal.open { display: flex }
+
+    .danger-box {
+      background: var(--bg2);
+      border: 1px solid rgba(239,68,68,.45);
+      border-radius: var(--r2);
+      padding: 28px 24px 24px;
+      width: 100%; max-width: 460px;
+      box-shadow: 0 0 0 1px rgba(239,68,68,.12), 0 32px 80px rgba(239,68,68,.18);
+      animation: dangerIn .2s ease-out;
+      position: relative; overflow: hidden;
+    }
+    .danger-box::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--red), #ff8080, var(--red));
+      background-size: 200% 100%;
+      animation: dangerPulse 2s linear infinite;
+    }
+    @keyframes dangerIn { from { transform: scale(.94); opacity:0 } to { transform: scale(1); opacity:1 } }
+    @keyframes dangerPulse { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
+
+    .danger-skull {
+      font-size: 36px; text-align: center; margin-bottom: 12px;
+      filter: drop-shadow(0 0 12px rgba(239,68,68,.6));
+    }
+    .danger-heading {
+      font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+      letter-spacing: 3px; color: var(--red); text-align: center; margin-bottom: 6px;
+    }
+    .danger-sub {
+      font-size: 10px; color: var(--text2); text-align: center;
+      line-height: 1.8; margin-bottom: 20px; letter-spacing: .3px;
+    }
+    .danger-sub strong { color: var(--text) }
+    .danger-sub code {
+      background: rgba(239,68,68,.12); color: #ff9090;
+      padding: 1px 6px; border-radius: 3px; font-size: 9px;
+    }
+
+    .danger-what {
+      background: rgba(239,68,68,.07); border: 1px solid rgba(239,68,68,.2);
+      border-radius: var(--r); padding: 12px 14px; margin-bottom: 18px;
+      font-size: 10px; color: var(--text2); line-height: 1.8;
+    }
+    .danger-what b { color: var(--red) }
+
+    .danger-label {
+      font-size: 8px; letter-spacing: 2px; color: var(--text3);
+      margin-bottom: 8px; display: block; text-transform: uppercase;
+    }
+    #danger-confirm-input {
+      background: var(--bg3); border: 1px solid rgba(239,68,68,.35);
+      border-radius: var(--r); padding: 12px 14px;
+      font-family: 'DM Mono', monospace; font-size: 14px;
+      color: var(--red); outline: none; width: 100%;
+      transition: border-color .2s, box-shadow .2s;
+      letter-spacing: 1px; margin-bottom: 18px;
+    }
+    #danger-confirm-input:focus {
+      border-color: var(--red);
+      box-shadow: 0 0 0 2px rgba(239,68,68,.1);
+    }
+    #danger-confirm-input::placeholder { color: var(--text3); letter-spacing: 0 }
+
+    .danger-actions { display: flex; gap: 10px; justify-content: flex-end }
+
+    .btn-nuke {
+      background: rgba(239,68,68,.15); border-color: rgba(239,68,68,.5);
+      color: var(--red); font-weight: 700; letter-spacing: 1.5px;
+    }
+    .btn-nuke:not(:disabled):hover {
+      background: var(--red); color: #fff; border-color: var(--red);
+      box-shadow: 0 0 24px rgba(239,68,68,.4);
+    }
+    .btn-nuke:disabled { opacity: .25; cursor: not-allowed; pointer-events: none }
+
+    /* Delete score row button */
+    .del-score-btn {
+      background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.2);
+      border-radius: 5px; padding: 5px 9px;
+      font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .5px;
+      color: rgba(239,68,68,.6); cursor: pointer; transition: all .15s;
+      white-space: nowrap; touch-action: manipulation; flex-shrink: 0;
+    }
+    .del-score-btn:hover {
+      background: rgba(239,68,68,.18); border-color: var(--red); color: var(--red);
+    }
+
+    /* Wipe profile zone */
+    .wipe-zone {
+      margin-top: 20px; padding-top: 20px;
+      border-top: 1px solid rgba(239,68,68,.2);
+    }
+    .wipe-zone-label {
+      font-size: 8px; letter-spacing: 2.5px; color: rgba(239,68,68,.5);
+      text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+    }
+    .wipe-zone-label::after {
+      content: ''; flex: 1; height: 1px; background: rgba(239,68,68,.15);
+    }
+    .btn-wipe {
+      background: rgba(239,68,68,.06); border-color: rgba(239,68,68,.2);
+      color: rgba(239,68,68,.7); font-size: 10px; letter-spacing: 1px;
+    }
+    .btn-wipe:hover {
+      background: rgba(239,68,68,.13); border-color: rgba(239,68,68,.5); color: var(--red);
+    }
   </style>
 </head>
 <body>
@@ -747,6 +867,14 @@
               <button class="btn btn-ghost" onclick="cancelStudentEdit()">Cancel</button>
               <button class="btn btn-primary" onclick="saveStudentEdit()">Save Changes</button>
             </div>
+
+            <!-- DANGER ZONE -->
+            <div class="wipe-zone">
+              <div class="wipe-zone-label">Danger Zone</div>
+              <button class="btn btn-wipe" onclick="promptWipeProfile()">
+                ☠ Wipe Profile Entirely
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -840,6 +968,25 @@
     <div class="gh-modal-actions">
       <button class="btn btn-ghost" onclick="closeGhModal()">Cancel</button>
       <button class="btn btn-primary" onclick="saveGhConfig()">Save Config</button>
+    </div>
+  </div>
+</div>
+
+<!-- DANGER CONFIRM MODAL -->
+<div id="danger-modal">
+  <div class="danger-box">
+    <div class="danger-skull" id="danger-skull">☠</div>
+    <div class="danger-heading" id="danger-heading">IRREVERSIBLE ACTION</div>
+    <div class="danger-sub" id="danger-sub"></div>
+    <div class="danger-what" id="danger-what"></div>
+    <label class="danger-label" id="danger-input-label">Type to confirm</label>
+    <input id="danger-confirm-input" type="text" autocomplete="off" spellcheck="false"
+      placeholder="" oninput="checkDangerConfirm()">
+    <div class="danger-actions">
+      <button class="btn btn-ghost" onclick="closeDangerModal()">Abort</button>
+      <button class="btn btn-nuke" id="danger-nuke-btn" disabled onclick="executeDangerAction()">
+        CONFIRM DELETE
+      </button>
     </div>
   </div>
 </div>
@@ -1564,6 +1711,8 @@
               oninput="markScoreDirty(this)">
             <button class="save-btn" disabled onclick="saveScore(this)">SAVE</button>
             <span class="saved-tick">✓</span>
+            <button class="del-score-btn" title="Remove from test"
+              onclick="promptDeleteScore('${esc(s.name)}','${esc(s.school)}')">✕</button>
           </div>
         </td>
       </tr>`).join('');
@@ -1583,6 +1732,8 @@
               data-name="${esc(s.name)}" data-school="${esc(s.school)}"
               oninput="markScoreDirty(this)" style="width:64px;font-size:18px;padding:7px 8px">
             <button class="save-btn" disabled onclick="saveScore(this)">✓</button>
+            <button class="del-score-btn" title="Remove from test"
+              onclick="promptDeleteScore('${esc(s.name)}','${esc(s.school)}')">✕</button>
           </div>
         </div>`).join('');
     }
@@ -1651,6 +1802,177 @@
     if (row) { const rc = row.querySelector('.tbl-rank'); if (rc) rc.textContent = '#' + student._displayRank; }
 
     showToast(`${origName}: ${prevMarks} → ${newVal}, saved to GitHub.`, 'success');
+  }
+
+  // ═══════════════════════════════════════════════
+  //  DANGER MODAL — delete score / wipe profile
+  // ═══════════════════════════════════════════════
+  let _dangerAction = null;
+  let _dangerPhrase = '';
+
+  function openDangerModal({ skull, heading, sub, what, confirmPhrase, btnLabel, action }) {
+    _dangerAction  = action;
+    _dangerPhrase  = confirmPhrase;
+    document.getElementById('danger-skull').textContent        = skull || '☠';
+    document.getElementById('danger-heading').textContent      = heading;
+    document.getElementById('danger-sub').innerHTML            = sub;
+    document.getElementById('danger-what').innerHTML           = what;
+    document.getElementById('danger-input-label').textContent  = 'Type  "' + confirmPhrase + '"  to unlock';
+    document.getElementById('danger-confirm-input').value      = '';
+    document.getElementById('danger-confirm-input').placeholder = confirmPhrase;
+    document.getElementById('danger-nuke-btn').textContent     = btnLabel || 'CONFIRM DELETE';
+    document.getElementById('danger-nuke-btn').disabled        = true;
+    document.getElementById('danger-modal').classList.add('open');
+    setTimeout(() => document.getElementById('danger-confirm-input').focus(), 80);
+  }
+
+  function closeDangerModal() {
+    document.getElementById('danger-modal').classList.remove('open');
+    _dangerAction = null;
+    _dangerPhrase = '';
+  }
+
+  function checkDangerConfirm() {
+    const val = document.getElementById('danger-confirm-input').value;
+    document.getElementById('danger-nuke-btn').disabled = (val !== _dangerPhrase);
+  }
+
+  async function executeDangerAction() {
+    if (!_dangerAction) return;
+    closeDangerModal();
+    if (_dangerAction.type === 'score')   await _execDeleteScore(_dangerAction);
+    else if (_dangerAction.type === 'profile') await _execWipeProfile(_dangerAction);
+  }
+
+  document.getElementById('danger-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('danger-modal')) closeDangerModal();
+  });
+
+  // ── DELETE A SINGLE SCORE ENTRY ──
+  function promptDeleteScore(name, school) {
+    if (!_currentExam) return;
+    const city   = document.getElementById('test-sel-city').value;
+    const year   = document.getElementById('test-sel-year').value;
+    const phrase = name.split(' ')[0].toUpperCase();
+    openDangerModal({
+      skull: '🗑',
+      heading: 'DELETE TEST ENTRY',
+      sub: '<strong>' + esc(name) + '</strong> will be removed from this test.<br>'
+         + 'It will appear as if they never sat the exam.<br>'
+         + '<code>This cannot be undone.</code>',
+      what: '<b>Exam:</b> ' + esc(_currentExam.label) + '<br>'
+          + '<b>Student:</b> ' + esc(name) + '<br>'
+          + '<b>School:</b> ' + esc(school) + '<br>'
+          + '<b>City / Year:</b> ' + esc(city) + ' · ' + esc(year),
+      confirmPhrase: phrase,
+      btnLabel: '☠ DELETE ENTRY',
+      action: { type: 'score', name, school, city, year }
+    });
+  }
+
+  async function _execDeleteScore({ name, school, city, year }) {
+    if (!_currentExam || !ADMIN_DATA) return;
+    const before = _currentExam.students.length;
+    _currentExam.students = _currentExam.students.filter(
+      s => !(s.name === name && s.school === school)
+    );
+    const removed = before - _currentExam.students.length;
+    if (!removed) return showToast('Student not found in exam.', 'error');
+    recomputeRanks(_currentExam);
+
+    const ok = await writeChunk(city, year);
+    if (!ok) return showToast('GitHub write failed — refresh to resync.', 'error');
+
+    await appendManualEdit(edits => {
+      if (!edits.deletions) edits.deletions = [];
+      edits.deletions.push({
+        type: 'scoreEntry', examId: _currentExam.id, city, year,
+        student: { name, school }, timestamp: Date.now()
+      });
+    });
+    bumpVersion();
+    renderTestSheet(_currentExam);
+    showToast(name + ' removed from ' + _currentExam.label + '. Saved to GitHub.', 'success');
+  }
+
+  // ── WIPE ENTIRE PROFILE ──
+  function promptWipeProfile() {
+    if (!editingStudent) return;
+    const { name, school } = editingStudent;
+    const phrase = name.toUpperCase();
+    let count = 0;
+    const affectedExams = [];
+    forEachStudent((s, exam, city, year) => {
+      if (s.name === name && s.school === school) {
+        count++;
+        affectedExams.push(city + ' ' + year + ' — ' + exam.label);
+      }
+    });
+    const examList = affectedExams.slice(0, 6).map(e => '• ' + esc(e)).join('<br>')
+      + (affectedExams.length > 6 ? '<br><i>…and ' + (affectedExams.length - 6) + ' more</i>' : '');
+    openDangerModal({
+      skull: '💀',
+      heading: 'WIPE PROFILE',
+      sub: '<strong>' + esc(name) + '</strong> from <strong>' + esc(school) + '</strong> will be<br>'
+         + '<span style="color:var(--red);font-size:11px;letter-spacing:1px">ERASED FROM ALL RECORDS.</span><br>'
+         + '<code>Permanent. Cannot be undone.</code>',
+      what: '<b>Student:</b> ' + esc(name) + '<br>'
+          + '<b>School:</b> ' + esc(school) + '<br>'
+          + '<b>Entries to be wiped:</b> ' + count + '<br><br>'
+          + '<b>Affected exams:</b><br>' + examList,
+      confirmPhrase: phrase,
+      btnLabel: '☠ WIPE FROM EXISTENCE',
+      action: { type: 'profile', name, school }
+    });
+  }
+
+  async function _execWipeProfile({ name, school }) {
+    if (!ADMIN_DATA) return;
+    const affectedMap = new Map();
+    let removed = 0;
+    for (const city of Object.keys(ADMIN_DATA)) {
+      for (const year of Object.keys(ADMIN_DATA[city])) {
+        const exams = ADMIN_DATA[city][year].exams || [];
+        for (const exam of exams) {
+          const before = exam.students.length;
+          exam.students = exam.students.filter(s => !(s.name === name && s.school === school));
+          const delta = before - exam.students.length;
+          if (delta > 0) {
+            removed += delta;
+            recomputeRanks(exam);
+            affectedMap.set(city + '|' + year, { city, year });
+          }
+        }
+      }
+    }
+    if (!removed) return showToast('No records found to delete.', 'error');
+
+    const pairs = [...affectedMap.values()];
+    showToast('Wiping ' + removed + ' entr' + (removed > 1 ? 'ies' : 'y') + ' across ' + pairs.length + ' chunk' + (pairs.length > 1 ? 's' : '') + '…', '');
+    const ok = await writeChunks(pairs);
+    if (!ok) return showToast('GitHub write failed — refresh to resync.', 'error');
+
+    await appendManualEdit(edits => {
+      if (!edits.deletions) edits.deletions = [];
+      edits.deletions.push({
+        type: 'profileWipe', student: { name, school },
+        entriesRemoved: removed, chunksAffected: pairs, timestamp: Date.now()
+      });
+    });
+    bumpVersion();
+
+    editingStudent = null;
+    document.getElementById('stu-edit-form').style.display = 'none';
+    document.getElementById('stu-empty').style.display     = 'block';
+    populateStuSchoolFilter();
+    document.getElementById('stu-result-list').innerHTML   = '';
+
+    if (_currentExam) {
+      const city = document.getElementById('test-sel-city').value;
+      const year = document.getElementById('test-sel-year').value;
+      if (city && year && affectedMap.has(city + '|' + year)) renderTestSheet(_currentExam);
+    }
+    showToast(name + ' wiped — ' + removed + ' entr' + (removed > 1 ? 'ies' : 'y') + ' deleted from GitHub.', 'success');
   }
 
   // ── TOAST ──
