@@ -871,8 +871,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap
+      gap: 12px
     }
 
     .card-title {
@@ -3167,8 +3166,9 @@
       }
 
       .card-header {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: row;
+        align-items: center;
+        flex-wrap: wrap;
         gap: 8px
       }
 
@@ -3309,7 +3309,7 @@
     <div class="splash-stage">
       <div class="splash-eyebrow">
         <span class="spl-line" id="spl-line-l"></span>
-        <span class="spl-etext" id="spl-etext">Janaka · Applied Maths</span>
+        <span class="spl-etext" id="spl-etext">Janaka Abeywardana</span>
         <span class="spl-line" id="spl-line-r"></span>
       </div>
       <div class="splash-word">
@@ -6987,7 +6987,7 @@
       'school-ranking': {
         title: 'Bayesian-Adjusted Average',
         html: `
-          <p style="margin-bottom:10px">A small school with only 2 students both scoring 95 would rank top by raw average. But that's a fluke of tiny sample size. The Bayesian adjustment <strong>shrinks</strong> each school's average toward the global mean in proportion to how few students it has. More data = less shrinkage</p>
+          <p style="margin-bottom:10px">A small school with only 2 students both scoring 95 would rank top by raw average — but that's a fluke of tiny sample size. The Bayesian adjustment <strong>shrinks</strong> each school's average toward the global mean in proportion to how few students it has. More data = less shrinkage = more trust.</p>
           <p style="color:var(--text3);font-size:11px">Formula: <strong>(sum of scores + k × global_mean) ÷ (n + k)</strong> where k is calibrated from the data spread.</p>
         `
       }
@@ -7000,13 +7000,11 @@
       const content = INFO_CONTENT[key];
       if (!content) return;
 
-      // Toggle off if same button
       if (_activeInfoTarget === btn && pop.classList.contains('open')) {
         closeInfoPopover(); return;
       }
       _activeInfoTarget = btn;
       pop.innerHTML = `<div class="info-popover-title">${content.title}</div><div class="info-popover-body">${content.html}</div>`;
-      // Make visible but off-screen to measure true height
       pop.style.cssText = 'left:-9999px;top:-9999px;max-width:320px;max-height:none;overflow-y:visible;display:block';
       pop.classList.add('open');
 
@@ -7017,12 +7015,10 @@
       const pw = Math.min(320, vw - margin * 2);
       const ph = Math.min(pop.offsetHeight, vh - margin * 2);
 
-      // Horizontal: prefer right-of-left-edge of button, flip if it clips right edge
       let left = rect.left;
       if (left + pw > vw - margin) left = vw - pw - margin;
       if (left < margin) left = margin;
 
-      // Vertical: prefer below button, flip above if not enough room
       let top, useScroll = false;
       const spaceBelow = vh - rect.bottom - margin;
       const spaceAbove = rect.top - margin;
@@ -7031,7 +7027,6 @@
       } else if (spaceAbove >= ph) {
         top = rect.top - ph - 6;
       } else {
-        // Neither fits — place below and add scroll
         top = rect.bottom + 6;
         if (top + ph > vh - margin) top = margin;
         useScroll = true;
