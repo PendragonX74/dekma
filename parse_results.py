@@ -97,9 +97,9 @@ def recompute_ranks(exam):
 
 def apply_edits(data_by_city_year, edits):
     """
-    Apply student renames and score edits to the in‑memory data.
+    Apply student renames, score edits, and deletions to the in‑memory data.
     data_by_city_year: dict key (city, year) -> list of exam objects
-    edits: dict with keys "studentRenames" and "scoreEdits"
+    edits: dict with keys "studentRenames", "scoreEdits", and "deletions"
     """
     # 1. Apply renames (modify student objects directly)
     for rename in edits.get("studentRenames", []):
@@ -113,7 +113,29 @@ def apply_edits(data_by_city_year, edits):
                         s["name"] = new_name
                         s["school"] = new_school
 
-    # 2. Apply score edits (after renames, so we look for possibly-renamed students)
+    # 2. Apply deletions (remove student entries entirely, before score edits)
+    for deletion in edits.get("deletions", []):
+        if deletion.get("type") != "scoreEntry":
+            continue
+        exam_id = deletion["examId"]
+        edit_city = deletion.get("city")
+        student_info = deletion["student"]
+        for (city, year), exams in data_by_city_year.items():
+            if edit_city and city != edit_city:
+                continue
+            for exam in exams:
+                if exam["id"] == exam_id:
+                    before = len(exam["students"])
+                    exam["students"] = [
+                        s for s in exam["students"]
+                        if not (s["name"] == student_info["name"] and s["school"] == student_info["school"])
+                    ]
+                    removed = before - len(exam["students"])
+                    if removed:
+                        print(f"  [DELETE] Removed {student_info['name']} from {exam_id}")
+                    break
+
+    # 3. Apply score edits (after renames, so we look for possibly-renamed students)
     for score_edit in edits.get("scoreEdits", []):
         exam_id = score_edit["examId"]
         edit_city = score_edit.get("city")   # present in edits made after the fix; None for older ones
