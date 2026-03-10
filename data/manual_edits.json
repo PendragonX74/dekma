@@ -149,6 +149,16 @@
       },
       "newMarks": 57,
       "timestamp": 1772641555022
+    },
+    {
+      "examId": "T-2027-005",
+      "city": "galle",
+      "student": {
+        "name": "Lokitha Kodikara",
+        "school": "Richmond College"
+      },
+      "newMarks": 20,
+      "timestamp": 1773158090910
     }
   ],
   "studentRenames": [
