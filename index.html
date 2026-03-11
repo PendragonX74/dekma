@@ -2535,60 +2535,53 @@
     }
 
     /* ── BOTTOM TAB NAV (mobile only) ── */
+    /* ── BOTTOM NAV (mobile) ── */
     .bottom-tabs {
       display: none;
       position: fixed;
       bottom: 0; left: 0; right: 0;
       z-index: 200;
-      background: rgba(14, 14, 20, 0.92);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background: var(--bg2);
       border-top: 1px solid var(--border);
-      padding: 6px 0 max(6px, env(safe-area-inset-bottom));
-      display: none;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 0
+      padding: 0 0 max(6px, env(safe-area-inset-bottom));
+      flex-direction: row;
+      align-items: stretch;
+      height: calc(56px + max(6px, env(safe-area-inset-bottom)));
     }
 
+    .tab-bubble { display: none; }
+
     .tab-item {
+      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 3px;
-      padding: 6px 2px 4px;
+      gap: 4px;
       cursor: pointer;
-      transition: color .2s;
-      color: var(--text3);
       -webkit-tap-highlight-color: transparent;
-      user-select: none
+      user-select: none;
+      color: var(--text3);
+      border-top: 2px solid transparent;
+      transition: color .15s, border-color .15s;
     }
 
     .tab-item.active {
-      color: var(--amber)
+      color: var(--amber);
+      border-top-color: var(--amber);
     }
 
     .tab-icon {
-      font-size: 18px;
+      font-size: 17px;
       line-height: 1;
-      transition: transform .3s cubic-bezier(.34,1.56,.64,1), opacity .2s
-    }
-
-    .tab-item.active .tab-icon {
-      transform: translateY(-3px) scale(1.15)
     }
 
     .tab-label {
       font-family: 'DM Mono', monospace;
-      font-size: 9px;
-      letter-spacing: .5px;
+      font-size: 8px;
+      letter-spacing: .4px;
       text-transform: uppercase;
       line-height: 1;
-      transition: opacity .2s, transform .2s
-    }
-
-    .tab-item:not(.active) .tab-label {
-      opacity: .6
     }
 
     .expand-btn {
@@ -2957,11 +2950,11 @@
       }
 
       .bottom-tabs {
-        display: grid
+        display: flex
       }
 
       .content {
-        padding: 12px 12px calc(72px + max(6px, env(safe-area-inset-bottom)));
+        padding: 12px 12px calc(70px + max(6px, env(safe-area-inset-bottom)));
         min-width: 0
       }
 
@@ -3465,17 +3458,20 @@
 
   <!-- ── BOTTOM TAB NAV (mobile) ── -->
   <nav class="bottom-tabs" id="bottom-tabs" role="tablist">
+    <!-- amber bubble slides to active tab via JS -->
+    <div class="tab-bubble" id="tab-bubble"></div>
+
     <div class="tab-item active" id="tab-dashboard" onclick="tabNav('dashboard')" role="tab" aria-label="Dashboard">
       <span class="tab-icon">◈</span>
       <span class="tab-label">Home</span>
     </div>
-    <div class="tab-item" id="tab-tests" onclick="tabNav('tests')" role="tab" aria-label="Tests">
-      <span class="tab-icon">▦</span>
-      <span class="tab-label">Tests</span>
-    </div>
     <div class="tab-item" id="tab-leaderboard" onclick="tabNav('leaderboard')" role="tab" aria-label="Leaderboard">
       <span class="tab-icon">◉</span>
       <span class="tab-label">Ranks</span>
+    </div>
+    <div class="tab-item" id="tab-tests" onclick="tabNav('tests')" role="tab" aria-label="Tests">
+      <span class="tab-icon">▦</span>
+      <span class="tab-label">Tests</span>
     </div>
     <div class="tab-item" id="tab-students" onclick="tabNav('students')" role="tab" aria-label="Students">
       <span class="tab-icon">◎</span>
@@ -3515,10 +3511,10 @@
         <div class="nav-item" onclick="location.hash='dashboard';closeSidebar()"><span class="nav-icon">◈</span>
           Dashboard</div>
         <div class="nav-section">Data</div>
-        <div class="nav-item" onclick="location.hash='tests';closeSidebar()"><span class="nav-icon">▦</span> All Tests
-        </div>
         <div class="nav-item" onclick="location.hash='leaderboard';closeSidebar()"><span class="nav-icon">◉</span>
           Leaderboard</div>
+        <div class="nav-item" onclick="location.hash='tests';closeSidebar()"><span class="nav-icon">▦</span> All Tests
+        </div>
         <div class="nav-section">Analysis</div>
         <div class="nav-item" onclick="location.hash='students';closeSidebar()"><span class="nav-icon">◎</span> Students
         </div>
@@ -5521,9 +5517,35 @@
           <div class="chip" style="color:var(--male)">Boys: <strong style="margin-left:4px">${boys}</strong></div>
           <div class="chip" style="color:var(--female)">Girls: <strong style="margin-left:4px">${girls}</strong></div>
         </div>
-        <div class="card-title" style="margin-bottom:12px">All Results</div>
-        ${buildTable(deduplicateStudents([...exam.students]).sort((a, b) => b.marks - a.marks), { rowHighlight: 3 })}`;
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="card-title">All Results</div>
+          <button onclick="openLeaderboardForTest('${esc(exam.id)}')" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:rgba(232,160,32,.12);border:1px solid rgba(232,160,32,.35);border-radius:6px;color:var(--amber);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.8px;cursor:pointer;transition:all .15s;text-transform:uppercase" onmouseenter="this.style.background='rgba(232,160,32,.2)'" onmouseleave="this.style.background='rgba(232,160,32,.12)'">Full Leaderboard ↗</button>
+        </div>
+        ${(()=>{
+          const sortedS = deduplicateStudents([...exam.students]).sort((a,b)=>b.marks-a.marks);
+          const rankMap = {};
+          let tRank = 1;
+          sortedS.forEach((s,i)=>{ if(i>0&&s.marks!==sortedS[i-1].marks) tRank=i+1; rankMap[s.name+'\x00'+s.school]=tRank; });
+          return buildTable(sortedS, { rowHighlight: 0, globalRanks: rankMap, useGlobalRank: true });
+        })()}`;
       openModal();
+    }
+
+    function openLeaderboardForTest(examId) {
+      document.getElementById('modal-overlay').classList.remove('open');
+      lbPage = 1;
+      lbSortField = 'marks';
+      lbSortAsc = false;
+      location.hash = 'leaderboard';
+      // Use TDD_CONFIGS.set so the dropdown label syncs with the selection
+      setTimeout(() => {
+        TDD_CONFIGS['lb-sel'].set({ mode: 'custom', ids: new Set([examId]) });
+        const label = document.getElementById('lb-sel-label');
+        if (label) {
+          const exam = EXAMS.find(x => x.id === examId);
+          if (exam) label.textContent = exam.label;
+        }
+      }, 60);
     }
 
     function buildStuSchoolDropdown() {
@@ -5823,9 +5845,9 @@
         const gRankKey = r.name + '\x00' + r.school;
         const gRankVal = useGlobalRank ? (globalRanks[gRankKey] || (isAgg ? globalRank(r.name, r.school) : (r.rank || '—'))) : (i + 1);
         const numRank = typeof gRankVal === 'number' ? gRankVal : parseInt(gRankVal);
-        const medal = numRank === 1 ? '🥇' : numRank === 2 ? '🥈' : numRank === 3 ? '🥉' : '';
-        const isTop3 = numRank >= 1 && numRank <= 3;
-        const gold = rowHighlight > 0 && isTop3 ? 'class="row-gold"' : '';
+        const isTop3 = rowHighlight > 0 && numRank >= 1 && numRank <= 3;
+        const medal = isTop3 ? (numRank === 1 ? '🥇' : numRank === 2 ? '🥈' : '🥉') : '';
+        const gold = isTop3 ? 'class="row-gold"' : '';
         const gBadge = r.gender === GEN_MALE ? `<span class="badge badge-b">Boy</span>` : r.gender === GEN_FEMALE ? `<span class="badge badge-g">Girl</span>` : '';
         const ratingCol = (r.rating || 0) >= 60 ? '#4ade80' : (r.rating || 0) >= 45 ? 'var(--amber)' : 'var(--pink)';
         h += `<tr ${gold}>
