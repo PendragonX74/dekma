@@ -17,6 +17,8 @@
 
   <!-- Chart.js: defer so it doesn't block HTML parsing -->
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
   <!-- ========== ASYNC VERSION-BASED DATA LOADER ========== -->
   <!-- Replaces synchronous XHR + document.write() with a non-blocking
@@ -6356,6 +6358,7 @@
           type: 'line', data: { labels: allLabels, datasets },
           options: {
             responsive: true, maintainAspectRatio: false,
+            elements: { point: { hitRadius: 18 } },
             plugins: {
               legend: { display: false }, tooltip: {
                 backgroundColor: 'rgba(17,17,24,.95)', borderColor: 'rgba(255,255,255,.1)', borderWidth: 1, titleFont: { family: 'DM Mono', size: 11 }, bodyFont: { family: 'DM Mono', size: 11 },
@@ -6687,6 +6690,7 @@
     function cOpts({ dual = false, ylabel = '' } = {}) {
       const base = {
         responsive: true, maintainAspectRatio: false,
+        elements: { point: { hitRadius: 18 } },
         plugins: { legend: { labels: { color: '#9090b0', font: { family: 'DM Mono', size: 11 } } } },
         scales: {
           x: { ticks: { color: '#5a5a78', font: { family: 'DM Mono', size: 9 }, maxRotation: 35 }, grid: { color: 'rgba(255,255,255,.04)' } },
@@ -6993,8 +6997,86 @@
     function exportLeaderboardPDF() {
       const { data, isAll } = _getLbData();
       const label = document.getElementById('lb-title')?.textContent || 'Leaderboard';
-      const top = data.slice(0, 200);
+      const top = data.filter(r => (isAll ? r.best : r.marks) >= 40);
       const city = (selectedCity || '').charAt(0).toUpperCase() + (selectedCity || '').slice(1);
+
+      // Wait for deferred jsPDF scripts then generate directly
+      let attempts = 0;
+      function tryGenerate() {
+        const jsPDF = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+        if (!jsPDF) {
+          if (++attempts < 15) { setTimeout(tryGenerate, 200); return; }
+          alert('PDF library not yet loaded — please try again in a moment.'); return;
+        }
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const W = doc.internal.pageSize.getWidth();
+
+        // Header
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(22); doc.setTextColor(28, 28, 46);
+        doc.text('DEKMA', 14, 18);
+        doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(100);
+        doc.text(`${city} · ${selectedYear}`, 14, 24);
+        doc.text(label, 14, 29);
+        doc.text(new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }), W - 14, 24, { align: 'right' });
+
+        // Rule
+        doc.setDrawColor(200); doc.setLineWidth(0.4);
+        doc.line(14, 32, W - 14, 32);
+
+        // Table
+        const amber = [192, 122, 0];
+        const dark  = [28, 28, 46];
+        const head  = isAll
+          ? [['#', 'Name', 'School', 'G', 'Rating', 'Avg', 'Best', 'Tests']]
+          : [['#', 'Name', 'School', 'G', 'Score']];
+        const body = top.map((r, i) => isAll
+          ? [i+1, r.name, r.school, r.gender==='B'?'M':r.gender==='G'?'F':'', r.rating.toFixed(2), r.marks, r.best, r.tests]
+          : [i+1, r.name, r.school, r.gender==='B'?'M':r.gender==='G'?'F':'', r.marks]);
+        const colStyles = isAll
+          ? { 0:{cellWidth:10,halign:'right'}, 1:{cellWidth:42}, 2:{cellWidth:48}, 3:{cellWidth:8,halign:'center'}, 4:{cellWidth:20,halign:'right'}, 5:{cellWidth:16,halign:'right'}, 6:{cellWidth:16,halign:'right'}, 7:{cellWidth:14,halign:'center'} }
+          : { 0:{cellWidth:12,halign:'right'}, 1:{cellWidth:55}, 2:{cellWidth:72}, 3:{cellWidth:10,halign:'center'}, 4:{cellWidth:24,halign:'right'} };
+
+        doc.autoTable({
+          head, body,
+          startY: 36,
+          styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 2.2, textColor: dark, lineColor: [230,230,235], lineWidth: 0.25 },
+          headStyles: { fillColor: dark, textColor: [255,255,255], fontSize: 7.5, fontStyle: 'bold', halign: 'left' },
+          columnStyles: colStyles,
+          alternateRowStyles: { fillColor: [250,250,252] },
+          didParseCell(d) {
+            // Amber for high scores
+            if (d.section==='body') {
+              const scoreCol = isAll ? 4 : 4;
+              if (d.column.index === scoreCol) {
+                const v = parseFloat(d.cell.raw);
+                if (!isNaN(v) && v >= 80) { d.cell.styles.textColor = amber; d.cell.styles.fontStyle = 'bold'; }
+              }
+              // Gold rows for top 3
+              if (parseInt(body[d.row.index]?.[0]) <= 3) {
+                d.cell.styles.fillColor = [255, 250, 235];
+                if (d.column.index === scoreCol) { d.cell.styles.textColor = amber; d.cell.styles.fontStyle = 'bold'; }
+              }
+            }
+          },
+          didDrawPage(d) {
+            // Footer on every page
+            const pg = doc.internal.getCurrentPageInfo().pageNumber;
+            const total = doc.internal.getNumberOfPages();
+            doc.setFontSize(7.5); doc.setTextColor(160);
+            doc.text('DEKMA Results Portal', 14, doc.internal.pageSize.getHeight() - 8);
+            doc.text(`${city} ${selectedYear} — ${label}`, W/2, doc.internal.pageSize.getHeight() - 8, { align: 'center' });
+            doc.text(`Page ${pg} / ${total}`, W - 14, doc.internal.pageSize.getHeight() - 8, { align: 'right' });
+          }
+        });
+
+        const filename = `DEKMA_${city}_${selectedYear}_${label.replace(/\s+/g,'_')}.pdf`;
+        doc.save(filename);
+      }
+      tryGenerate();
+
+      // ── old print-dialog implementation below (replaced) ──
+      if (false) {
 
       const rows = top.map((r, i) => `
         <tr>
@@ -7083,6 +7165,7 @@
       const blob = new Blob([html], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
       window.open(url, '_blank');
+      } // end if(false)
     }
 
     // ═══════════════════════════════════════════════════
