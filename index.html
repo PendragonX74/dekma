@@ -1441,6 +1441,17 @@
       color: var(--amber)
     }
 
+    /* Fixed-width sort arrow — prevents header shift on sort change */
+    .th-arrow {
+      display: inline-block;
+      width: 1em;
+      text-align: center;
+      opacity: .35;
+      font-size: .85em;
+      vertical-align: middle
+    }
+    thead th.sorted .th-arrow { opacity: .7 }
+
     thead th.sorted-rank {
       color: var(--amber)
     }
@@ -1482,6 +1493,12 @@
       font-family: 'Bebas Neue', sans-serif;
       font-size: 20px;
       color: var(--teal);
+      letter-spacing: 1px
+    }
+
+    .td-rating {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
       letter-spacing: 1px
     }
 
@@ -2221,8 +2238,27 @@
       padding: 4px 12px;
       font-family: 'DM Mono', monospace;
       font-size: 11px;
-      color: var(--text2)
+      color: var(--text2);
+      white-space: nowrap
     }
+
+    /* Export icon button — compact, matches chip height */
+    .export-icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text2);
+      cursor: pointer;
+      font-size: 14px;
+      transition: all .15s;
+      flex-shrink: 0
+    }
+    .export-icon-btn:hover { border-color: var(--border2); color: var(--text) }
 
     /* Loading */
     /* ══ LOADING ════════════════════════════════════════════════════════════ */
@@ -2705,10 +2741,7 @@
     }
     .kbd-hint:hover { border-color: var(--border2); color: var(--text2) }
     .kbd-hint.active { border-color: var(--amber); color: var(--amber); background: rgba(232,160,32,.08) }
-    .kbd-hint kbd {
-      background: none; border: none; padding: 0;
-      font-family: inherit; font-size: inherit; color: inherit; pointer-events: none
-    }
+    .kbd-hint kbd { background: none; border: none; padding: 0; font-family: inherit; font-size: inherit; color: inherit; pointer-events: none }
     .kbd-panel {
       position: fixed; background: var(--bg2);
       border: 1px solid var(--border2); border-radius: var(--radius2);
@@ -3151,19 +3184,51 @@
       }
 
       thead th {
-        padding: 7px 8px;
-        font-size: 9px
+        padding: 8px 8px;
+        font-size: 8px;
+        white-space: nowrap
       }
 
       tbody td {
-        padding: 7px 8px;
-        font-size: 13px
+        padding: 9px 8px;
+        font-size: 12px;
+        white-space: nowrap
       }
 
+      /* All numeric data cells the same size on mobile */
       .td-marks,
-      .td-avg {
-        font-size: 16px
+      .td-avg,
+      .td-rating {
+        font-size: 15px
       }
+
+      .td-rank {
+        width: 36px;
+        font-size: 10px;
+        padding: 9px 4px
+      }
+
+      .td-name {
+        max-width: 130px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap
+      }
+
+      .td-school {
+        max-width: 110px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap
+      }
+
+      .table-wrap {
+        -webkit-overflow-scrolling: touch
+      }
+
+      /* Top 10: hide inactive column on mobile based on data-sort attribute */
+      #top10-table table[data-sort="rating"] .col-t10-avg { display: none }
+      #top10-table table[data-sort="avg"]    .col-t10-rating { display: none }
 
       .card-header {
         flex-direction: row;
@@ -3275,11 +3340,13 @@
 
     @media(max-width:480px) {
       .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px }
-      .stat-value { font-size: 26px }
-      .stat-label { font-size: 9px }
-      .stat-sub   { font-size: 10px }
+      .stat-value { font-size: 24px }
+      .stat-label { font-size: 8px }
+      .stat-sub   { font-size: 9px }
       .search-input { width: 120px; font-size: 11px }
-      .podium-name  { font-size: 11px }
+      .podium-name  { font-size: 10px; max-width: 80px }
+      .podium-marks { font-size: 22px }
+      .podium-slot:nth-child(2) .podium-marks { font-size: 28px }
       .two-col, .three-col { gap: 10px }
       .score-bar-label { width: 110px; font-size: 12px }
       .school-count { width: 40px; font-size: 10px }
@@ -3291,11 +3358,61 @@
       .sl { font-size: 52px; }
       .splash-col, .picker-col { padding: 16px 14px; }
       .splash-opt { font-size: 10px; padding: 6px 10px; }
+      .td-name { max-width: 100px }
+      .td-school { max-width: 90px }
+      .td-marks, .td-avg, .td-rating { font-size: 13px }
     }
 
     @media(max-width:360px) {
       .sl { font-size: 44px; }
       .splash-opt { font-size: 9px; padding: 5px 9px; }
+    }
+
+    /* ── LEADERBOARD MOBILE TABLE: hide low-priority columns ── */
+    @media(max-width:768px) {
+      /* Hide "Best" and "Tests" columns in aggregated leaderboard on mobile */
+      .col-best, .col-tests {
+        display: none
+      }
+
+      /* Hide Gender column on mobile — show gender via badge elsewhere */
+      .col-gender {
+        display: none
+      }
+
+      /* Compact Top 10 sort buttons */
+      .t10-sort-btn {
+        font-size: 9px;
+        padding: 4px 8px;
+        letter-spacing: .3px
+      }
+
+      /* Compact leaderboard filter bar */
+      #page-leaderboard .filter-bar {
+        gap: 6px
+      }
+
+      /* Compact lb card header — title + count + export in one row */
+      #page-leaderboard .card-header {
+        flex-wrap: nowrap;
+        gap: 6px
+      }
+
+      #lb-title {
+        font-size: 10px
+      }
+
+      #lb-count {
+        font-size: 9px;
+        padding: 2px 7px
+      }
+
+      /* Leaderboard name search: smaller on mobile */
+      #lb-name {
+        font-size: 11px;
+        padding: 6px 10px 6px 28px;
+        height: 34px
+      }
     }
   </style>
 </head>
@@ -3479,8 +3596,8 @@
               <div class="card-title">⭐ Top 10</div>
               <div style="display:flex;align-items:center;gap:8px">
                 <div id="top10-sel" class="tdd-wrap"></div>
-                <button class="t10-sort-btn active" id="t10-rank-btn" onclick="setTop10Sort('rank',this)">By Rating</button>
-                <button class="t10-sort-btn" id="t10-avg-btn" onclick="setTop10Sort('avg',this)">By Avg</button>
+                <button class="t10-sort-btn active" id="t10-rank-btn" onclick="setTop10Sort('rank')">By Rating</button>
+                <button class="t10-sort-btn" id="t10-avg-btn" onclick="setTop10Sort('avg')">By Avg</button>
               </div>
             </div>
             <div class="table-wrap" id="top10-table"></div>
@@ -3534,12 +3651,12 @@
               oninput="lbPage=1;renderLeaderboard()" style="width:200px;max-width:100%">
           </div>
           <div class="card">
-            <div class="card-header">
-              <div class="card-title" id="lb-title">Leaderboard</div>
-              <div style="display:flex;align-items:center;gap:8px">
+            <div class="card-header" style="flex-wrap:nowrap">
+              <div class="card-title" id="lb-title" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Leaderboard</div>
+              <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
                 <div class="chip" id="lb-count">—</div>
               <div style="position:relative;display:inline-block" id="export-dd-wrap">
-                <button class="filter-btn" onclick="toggleExportDrop(event)" id="export-dd-btn">Export ▾</button>
+                <button class="export-icon-btn" onclick="toggleExportDrop(event)" id="export-dd-btn" title="Export"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block"><path d="M7 1v7M4 5.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 10v1.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
                 <div id="export-dd-panel" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);z-index:300;min-width:130px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.5)">
                   <div onclick="exportLeaderboardCSV();closeExportDrop()" style="padding:9px 16px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s" onmouseenter="this.style.background='var(--bg3)'" onmouseleave="this.style.background=''">⬇ CSV</div>
                   <div onclick="exportLeaderboardPDF();closeExportDrop()" style="padding:9px 16px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);cursor:pointer;transition:background .1s" onmouseenter="this.style.background='var(--bg3)'" onmouseleave="this.style.background=''">⬇ PDF</div>
@@ -5265,13 +5382,8 @@
     }
 
     // ─── TOP 10 ──────────────────────────────────────
-    function setTop10Sort(field, btn) {
-      // Clicking 'avg' when already on 'avg' toggles back to 'rank' (no reverse sort)
-      if (field === 'avg' && top10SortField === 'avg') {
-        top10SortField = 'rank';
-      } else {
-        top10SortField = field;
-      }
+    function setTop10Sort(field) {
+      top10SortField = field;
       syncTop10Btns(); renderTop10();
     }
     function syncTop10Btns() {
@@ -5283,18 +5395,18 @@
       const sel = top10TestSel;
       const isAggr = isAgg(sel);
       let rows;
-      if (isAggr) { rows = getTopByAverage(getRowsForSel(sel), 200); }
-      else {
+      if (isAggr) {
+        rows = getTopByAverage(getRowsForSel(sel), 200);
+        if (top10SortField === 'avg') rows.sort((a, b) => b.marks - a.marks);
+        else rows.sort((a, b) => b.rating - a.rating);
+      } else {
         const eid = resolveExamIds(sel)[0];
         const exam = EXAMS.find(x => x.id === eid);
         if (!exam) { document.getElementById('top10-table').innerHTML = '<div class="empty"><div class="empty-icon">📋</div>No data</div>'; return; }
         rows = deduplicateStudents([...exam.students]).sort((a, b) => b.marks - a.marks);
       }
-      // Always sort descending by the display value — no reverse toggle in top-10
-      if (top10SortField === 'avg' && isAggr) { rows.sort((a, b) => b.marks - a.marks); }
-      else if (!isAggr) { rows.sort((a, b) => b.marks - a.marks); }
       if (rows.length > 10) {
-        const scoreKey = r => isAggr ? r.rating : r.marks;
+        const scoreKey = r => isAggr ? (top10SortField === 'avg' ? r.marks : r.rating) : r.marks;
         const boundary = scoreKey(rows[9]);
         rows = rows.filter((r, i) => i < 10 || scoreKey(r) === boundary);
       }
@@ -5303,26 +5415,31 @@
 
     function buildTop10Table(data, isAll) {
       if (!data.length) return '<div class="empty"><div class="empty-icon">📭</div>No results</div>';
-      const avgArrow = top10SortField === 'avg' ? (top10SortAsc ? ' ↑' : ' ↓') : ' ↕';
-      const rkClass = top10SortField === 'rank' ? 'sorted-rank' : '';
-      let h = `<table><thead><tr>
-        <th class="${rkClass}"># Rank</th>
+      const scoreKey = r => isAll ? (top10SortField === 'avg' ? r.marks : r.rating) : r.marks;
+      const ratingActive = isAll && top10SortField === 'rank';
+      const avgActive    = isAll && top10SortField === 'avg';
+      const arr = a => `<span class="th-arrow">${a ? '↓' : '↕'}</span>`;
+      // data-sort drives CSS to hide the inactive column on mobile
+      const sortAttr = isAll ? `data-sort="${top10SortField === 'avg' ? 'avg' : 'rating'}"` : '';
+      let h = `<table ${sortAttr}><thead><tr>
+        <th style="cursor:pointer" onclick="setTop10Sort('rank')" class="${ratingActive ? 'sorted' : ''}">#${isAll ? arr(ratingActive) : ''}</th>
         <th>Name</th>
-        <th onclick="setTop10Sort('avg',this)" style="cursor:pointer" class="${top10SortField === 'avg' ? 'sorted' : ''}">${isAll ? 'Avg' : 'Score'}<span style="opacity:.4">${avgArrow}</span></th>
+        ${isAll ? `<th class="col-t10-rating" style="cursor:pointer" onclick="setTop10Sort('rank')" class="${ratingActive ? 'sorted' : ''}">Rating ${arr(ratingActive)}</th>` : ''}
+        <th class="col-t10-avg" onclick="setTop10Sort('avg')" style="cursor:pointer" class="${avgActive ? 'sorted' : ''}">${isAll ? 'Avg' : 'Score'} ${arr(avgActive)}</th>
         <th>School</th>
       </tr></thead><tbody>`;
-      // Build tie-aware ranks: same score/rating = same rank
-      const scoreKey = r => isAll ? r.rating : r.marks;
       let tieRank = 1;
       data.forEach((r, i) => {
         if (i > 0 && scoreKey(r) !== scoreKey(data[i - 1])) tieRank = i + 1;
         const medal = tieRank === 1 ? '🥇' : tieRank === 2 ? '🥈' : tieRank === 3 ? '🥉' : '';
         const gold = tieRank <= 3 ? 'class="row-gold"' : '';
         const rankColor = tieRank <= 3 ? 'var(--amber)' : 'var(--text3)';
+        const ratingCol = isAll ? (r.rating >= 60 ? '#4ade80' : r.rating >= 45 ? 'var(--amber)' : 'var(--pink)') : '';
         h += `<tr ${gold}>
           <td class="td-rank" style="color:${rankColor}">${medal || tieRank}</td>
           <td class="td-name" onclick="navToStudent('${_ns(r.name)}','${_ns(r.school)}')">${r.name}</td>
-          <td class="${isAll ? 'td-avg' : 'td-marks'}">${r.marks}</td>
+          ${isAll ? `<td class="td-rating col-t10-rating" style="color:${ratingCol}">${r.rating.toFixed(2)}</td>` : ''}
+          <td class="${isAll ? 'td-avg col-t10-avg' : 'td-marks'}">${isAll ? parseFloat(r.marks.toFixed(1)) : r.marks}</td>
           <td class="td-school">${r.school}</td>
         </tr>`;
       });
@@ -5590,8 +5707,14 @@
     }
 
     function setSort(field) {
-      if (lbSortField === field) lbSortAsc = !lbSortAsc;
-      else { lbSortField = field; lbSortAsc = (field === 'name' || field === 'school' || field === 'rank'); }
+      if (lbSortField === field) {
+        lbSortAsc = !lbSortAsc;
+      } else {
+        lbSortField = field;
+        // name/school: default A-Z (lbSortAsc=false → un-negated localeCompare → A-Z)
+        // numeric fields: default descending (lbSortAsc=false → un-negated numeric diff → highest first)
+        lbSortAsc = false;
+      }
       lbPage = 1; renderLeaderboard();
     }
 
@@ -5631,7 +5754,7 @@
         });
         data = Object.values(dedupMap);
       }
-      const sf = isAll && (lbSortField === 'rank' || lbSortField === 'marks' || lbSortField === 'avg' || lbSortField === 'rating' || lbSortField === 'best') ? lbSortField : (isAll ? 'rating' : lbSortField);
+      const sf = isAll && (lbSortField === 'rank' || lbSortField === 'marks' || lbSortField === 'avg' || lbSortField === 'rating' || lbSortField === 'best' || lbSortField === 'name') ? lbSortField : (isAll ? 'rating' : lbSortField);
       data = [...data].sort((a, b) => {
         let v;
         if (sf === 'rating') v = (b.rating || 0) - (a.rating || 0);
@@ -5658,7 +5781,7 @@
       const total = data.length, pages = Math.ceil(total / PER_PAGE) || 1;
       lbPage = Math.min(lbPage, pages);
       const slice = data.slice((lbPage - 1) * PER_PAGE, lbPage * PER_PAGE);
-      const examLabel = isAll ? selLabel(sel) + (sel.mode === 'all' ? ' (Aggregated)' : '') : (EXAMS.find(x => x.id === resolveExamIds(sel)[0])?.label || '');
+      const examLabel = isAll ? selLabel(sel) : (EXAMS.find(x => x.id === resolveExamIds(sel)[0])?.label || '');
       document.getElementById('lb-count').textContent = `${total.toLocaleString()} ${isAll ? 'students' : 'entries'}`;
       document.getElementById('lb-title').textContent = examLabel;
       document.getElementById('lb-table').innerHTML = buildTable(slice, { showExam: false, isAgg: isAll, rowHighlight: 3, globalRanks: displayRankMap, useGlobalRank: true });
@@ -5680,18 +5803,19 @@
     function buildTable(data, opts = {}) {
       if (!data.length) return '<div class="empty"><div class="empty-icon">📭</div>No results</div>';
       const { rowHighlight = 0, showExam = false, isAgg = false, isAvg = false, globalRanks = {}, useGlobalRank = false } = opts;
+      // Fixed-width arrow: always same space, just opacity changes
+      const arr = active => `<span class="th-arrow">${active ? (lbSortAsc ? '↑' : '↓') : '↕'}</span>`;
       const sh = (f, lbl) => {
         const active = lbSortField === f;
-        const arrow = active ? (lbSortAsc ? ' ↑' : ' ↓') : ' ↕';
-        return `<th onclick="setSort('${f}')" class="${active ? 'sorted' : ''}">${lbl}<span style="opacity:.4">${arrow}</span></th>`;
+        return `<th onclick="setSort('${f}')" class="${active ? 'sorted' : ''}">${lbl} ${arr(active)}</th>`;
       };
       let h = `<table><thead><tr>
         <th class="sorted-rank"># Rank</th>
         ${sh('name', 'Name')}
         ${isAgg ? sh('rating', 'Rating ⬡') : (isAvg ? sh('marks', 'Avg') : sh('marks', 'Marks'))}
-        ${isAgg ? sh('marks', 'Raw Avg') + sh('best', 'Best') + '<th>Tests</th>' : ''}
+        ${isAgg ? sh('marks', 'Avg') + `<th class="col-best" onclick="setSort('best')" class="${lbSortField==='best'?'sorted':''}">Best ${arr(lbSortField==='best')}</th>` + '<th class="col-tests">Tests</th>' : ''}
         ${sh('school', 'School')}
-        <th>Gender</th>
+        <th class="col-gender">Gender</th>
         ${showExam ? '<th>Test</th>' : ''}
       </tr></thead><tbody>`;
 
@@ -5708,13 +5832,13 @@
           <td class="td-rank" style="color:${isTop3 ? 'var(--amber)' : 'var(--text3)'};font-weight:${isTop3 ? 'bold' : 'normal'}">${medal || '#' + gRankVal}</td>
           <td class="td-name" onclick="navToStudent('${_ns(r.name)}','${_ns(r.school)}')">${r.name}</td>
           ${isAgg
-            ? `<td><span style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:${ratingCol}">${r.rating.toFixed(2)}</span><span style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text3);margin-left:3px">pts</span></td>
+            ? `<td class="td-rating" style="color:${ratingCol}">${r.rating.toFixed(2)}<span style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text3);margin-left:3px">pts</span></td>
                <td class="td-avg">${r.marks}</td>
-               <td class="td-marks">${r.best}</td>
-               <td class="td-school">${r.tests}</td>`
+               <td class="td-marks col-best">${r.best}</td>
+               <td class="td-school col-tests">${r.tests}</td>`
             : `<td class="${isAvg ? 'td-avg' : 'td-marks'}">${r.marks}</td>`}
           <td class="td-school">${r.school}</td>
-          <td>${gBadge}</td>
+          <td class="col-gender">${gBadge}</td>
           ${showExam ? `<td class="td-school">${r.exam_label || ''}</td>` : ''}
         </tr>`;
       });
@@ -6871,6 +6995,11 @@
   @page { size: A4; margin: 18mm 14mm; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; color: #1c1c2e; background: #fff; }
+  .print-bar { position: sticky; top: 0; z-index: 99; background: #1c1c2e; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .print-bar-title { color: rgba(255,255,255,.6); font-size: 11px; letter-spacing: 1px; }
+  .print-btn { background: #c07a00; color: #fff; border: none; border-radius: 6px; padding: 8px 20px; font-size: 12px; font-weight: 600; letter-spacing: 1px; cursor: pointer; }
+  .print-btn:hover { background: #d98c00; }
+  .doc { padding: 20px 24px; }
   header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2.5px solid #1c1c2e; padding-bottom: 10px; margin-bottom: 16px; }
   .logo { font-size: 28px; font-weight: 900; letter-spacing: 4px; color: #1c1c2e; line-height: 1; }
   .logo span { color: #c07a00; }
@@ -6895,10 +7024,16 @@
   .center { text-align: center; color: #888; }
   footer { margin-top: 16px; border-top: 1px solid #ddd; padding-top: 8px; display: flex; justify-content: space-between; font-size: 9px; color: #aaa; }
   @media print {
+    .print-bar { display: none !important; }
     tr { page-break-inside: avoid; }
     thead { display: table-header-group; }
   }
 </style></head><body>
+<div class="print-bar">
+  <span class="print-bar-title">DEKMA ${city} ${selectedYear} — ${label}</span>
+  <button class="print-btn" onclick="window.print()">Save as PDF ↓</button>
+</div>
+<div class="doc">
 <header>
   <div class="logo">DEK<span>MA</span></div>
   <div class="meta-block">
@@ -6920,12 +7055,12 @@
   <span>DEKMA Results Portal</span>
   <span>${city} ${selectedYear} — Generated ${new Date().toLocaleString()}</span>
 </footer>
+</div>
 </body></html>`;
 
       const blob = new Blob([html], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
-      const w = window.open(url, '_blank');
-      if (w) setTimeout(() => { w.print(); }, 600);
+      window.open(url, '_blank');
     }
 
     // ═══════════════════════════════════════════════════
@@ -6987,7 +7122,7 @@
       'school-ranking': {
         title: 'Bayesian-Adjusted Average',
         html: `
-          <p style="margin-bottom:10px">A school with very few students may show an inflated raw average that does not reflect true performance. The Bayesian adjustment pulls each school's average toward the global mean, weighted by sample size — the fewer the students, the greater the correction. This produces a more reliable comparison across schools of different sizes.</p>
+          <p style="margin-bottom:10px">A school with very few students may show an inflated raw average that does not reflect true performance. The Bayesian adjustment pulls each school's average toward the global mean, weighted by sample size — the fewer the students, the greater the correction.</p>
           <p style="color:var(--text3);font-size:11px">Formula: <strong>(sum of scores + k × global_mean) ÷ (n + k)</strong> where k is calibrated from the data spread.</p>
         `
       }
@@ -6999,26 +7134,23 @@
       const pop = document.getElementById('info-popover');
       const content = INFO_CONTENT[key];
       if (!content) return;
-
-      if (_activeInfoTarget === btn && pop.classList.contains('open')) {
-        closeInfoPopover(); return;
-      }
+      if (_activeInfoTarget === btn && pop.classList.contains('open')) { closeInfoPopover(); return; }
       _activeInfoTarget = btn;
       pop.innerHTML = `<div class="info-popover-title">${content.title}</div><div class="info-popover-body">${content.html}</div>`;
       pop.style.cssText = 'left:-9999px;top:-9999px;max-width:320px;max-height:none;overflow-y:visible;display:block';
       pop.classList.add('open');
       const rect = btn.getBoundingClientRect();
-      const vw = window.innerWidth, vh = window.innerHeight, margin = 10;
-      const pw = Math.min(320, vw - margin * 2);
-      const ph = Math.min(pop.offsetHeight, vh - margin * 2);
+      const vw = window.innerWidth, vh = window.innerHeight, m = 10;
+      const pw = Math.min(320, vw - m * 2);
+      const ph = Math.min(pop.offsetHeight, vh - m * 2);
       let left = rect.left;
-      if (left + pw > vw - margin) left = vw - pw - margin;
-      if (left < margin) left = margin;
+      if (left + pw > vw - m) left = vw - pw - m;
+      if (left < m) left = m;
       let top, useScroll = false;
-      const spaceBelow = vh - rect.bottom - margin, spaceAbove = rect.top - margin;
-      if (spaceBelow >= ph) { top = rect.bottom + 6; }
-      else if (spaceAbove >= ph) { top = rect.top - ph - 6; }
-      else { top = rect.bottom + 6; if (top + ph > vh - margin) top = margin; useScroll = true; }
+      const spaceBelow = vh - rect.bottom - m, spaceAbove = rect.top - m;
+      if (spaceBelow >= ph) top = rect.bottom + 6;
+      else if (spaceAbove >= ph) top = rect.top - ph - 6;
+      else { top = rect.bottom + 6; if (top + ph > vh - m) top = m; useScroll = true; }
       pop.style.cssText = `left:${left}px;top:${top}px;max-width:${pw}px;max-height:${ph}px;overflow-y:${useScroll ? 'auto' : 'visible'}`;
     }
 
@@ -7119,7 +7251,7 @@
         return;
       }
 
-      // 1–6: page navigation (plain number only — not Ctrl/Meta/Alt+number)
+      // 1–6: page navigation (plain number only)
       if (PAGE_KEYS[e.key] && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
         location.hash = PAGE_KEYS[e.key];
