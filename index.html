@@ -6997,7 +6997,7 @@
     function exportLeaderboardPDF() {
       const { data, isAll } = _getLbData();
       const label = document.getElementById('lb-title')?.textContent || 'Leaderboard';
-      const top = data.filter(r => (isAll ? r.best : r.marks) >= 40);
+      const top = data.filter(r => isAll ? r.rating >= 45 : r.marks >= 40);
       const city = (selectedCity || '').charAt(0).toUpperCase() + (selectedCity || '').slice(1);
 
       // Wait for deferred jsPDF scripts then generate directly
