@@ -1639,13 +1639,9 @@
     .test-card.theory::before {
       background: linear-gradient(90deg, var(--teal), var(--teal2))
     }
-
-    .test-card.model_theory::before {
-      background: linear-gradient(90deg, #818cf8, #a5b4fc)
-    }
-
+    .test-card.model_theory::before,
     .test-card.model_revision::before {
-      background: linear-gradient(90deg, var(--pink), #fb7cc0)
+      background: linear-gradient(90deg, #818cf8, #a5b4fc)
     }
 
     .test-card:hover {
@@ -1669,13 +1665,9 @@
     .test-card.theory .test-card-type {
       color: var(--teal)
     }
-
-    .test-card.model_theory .test-card-type {
-      color: #818cf8
-    }
-
+    .test-card.model_theory .test-card-type,
     .test-card.model_revision .test-card-type {
-      color: var(--pink)
+      color: #818cf8
     }
 
     .test-card-title {
@@ -3670,8 +3662,7 @@
             <div class="filter-btn active" onclick="filterTests('all',this)">All</div>
             <div class="filter-btn" onclick="filterTests('theory',this)">Theory</div>
             <div class="filter-btn" onclick="filterTests('revision',this)">Revision</div>
-            <div class="filter-btn" id="ft-model-thy" onclick="filterTests('model_theory',this)" style="display:none;color:#818cf8;border-color:rgba(129,140,248,.35)">Theory Model</div>
-            <div class="filter-btn" id="ft-model-rev" onclick="filterTests('model_revision',this)" style="display:none;color:var(--pink);border-color:rgba(244,114,182,.35)">Revision Model</div>
+            <div class="filter-btn" id="ft-model" onclick="filterTests('model',this)" style="display:none;color:#818cf8;border-color:rgba(129,140,248,.35)">Model</div>
           </div>
           <div class="tests-grid" id="tests-grid"></div>
         </div>
@@ -3761,8 +3752,7 @@
             <div class="filter-btn active" id="at-all" onclick="setAvgType('all',this)">All Tests</div>
             <div class="filter-btn" id="at-thy" onclick="setAvgType('theory',this)">Theory</div>
             <div class="filter-btn" id="at-rev" onclick="setAvgType('revision',this)">Revision</div>
-            <div class="filter-btn" id="at-mthy" onclick="setAvgType('model_theory',this)" style="display:none;color:#818cf8;border-color:rgba(129,140,248,.35)">Theory Model</div>
-            <div class="filter-btn" id="at-mrev" onclick="setAvgType('model_revision',this)" style="display:none;color:var(--pink);border-color:rgba(244,114,182,.35)">Revision Model</div>
+            <div class="filter-btn" id="at-mod" onclick="setAvgType('model',this)" style="display:none;color:#818cf8;border-color:rgba(129,140,248,.35)">Model</div>
           </div>
           <div class="three-col">
             <div class="card">
@@ -4770,24 +4760,23 @@
     // ═══════════════════════════════════════════════════
     //  EXAM-TYPE HELPERS
     // ═══════════════════════════════════════════════════
-    const TYPE_SORT = { theory: 0, revision: 1, model_theory: 2, model_revision: 3 };
-    function isModelType(t) { return t === 'model_theory' || t === 'model_revision'; }
+    const TYPE_SORT = { theory:0, revision:1, model_theory:2, model_revision:3 };
+    function isModelType(t) { return t==='model_theory'||t==='model_revision'; }
     function typeColor(t) {
-      if (t === 'theory')         return 'var(--teal)';
-      if (t === 'revision')       return 'var(--amber)';
-      if (t === 'model_theory')   return '#818cf8';
-      if (t === 'model_revision') return 'var(--pink)';
+      if (t==='theory')   return 'var(--teal)';
+      if (t==='revision') return 'var(--amber)';
+      if (isModelType(t)) return '#818cf8';
       return 'var(--text2)';
     }
-    function typeColorRgba(t, a) {
-      const map = { theory:'45,212,191', revision:'232,160,32', model_theory:'129,140,248', model_revision:'244,114,182' };
-      return `rgba(${map[t] || '144,144,176'},${a})`;
+    function typeColorRgba(t,a) {
+      const c={theory:'45,212,191',revision:'232,160,32'};
+      return `rgba(${c[t]||(isModelType(t)?'129,140,248':'144,144,176')},${a})`;
     }
     function typeLabel(t) {
-      return { theory:'Theory', revision:'Revision', model_theory:'Theory Model', model_revision:'Revision Model' }[t] || t;
+      return {theory:'Theory',revision:'Revision',model_theory:'Theory Model',model_revision:'Revision Model'}[t]||t;
     }
     function typeShort(t) {
-      return { theory:'THE', revision:'REV', model_theory:'THM', model_revision:'RVM' }[t] || t.slice(0,3).toUpperCase();
+      return {theory:'THE',revision:'REV',model_theory:'THM',model_revision:'RVM'}[t]||t.slice(0,3).toUpperCase();
     }
 
     // ═══════════════════════════════════════════════════
@@ -4795,8 +4784,7 @@
     // ═══════════════════════════════════════════════════
     let _thyRankMap = {};
     let _revRankMap = {};
-    let _modThyRankMap = {};
-    let _modRevRankMap = {};
+    let _modRankMap = {};
 
     function buildRankMapFromRows(rows) {
       if (!rows.length) return {};
@@ -4813,11 +4801,7 @@
 
     function buildGlobalRankMap() {
       if (!ALL.length) return;
-      // Global rank uses only regular (non-model) exams
-      _globalRankMap = buildRankMapFromRows(ALL.filter(r => {
-        const e = EXAMS.find(x => x.id === r.exam_id);
-        return e && !isModelType(e.type);
-      }));
+      _globalRankMap = buildRankMapFromRows(ALL);
       _thyRankMap = buildRankMapFromRows(ALL.filter(r => {
         const e = EXAMS.find(x => x.id === r.exam_id);
         return e && e.type === 'theory';
@@ -4826,36 +4810,29 @@
         const e = EXAMS.find(x => x.id === r.exam_id);
         return e && e.type === 'revision';
       }));
-      _modThyRankMap = buildRankMapFromRows(ALL.filter(r => {
+      _modRankMap = buildRankMapFromRows(ALL.filter(r => {
         const e = EXAMS.find(x => x.id === r.exam_id);
-        return e && e.type === 'model_theory';
-      }));
-      _modRevRankMap = buildRankMapFromRows(ALL.filter(r => {
-        const e = EXAMS.find(x => x.id === r.exam_id);
-        return e && e.type === 'model_revision';
+        return e && isModelType(e.type);
       }));
     }
-    function globalRank(name, school)  { return _globalRankMap[name + '\x00' + school] || '—'; }
-    function thyRank(name, school)     { return _thyRankMap[name + '\x00' + school] || '—'; }
-    function revRank(name, school)     { return _revRankMap[name + '\x00' + school] || '—'; }
-    function modThyRank(name, school)  { return _modThyRankMap[name + '\x00' + school] || '—'; }
-    function modRevRank(name, school)  { return _modRevRankMap[name + '\x00' + school] || '—'; }
+    function globalRank(name, school) { return _globalRankMap[name + '\x00' + school] || '—'; }
+    function thyRank(name, school) { return _thyRankMap[name + '\x00' + school] || '—'; }
+    function revRank(name, school) { return _revRankMap[name + '\x00' + school] || '—'; }
+    function modRank(name, school)  { return _modRankMap[name + '\x00' + school] || '—'; }
 
     // ═══════════════════════════════════════════════════
     //  TEST SELECTION ENGINE — multi-select, range, type filter
     // ═══════════════════════════════════════════════════
 
-    // sel = { mode: 'all'|'theory'|'revision'|'model_theory'|'model_revision'|'model_all'|'custom' }
-    // 'all' excludes model papers (they use dedicated preset modes)
+    // sel = { mode: 'all'|'theory'|'revision'|'model'|'custom', ids?: Set<string> }
+    // 'all' includes model papers — they count in all leaderboards/rankings
     function resolveExamIds(sel) {
-      if (!sel || sel.mode === 'all')    return EXAMS.filter(e => !isModelType(e.type)).map(e => e.id);
-      if (sel.mode === 'theory')         return EXAMS.filter(e => e.type === 'theory').map(e => e.id);
-      if (sel.mode === 'revision')       return EXAMS.filter(e => e.type === 'revision').map(e => e.id);
-      if (sel.mode === 'model_theory')   return EXAMS.filter(e => e.type === 'model_theory').map(e => e.id);
-      if (sel.mode === 'model_revision') return EXAMS.filter(e => e.type === 'model_revision').map(e => e.id);
-      if (sel.mode === 'model_all')      return EXAMS.filter(e => isModelType(e.type)).map(e => e.id);
-      if (sel.mode === 'custom')         return [...(sel.ids || [])];
-      return EXAMS.filter(e => !isModelType(e.type)).map(e => e.id);
+      if (!sel || sel.mode === 'all')  return EXAMS.map(e => e.id);
+      if (sel.mode === 'theory')       return EXAMS.filter(e => e.type === 'theory').map(e => e.id);
+      if (sel.mode === 'revision')     return EXAMS.filter(e => e.type === 'revision').map(e => e.id);
+      if (sel.mode === 'model')        return EXAMS.filter(e => isModelType(e.type)).map(e => e.id);
+      if (sel.mode === 'custom')       return [...(sel.ids || [])];
+      return EXAMS.map(e => e.id);
     }
 
     function getRowsForSel(sel) {
@@ -4868,12 +4845,10 @@
     function isAgg(sel) { return resolveExamIds(sel).length !== 1; }
 
     function selLabel(sel) {
-      if (!sel || sel.mode === 'all')         return 'All Tests';
-      if (sel.mode === 'theory')              return `Theory Only (${EXAMS.filter(e => e.type === 'theory').length})`;
-      if (sel.mode === 'revision')            return `Revision Only (${EXAMS.filter(e => e.type === 'revision').length})`;
-      if (sel.mode === 'model_theory')        return `Theory Model (${EXAMS.filter(e => e.type === 'model_theory').length})`;
-      if (sel.mode === 'model_revision')      return `Revision Model (${EXAMS.filter(e => e.type === 'model_revision').length})`;
-      if (sel.mode === 'model_all')           return `All Model Papers (${EXAMS.filter(e => isModelType(e.type)).length})`;
+      if (!sel || sel.mode === 'all') return 'All Tests';
+      if (sel.mode === 'theory')   return `Theory Only (${EXAMS.filter(e => e.type === 'theory').length})`;
+      if (sel.mode === 'revision') return `Revision Only (${EXAMS.filter(e => e.type === 'revision').length})`;
+      if (sel.mode === 'model')    return `Model Papers (${EXAMS.filter(e => isModelType(e.type)).length})`;
       if (sel.mode === 'custom') {
         const ids = [...(sel.ids || [])];
         if (ids.length === 0) return 'None Selected';
@@ -4887,17 +4862,15 @@
     }
 
     function selDotColor(sel) {
-      if (!sel || sel.mode === 'all')         return 'var(--blue)';
-      if (sel.mode === 'theory')              return 'var(--teal)';
-      if (sel.mode === 'revision')            return 'var(--amber)';
-      if (sel.mode === 'model_theory')        return '#818cf8';
-      if (sel.mode === 'model_revision')      return 'var(--pink)';
-      if (sel.mode === 'model_all')           return '#818cf8';
+      if (!sel || sel.mode === 'all') return 'var(--blue)';
+      if (sel.mode === 'theory')       return 'var(--teal)';
+      if (sel.mode === 'revision')     return 'var(--amber)';
+      if (sel.mode === 'model')        return '#818cf8';
       if (sel.mode === 'custom') {
         const ids = [...(sel.ids || [])];
         if (ids.length === 1) {
           const e = EXAMS.find(x => x.id === ids[0]);
-          return e?.type === 'revision' ? 'var(--amber)' : 'var(--teal)';
+          return typeColor(e?.type);
         }
         return 'var(--blue)';
       }
@@ -4979,15 +4952,12 @@
       const multi = isMultiMode(cid);
       const checked = new Set(resolveExamIds(sel));
       // Display order in dropdown: newest first (descending number)
-      const thy    = EXAMS.filter(e => e.type === 'theory').slice().sort((a, b) => (b.number || 0) - (a.number || 0));
-      const rev    = EXAMS.filter(e => e.type === 'revision').slice().sort((a, b) => (b.number || 0) - (a.number || 0));
-      const modThy = EXAMS.filter(e => e.type === 'model_theory').slice().sort((a, b) => (b.number || 0) - (a.number || 0));
-      const modRev = EXAMS.filter(e => e.type === 'model_revision').slice().sort((a, b) => (b.number || 0) - (a.number || 0));
-      const hasModels = modThy.length > 0 || modRev.length > 0;
-      const allCount = EXAMS.length;
-      const thyCount = thy.length, revCount = rev.length;
-      const modThyCount = modThy.length, modRevCount = modRev.length;
-      const selCount = resolveExamIds(sel).length;
+      const thy = EXAMS.filter(e=>e.type==='theory').slice().sort((a,b)=>(b.number||0)-(a.number||0));
+      const rev = EXAMS.filter(e=>e.type==='revision').slice().sort((a,b)=>(b.number||0)-(a.number||0));
+      const mod = EXAMS.filter(e=>isModelType(e.type)).slice().sort((a,b)=>(TYPE_SORT[a.type]||2)-(TYPE_SORT[b.type]||2)||(b.number||0)-(a.number||0));
+      const allCount=EXAMS.length;
+      const thyCount=thy.length, revCount=rev.length, modCount=mod.length;
+      const selCount=resolveExamIds(sel).length;
 
       const presetActive = (m) => sel.mode === m && m !== 'custom' ? 'active' : '';
       const allActive = sel.mode === 'all' ? 'active' : '';
@@ -5028,8 +4998,7 @@
           <button class="tdd-preset ${allActive}" onclick="event.stopPropagation();applyPreset('${cid}','all')">All</button>
           <button class="tdd-preset ${presetActive('theory')}" onclick="event.stopPropagation();applyPreset('${cid}','theory')">Theory</button>
           <button class="tdd-preset ${presetActive('revision')}" onclick="event.stopPropagation();applyPreset('${cid}','revision')">Revision</button>
-          ${hasModels ? `<button class="tdd-preset ${presetActive('model_theory')}" onclick="event.stopPropagation();applyPreset('${cid}','model_theory')" style="color:#818cf8;border-color:rgba(129,140,248,.35)">T-Model</button>` : ''}
-          ${hasModels ? `<button class="tdd-preset ${presetActive('model_revision')}" onclick="event.stopPropagation();applyPreset('${cid}','model_revision')" style="color:var(--pink);border-color:rgba(244,114,182,.35)">R-Model</button>` : ''}
+          ${modCount ? `<button class="tdd-preset ${presetActive('model')}" onclick="event.stopPropagation();applyPreset('${cid}','model')" style="color:#818cf8;border-color:rgba(129,140,248,.35)">Model</button>` : ''}
           <button class="tdd-preset-multi ${multi ? 'active' : ''}" onclick="event.stopPropagation();setMultiMode('${cid}',${!multi})">Multi</button>
         </div>
         <div class="tdd-cols-wrap">
@@ -5047,8 +5016,7 @@
             </div>
             <div class="tdd-col-scroll">${rev.length ? rev.map(e => opt(e, 'var(--amber)')).join('') : '<div class="tdd-empty">None loaded</div>'}</div>
           </div>
-          ${modThy.length ? `<div class="tdd-col"><div class="tdd-col-head" style="color:#818cf8"><span>Theory Model (${modThyCount})</span>${colToggle('model_theory', modThy)}</div><div class="tdd-col-scroll">${modThy.map(e => opt(e, '#818cf8')).join('')}</div></div>` : ''}
-          ${modRev.length ? `<div class="tdd-col"><div class="tdd-col-head" style="color:var(--pink)"><span>Revision Model (${modRevCount})</span>${colToggle('model_revision', modRev)}</div><div class="tdd-col-scroll">${modRev.map(e => opt(e, 'var(--pink)')).join('')}</div></div>` : ''}
+          ${modCount ? `<div class="tdd-col"><div class="tdd-col-head" style="color:#818cf8"><span>Model (${modCount})</span>${colToggle('model', mod)}</div><div class="tdd-col-scroll">${mod.map(e=>opt(e,'#818cf8')).join('')}</div></div>` : ''}
         </div>
         <div class="tdd-footer">
           <span class="tdd-footer-count">${footerText}</span>
@@ -5081,43 +5049,32 @@
       let ids = new Set(resolveExamIds(sel));
       if (ids.has(examId)) ids.delete(examId);
       else ids.add(examId);
-      // Snap back to a named preset mode if the selection exactly matches one
-      const _snapSel = (ids) => {
-        const regIds = EXAMS.filter(e => !isModelType(e.type)).map(e => e.id);
-        if (ids.size === regIds.length && regIds.every(id => ids.has(id))) return { mode: 'all' };
-        for (const m of ['theory','revision','model_theory','model_revision']) {
-          const g = EXAMS.filter(e => e.type === m);
-          if (g.length && ids.size === g.length && g.every(e => ids.has(e.id))) return { mode: m };
-        }
-        const modIds = EXAMS.filter(e => isModelType(e.type)).map(e => e.id);
-        if (modIds.length && ids.size === modIds.length && modIds.every(id => ids.has(id))) return { mode: 'model_all' };
-        return { mode: 'custom', ids };
+      const _snap=ids=>{
+        if(ids.size===EXAMS.length)return 'all';
+        for(const m of['theory','revision']){const g=EXAMS.filter(e=>e.type===m);if(g.length&&ids.size===g.length&&g.every(e=>ids.has(e.id)))return m;}
+        const mg=EXAMS.filter(e=>isModelType(e.type));if(mg.length&&ids.size===mg.length&&mg.every(e=>ids.has(e.id)))return 'model';
+        return null;
       };
-      TDD_CONFIGS[cid].set(_snapSel(ids));
+      const snap=_snap(ids);
+      TDD_CONFIGS[cid].set(snap?{mode:snap}:{mode:'custom',ids});
       buildOneDropdown(cid);
     }
 
     function toggleTypeInSel(cid, type, ev) {
       if (ev) ev.stopPropagation();
-      const sel = TDD_CONFIGS[cid].get();
-      const typeExams = EXAMS.filter(e => e.type === type).map(e => e.id);
-      let ids = new Set(resolveExamIds(sel));
-      const allOn = typeExams.every(id => ids.has(id));
-      if (allOn) typeExams.forEach(id => ids.delete(id));
-      else typeExams.forEach(id => ids.add(id));
-      const regIds = EXAMS.filter(e => !isModelType(e.type)).map(e => e.id);
-      let newSel;
-      if (ids.size === regIds.length && regIds.every(id => ids.has(id)))
-        newSel = { mode: 'all' };
-      else {
-        let m = null;
-        for (const mode of ['theory','revision','model_theory','model_revision']) {
-          const g = EXAMS.filter(e => e.type === mode);
-          if (g.length && ids.size === g.length && g.every(e => ids.has(e.id))) { m = mode; break; }
-        }
-        newSel = m ? { mode: m } : { mode: 'custom', ids };
-      }
-      TDD_CONFIGS[cid].set(newSel);
+      const sel=TDD_CONFIGS[cid].get();
+      const typeExams=type==='model'?EXAMS.filter(e=>isModelType(e.type)).map(e=>e.id):EXAMS.filter(e=>e.type===type).map(e=>e.id);
+      let ids=new Set(resolveExamIds(sel));
+      const allOn=typeExams.every(id=>ids.has(id));
+      if(allOn)typeExams.forEach(id=>ids.delete(id));else typeExams.forEach(id=>ids.add(id));
+      const _snap2=ids=>{
+        if(ids.size===EXAMS.length)return 'all';
+        for(const m of['theory','revision']){const g=EXAMS.filter(e=>e.type===m);if(g.length&&ids.size===g.length&&g.every(e=>ids.has(e.id)))return m;}
+        const mg=EXAMS.filter(e=>isModelType(e.type));if(mg.length&&ids.size===mg.length&&mg.every(e=>ids.has(e.id)))return 'model';
+        return null;
+      };
+      const snap=_snap2(ids);
+      TDD_CONFIGS[cid].set(snap?{mode:snap}:{mode:'custom',ids});
       buildOneDropdown(cid);
     }
 
@@ -5346,12 +5303,12 @@
       const unique = new Set(ALL.map(r => r.name + '||' + r.school)).size;
       const avg = total ? (ALL.reduce((s, r) => s + r.marks, 0) / total).toFixed(1) : 0;
       const top = total ? Math.max(...ALL.map(r => r.marks)) : 0;
-      const revs    = EXAMS.filter(x => x.type === 'revision').length;
-      const thys    = EXAMS.filter(x => x.type === 'theory').length;
-      const modCnt  = EXAMS.filter(x => isModelType(x.type)).length;
-      const modelSub = modCnt ? ` · ${modCnt} model` : '';
+      const revs=EXAMS.filter(x=>x.type==='revision').length;
+      const thys=EXAMS.filter(x=>x.type==='theory').length;
+      const mods=EXAMS.filter(x=>isModelType(x.type)).length;
+      const testSub=mods?`${thys} theory · ${revs} revision · ${mods} model`:`${thys} theory · ${revs} revision`;
       const cards = [
-        { label: 'Tests Loaded', value: EXAMS.length, color: 'amber', sub: `${thys} theory · ${revs} revision${modelSub}` },
+        { label: 'Tests Loaded', value: EXAMS.length, color: 'amber', sub: testSub },
         { label: 'Total Entries', value: total, color: 'blue', sub: 'across all tests', fmt: true },
         { label: 'Unique Students', value: unique, color: 'teal', sub: 'name + school', fmt: true },
         { label: 'Schools', value: SCHOOLS.length, color: 'pink', sub: 'participating' },
@@ -5476,7 +5433,7 @@
       CHARTS.tests = new Chart(ctx, {
         type: 'bar', data: {
           labels, datasets: [
-            { label: 'Avg Score', data: avgs, backgroundColor: EXAMS.map(e => typeColorRgba(e.type,.4)), borderColor: EXAMS.map(e => typeColor(e.type)), borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
+            { label: 'Avg Score', data: avgs, backgroundColor: EXAMS.map(e=>typeColorRgba(e.type,.4)), borderColor: EXAMS.map(e=>typeColor(e.type)), borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
             { label: 'Students', data: counts, borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,.1)', type: 'line', pointRadius: 3, fill: true, tension: .3, yAxisID: 'y1' }
           ]
         }, options: cOpts({ dual: true })
@@ -5551,15 +5508,10 @@
     // ═══════════════════════════════════════════════════
     //  TESTS PAGE
     // ═══════════════════════════════════════════════════
-    function syncTestsFilterBtns() {
-      const hasMT = EXAMS.some(e => e.type === 'model_theory');
-      const hasMR = EXAMS.some(e => e.type === 'model_revision');
-      const mtBtn = document.getElementById('ft-model-thy');
-      const mrBtn = document.getElementById('ft-model-rev');
-      if (mtBtn) mtBtn.style.display = hasMT ? '' : 'none';
-      if (mrBtn) mrBtn.style.display = hasMR ? '' : 'none';
+    function syncTestsFilterBtns(){
+      const b=document.getElementById('ft-model');
+      if(b)b.style.display=EXAMS.some(e=>isModelType(e.type))?'':'none';
     }
-
     let testsFilter = 'all';
     function filterTests(type, btn) {
       testsFilter = type;
@@ -5571,9 +5523,9 @@
     function renderTestsGrid() {
       const grid = document.getElementById('tests-grid');
       if (!EXAMS.length) { grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📂</div>Run parse_results.py first</div>'; return; }
-      const baseList = testsFilter === 'all' ? EXAMS : EXAMS.filter(e => e.type === testsFilter);
+      const baseList=testsFilter==='all'?EXAMS:testsFilter==='model'?EXAMS.filter(e=>isModelType(e.type)):EXAMS.filter(e=>e.type===testsFilter);
       const list = baseList.slice().sort((a, b) => {
-        if (a.type !== b.type) return (TYPE_SORT[a.type] ?? 9) - (TYPE_SORT[b.type] ?? 9);
+        if(a.type!==b.type)return(TYPE_SORT[a.type]??9)-(TYPE_SORT[b.type]??9);
         return (b.number || 0) - (a.number || 0);
       });
       grid.innerHTML = list.map(exam => {
@@ -6146,8 +6098,8 @@
       _currentProfileIdx = resolvedIdx;
 
       apps.sort((a, b) => {
-        if (a.exam_type === b.exam_type) return a.exam_id.localeCompare(b.exam_id);
-        return (TYPE_SORT[a.exam_type] ?? 9) - (TYPE_SORT[b.exam_type] ?? 9);
+        if(a.exam_type===b.exam_type)return a.exam_id.localeCompare(b.exam_id);
+        return(TYPE_SORT[a.exam_type]??9)-(TYPE_SORT[b.exam_type]??9);
       });
 
       const marks = apps.map(a => a.marks);
@@ -6156,14 +6108,12 @@
       const avg = marks.reduce((a, b) => a + b, 0) / marks.length;
       const avgStr = avg.toFixed(1);
       const bestRank = Math.min(...apps.map(a => a.rank));
-      const revApps    = apps.filter(a => a.exam_type === 'revision');
-      const thyApps    = apps.filter(a => a.exam_type === 'theory');
-      const modThyApps = apps.filter(a => a.exam_type === 'model_theory');
-      const modRevApps = apps.filter(a => a.exam_type === 'model_revision');
-      const revAvg    = revApps.length    ? revApps.reduce((s,a)=>s+a.marks,0)    / revApps.length    : null;
-      const thyAvg    = thyApps.length    ? thyApps.reduce((s,a)=>s+a.marks,0)    / thyApps.length    : null;
-      const modThyAvg = modThyApps.length ? modThyApps.reduce((s,a)=>s+a.marks,0) / modThyApps.length : null;
-      const modRevAvg = modRevApps.length ? modRevApps.reduce((s,a)=>s+a.marks,0) / modRevApps.length : null;
+      const revApps=apps.filter(a=>a.exam_type==='revision');
+      const thyApps=apps.filter(a=>a.exam_type==='theory');
+      const modApps=apps.filter(a=>isModelType(a.exam_type));
+      const revAvg=revApps.length?revApps.reduce((s,a)=>s+a.marks,0)/revApps.length:null;
+      const thyAvg=thyApps.length?thyApps.reduce((s,a)=>s+a.marks,0)/thyApps.length:null;
+      const modAvg=modApps.length?modApps.reduce((s,a)=>s+a.marks,0)/modApps.length:null;
 
       const zList = apps.map(a => examZ(a.exam_id, a.marks));
       const post = computePosterior(zList);
@@ -6171,15 +6121,13 @@
       const meanRating = post.meanRating; // best-estimate skill level
 
       const gRank = globalRank(stuData.name, stuData.school);
-      const tRank  = thyApps.length    ? thyRank(stuData.name, stuData.school)    : null;
-      const rRank  = revApps.length    ? revRank(stuData.name, stuData.school)    : null;
-      const mtRank = modThyApps.length ? modThyRank(stuData.name, stuData.school) : null;
-      const mrRank = modRevApps.length ? modRevRank(stuData.name, stuData.school) : null;
-      const totalStudents = Object.keys(_globalRankMap).length;
-      const totalThy    = Object.keys(_thyRankMap).length;
-      const totalRev    = Object.keys(_revRankMap).length;
-      const totalModThy = Object.keys(_modThyRankMap).length;
-      const totalModRev = Object.keys(_modRevRankMap).length;
+      const tRank=thyApps.length?thyRank(stuData.name,stuData.school):null;
+      const rRank=revApps.length?revRank(stuData.name,stuData.school):null;
+      const mRank=modApps.length?modRank(stuData.name,stuData.school):null;
+      const totalStudents=Object.keys(_globalRankMap).length;
+      const totalThy=Object.keys(_thyRankMap).length;
+      const totalRev=Object.keys(_revRankMap).length;
+      const totalMod=Object.keys(_modRankMap).length;
       const rankTierInfo = typeof gRank === 'number' ? getRankTier(gRank, totalStudents) : null;
 
       const stdDev = marks.length > 1 ? Math.sqrt(marks.reduce((s, m) => s + (m - avg) ** 2, 0) / marks.length) : 0;
@@ -6252,24 +6200,18 @@
             <span style="color:var(--teal);font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1">#${tRank}</span>
             <span style="color:var(--teal);font-family:'DM Mono',monospace;font-size:9px;opacity:.5">of ${totalThy}</span>
           </div>` : '';
-        const rRankHTML  = (rRank && typeof rRank === 'number' && totalRev > 1) ? `
+        const rRankHTML = (rRank && typeof rRank === 'number' && totalRev > 1) ? `
           <div class="type-rank-chip" style="border-color:rgba(232,160,32,.3);background:rgba(232,160,32,.06)">
             <span style="color:var(--amber);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;opacity:.7">Revision</span>
             <span style="color:var(--amber);font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1">#${rRank}</span>
             <span style="color:var(--amber);font-family:'DM Mono',monospace;font-size:9px;opacity:.5">of ${totalRev}</span>
           </div>` : '';
-        const mtRankHTML = (mtRank && typeof mtRank === 'number' && totalModThy > 1) ? `
+        const mRankHTML=(mRank&&typeof mRank==='number'&&totalMod>1)?`
           <div class="type-rank-chip" style="border-color:rgba(129,140,248,.3);background:rgba(129,140,248,.06)">
-            <span style="color:#818cf8;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;opacity:.7">T-Model</span>
-            <span style="color:#818cf8;font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1">#${mtRank}</span>
-            <span style="color:#818cf8;font-family:'DM Mono',monospace;font-size:9px;opacity:.5">of ${totalModThy}</span>
-          </div>` : '';
-        const mrRankHTML = (mrRank && typeof mrRank === 'number' && totalModRev > 1) ? `
-          <div class="type-rank-chip" style="border-color:rgba(244,114,182,.3);background:rgba(244,114,182,.06)">
-            <span style="color:var(--pink);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;opacity:.7">R-Model</span>
-            <span style="color:var(--pink);font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1">#${mrRank}</span>
-            <span style="color:var(--pink);font-family:'DM Mono',monospace;font-size:9px;opacity:.5">of ${totalModRev}</span>
-          </div>` : '';
+            <span style="color:#818cf8;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;opacity:.7">Model</span>
+            <span style="color:#818cf8;font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1">#${mRank}</span>
+            <span style="color:#818cf8;font-family:'DM Mono',monospace;font-size:9px;opacity:.5">of ${totalMod}</span>
+          </div>`:'';
 
         rankBadgeHTML = `
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px">
@@ -6286,7 +6228,7 @@
               </div>
             </div>
             <div style="display:flex;gap:10px;flex-shrink:0">
-              ${tRankHTML}${rRankHTML}${mtRankHTML}${mrRankHTML}
+              ${tRankHTML}${rRankHTML}${mRankHTML}
             </div>
           </div>`;
       }
@@ -6369,10 +6311,9 @@
              <div class="insight-sub">${aboveAvgCount} of ${apps.length} tests</div>
            </div>
            ${classPercentile !== null ? `<div class="insight-card pink" style="animation-delay:.2s"><div class="insight-label">Best Percentile</div><div class="insight-value pink">${classPercentile}<span style="font-size:14px">th</span></div><div class="insight-sub">In ${bestExamEntry?.exam_label || ''}</div></div>` : ''}
-           ${revAvg !== null ? `<div class="insight-card amber" style="animation-delay:.25s"><div class="insight-label">Revision Avg</div><div class="insight-value amber">${revAvg.toFixed(1)}</div><div class="insight-sub">${revApps.length} test${revApps.length > 1 ? 's' : ''}</div></div>` : ''}
-           ${thyAvg !== null ? `<div class="insight-card teal" style="animation-delay:.3s"><div class="insight-label">Theory Avg</div><div class="insight-value teal">${thyAvg.toFixed(1)}</div><div class="insight-sub">${thyApps.length} test${thyApps.length > 1 ? 's' : ''}</div></div>` : ''}
-           ${modThyAvg !== null ? `<div class="insight-card" style="border-color:rgba(129,140,248,.4);background:rgba(129,140,248,.06);animation-delay:.35s"><div class="insight-label" style="color:#818cf8">T-Model Avg</div><div class="insight-value" style="color:#818cf8;font-size:26px">${modThyAvg.toFixed(1)}</div><div class="insight-sub">${modThyApps.length} test${modThyApps.length>1?'s':''}</div></div>` : ''}
-           ${modRevAvg !== null ? `<div class="insight-card" style="border-color:rgba(244,114,182,.4);background:rgba(244,114,182,.06);animation-delay:.4s"><div class="insight-label" style="color:var(--pink)">R-Model Avg</div><div class="insight-value" style="color:var(--pink);font-size:26px">${modRevAvg.toFixed(1)}</div><div class="insight-sub">${modRevApps.length} test${modRevApps.length>1?'s':''}</div></div>` : ''}
+           ${revAvg!==null?`<div class="insight-card amber" style="animation-delay:.25s"><div class="insight-label">Revision Avg</div><div class="insight-value amber">${revAvg.toFixed(1)}</div><div class="insight-sub">${revApps.length} test${revApps.length>1?'s':''}</div></div>`:''}
+           ${thyAvg!==null?`<div class="insight-card teal" style="animation-delay:.3s"><div class="insight-label">Theory Avg</div><div class="insight-value teal">${thyAvg.toFixed(1)}</div><div class="insight-sub">${thyApps.length} test${thyApps.length>1?'s':''}</div></div>`:''}
+           ${modAvg!==null?`<div class="insight-card" style="border-color:rgba(129,140,248,.4);background:rgba(129,140,248,.06);animation-delay:.35s"><div class="insight-label" style="color:#818cf8">Model Avg</div><div class="insight-value" style="color:#818cf8;font-size:26px">${modAvg.toFixed(1)}</div><div class="insight-sub">${modApps.length} test${modApps.length>1?'s':''}</div></div>`:''}
            ${(() => {
              const thyBooks = apps.filter(a => a.exam_type === 'theory' && a.rank <= 50).length;
              const revBooks = apps.filter(a => a.exam_type === 'revision' && a.rank <= 30).length;
@@ -6390,11 +6331,8 @@
         <div class="card" style="margin-bottom:20px">
           <div class="card-header">
             <div class="card-title"><i class="ph ph-trend-up" style="color:var(--teal)"></i> Performance Timeline</div>
-            <div style="display:flex;gap:14px;font-family:'DM Mono',monospace;font-size:10px">
-              ${thyApps.length    ? `<span style="color:var(--teal)">● Theory</span>`  : ''}
-              ${revApps.length    ? `<span style="color:var(--amber)">● Revision</span>` : ''}
-              ${modThyApps.length ? `<span style="color:#818cf8">● T-Model</span>`     : ''}
-              ${modRevApps.length ? `<span style="color:var(--pink)">● R-Model</span>`  : ''}
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              ${['all','theory','revision'].concat(modApps.length?['model']:[]).map(t=>`<button id="stu-tl-${t}" onclick="setStuTimelineFilter('${stuData.name}','${stuData.school}','${t}')" style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;padding:2px 9px;border-radius:3px;cursor:pointer;border:1px solid ${t==='all'?'var(--border2)':typeColor(t)+'55'};background:${t==='all'?'var(--bg3)':'transparent'};color:${t==='all'?'var(--text)':typeColor(t)}">${t==='all'?'All':typeLabel(t)}</button>`).join('')}
             </div>
           </div>
           <div class="card-body"><div style="height:240px;position:relative"><canvas id="stu-chart"></canvas></div></div>
@@ -6402,10 +6340,14 @@
 
         <div class="two-col" style="margin-bottom:24px">
           <div class="card">
-            <div class="card-header"><div class="card-title"><i class="ph ph-clipboard-text" style="color:var(--text2)"></i> Test History</div>
-              <button class="info-btn" onclick="showInfoPopover(this,'test-history')" title="How this works"><i class="ph ph-info" style="font-size:13px;line-height:1"></i></button>
+            <div class="card-header">
+              <div class="card-title"><i class="ph ph-clipboard-text" style="color:var(--text2)"></i> Test History</div>
+              <div style="display:flex;align-items:center;gap:6px">
+                ${['all','theory','revision'].concat(modApps.length?['model']:[]).map(t=>`<button id="stu-th-${t}" onclick="setStuHistoryFilter('${stuData.name}','${stuData.school}','${t}')" style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;padding:2px 9px;border-radius:3px;cursor:pointer;border:1px solid ${t==='all'?'var(--border2)':typeColor(t)+'55'};background:${t==='all'?'var(--bg3)':'transparent'};color:${t==='all'?'var(--text)':typeColor(t)}">${t==='all'?'All':typeLabel(t)}</button>`).join('')}
+                <button class="info-btn" onclick="showInfoPopover(this,'test-history')" title="How this works" style="margin-left:2px"><i class="ph ph-info" style="font-size:13px;line-height:1"></i></button>
+              </div>
             </div>
-            <div class="table-wrap"><table>
+            <div class="table-wrap" id="stu-history-table"><table>
               <thead><tr><th>Test</th><th>Type</th><th>Marks</th><th>Rank</th><th>vs Class</th><th title="How exceptional relative to class spread">Impact</th></tr></thead>
               <tbody>
               ${apps.map(a => {
@@ -6417,7 +6359,7 @@
         const zStr = (z >= 0 ? '+' : '') + z.toFixed(2) + 'σ';
         const zCol = z >= 1.5 ? '#4ade80' : z >= 0.5 ? 'var(--teal)' : z >= -0.5 ? 'var(--text2)' : z >= -1.5 ? '#fb923c' : 'var(--pink)';
         const zLabel = z >= 2 ? '🔥 exceptional' : z >= 1 ? '✦ above avg' : z >= -0.5 ? '· average' : z >= -1.5 ? '▼ below avg' : '▼ below avg';
-        return `<tr>
+        return `<tr data-etype="${a.exam_type}">
                   <td class="td-school">${a.exam_label}</td>
                   <td><span style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 6px;border-radius:3px;background:${typeColorRgba(a.exam_type,.15)};color:${typeColor(a.exam_type)}">${typeShort(a.exam_type)}</span></td>
                   <td class="td-marks">${a.marks}</td>
@@ -6453,83 +6395,8 @@
           </div>
         </div>`;
 
-      setTimeout(() => {
-        const ctx = document.getElementById('stu-chart')?.getContext('2d');
-        if (!ctx) return;
-        if (CHARTS.stuChart) CHARTS.stuChart.destroy();
-        const sortedApps = apps;
-        const sortedMarks = sortedApps.map(a => a.marks);
-        const ptColors = sortedApps.map(a => typeColor(a.exam_type));
-        const _regThy = sortedApps.filter(a => a.exam_type === 'theory').length;
-        const _allReg = sortedApps.every(a => a.exam_type === 'theory' || a.exam_type === 'revision');
-
-        // Scriptable point radius — scales with the chart's actual rendered width
-        const dynRadius = (ctx) => {
-          const w = ctx.chart.width || 300;
-          const base = w < 320 ? 2 : w < 500 ? 3 : 5;
-          return sortedApps[ctx.dataIndex]?.marks === best ? base + 3 : base;
-        };
-        const dynHover = (ctx) => { const w = ctx.chart.width || 300; return w < 500 ? 6 : 9; };
-
-        const datasets = [{
-          label: 'Score', data: sortedMarks,
-          borderColor: '#60a5fa',
-          backgroundColor: (ctx2) => {
-            const c = ctx2.chart.ctx, area = ctx2.chart.chartArea;
-            if (!area) return 'rgba(96,165,250,.08)';
-            const g = c.createLinearGradient(0, area.top, 0, area.bottom);
-            g.addColorStop(0, 'rgba(96,165,250,.15)'); g.addColorStop(1, 'rgba(96,165,250,.02)'); return g;
-          },
-          borderWidth: 2.5, fill: true, tension: .35,
-          pointBackgroundColor: ptColors, pointBorderColor: ptColors,
-          pointBorderWidth: 2, pointRadius: dynRadius, pointHoverRadius: dynHover,
-        }];
-
-        const classAvgs = sortedApps.map(a => {
-          const exam = EXAMS.find(e => e.id === a.exam_id);
-          return exam ? +(exam.students.reduce((s, st) => s + st.marks, 0) / exam.students.length).toFixed(1) : null;
-        });
-        datasets.push({ label: 'Class Avg', data: classAvgs, borderColor: 'rgba(255,255,255,.18)', backgroundColor: 'transparent', borderWidth: 1, borderDash: [5, 4], pointRadius: 0, fill: false, tension: .3 });
-
-        const allLabels = sortedApps.map(a => a.exam_label);
-        CHARTS.stuChart = new Chart(ctx, {
-          type: 'line', data: { labels: allLabels, datasets },
-          options: {
-            responsive: true, maintainAspectRatio: false,
-            elements: { point: { hitRadius: 18 } },
-            plugins: {
-              legend: { display: false }, tooltip: {
-                backgroundColor: 'rgba(17,17,24,.95)', borderColor: 'rgba(255,255,255,.1)', borderWidth: 1, titleFont: { family: 'DM Mono', size: 11 }, bodyFont: { family: 'DM Mono', size: 11 },
-                callbacks: {
-                  label: (c) => {
-                    if (c.datasetIndex === 0) { const a = sortedApps[c.dataIndex]; return a ? `▸ ${typeLabel(a.exam_type)} · ${c.parsed.y} pts` : ''; }
-                    return `Class avg · ${c.parsed.y}`;
-                  }
-                }
-              }
-            },
-            scales: {
-              x: {
-                ticks: { color: '#5a5a78', font: { family: 'DM Mono', size: 9 }, maxRotation: 30 }, grid: { color: 'rgba(255,255,255,.03)' },
-                afterDrawTickLabels(ax) {
-                  if (!_allReg || _regThy === 0 || _regThy >= sortedApps.length) return;
-                  const chart = ax.chart, meta = chart.getDatasetMeta(0);
-                  if (!meta.data[_regThy - 1]) return;
-                  const xA = meta.data[_regThy - 1].x, xB = meta.data[_regThy]?.x;
-                  const x = xA + (xB ? xB - xA : 0) / 2;
-                  const ctx3 = chart.ctx;
-                  ctx3.save(); ctx3.beginPath(); ctx3.strokeStyle = 'rgba(255,255,255,.12)'; ctx3.lineWidth = 1; ctx3.setLineDash([4, 4]);
-                  ctx3.moveTo(x, chart.chartArea.top); ctx3.lineTo(x, chart.chartArea.bottom); ctx3.stroke();
-                  ctx3.fillStyle = '#5a5a78'; ctx3.font = '8px DM Mono,monospace';
-                  ctx3.fillText('← Theory   Revision →', x - 60, chart.chartArea.top + 12);
-                  ctx3.restore();
-                }
-              },
-              y: { min: Math.max(0, Math.min(...sortedMarks, ...classAvgs.filter(v => v !== null)) - 14), max: Math.min(105, Math.max(...sortedMarks, ...classAvgs.filter(v => v !== null)) + 12), ticks: { color: '#5a5a78', font: { family: 'DM Mono', size: 9 } }, grid: { color: 'rgba(255,255,255,.04)' } }
-            }
-          }
-        });
-      }, 60);
+      _stuTlFilter='all'; _stuThFilter='all';
+      setTimeout(()=>_renderStuChart(apps,best), 60);
     }
 
     // ═══════════════════════════════════════════════════
@@ -6645,27 +6512,22 @@
     // ═══════════════════════════════════════════════════
     //  ANALYTICS
     // ═══════════════════════════════════════════════════
-    function filteredExams() {
-      if (avgType === 'all') return EXAMS.filter(e => !isModelType(e.type));
-      return EXAMS.filter(e => e.type === avgType);
+    function filteredExams(){
+      if(avgType==='all') return EXAMS;
+      if(avgType==='model') return EXAMS.filter(e=>isModelType(e.type));
+      return EXAMS.filter(e=>e.type===avgType);
     }
-    function filteredAll() {
-      const exs = filteredExams();
-      const ids = new Set(exs.map(e => e.id));
-      return ALL.filter(r => ids.has(r.exam_id));
+    function filteredAll(){
+      const ids=new Set(filteredExams().map(e=>e.id));
+      return ALL.filter(r=>ids.has(r.exam_id));
     }
-    function syncAvgFilterBtns() {
-      const hasMT = EXAMS.some(e => e.type === 'model_theory');
-      const hasMR = EXAMS.some(e => e.type === 'model_revision');
-      const mtBtn = document.getElementById('at-mthy');
-      const mrBtn = document.getElementById('at-mrev');
-      if (mtBtn) mtBtn.style.display = hasMT ? '' : 'none';
-      if (mrBtn) mrBtn.style.display = hasMR ? '' : 'none';
+    function syncAvgFilterBtns(){
+      const b=document.getElementById('at-mod');
+      if(b)b.style.display=EXAMS.some(e=>isModelType(e.type))?'':'none';
     }
-
     function setAvgType(t, btn) {
       avgType = t;
-      document.querySelectorAll('#at-all,#at-rev,#at-thy,#at-mthy,#at-mrev').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#at-all,#at-rev,#at-thy,#at-mod').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
       renderAnalytics();
     }
@@ -7436,6 +7298,85 @@
       document.getElementById('school-drawer').classList.remove('open');
       document.getElementById('school-drawer-overlay').classList.remove('open');
       document.body.style.overflow = '';
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  STUDENT PROFILE — TIMELINE & HISTORY FILTERS
+    // ═══════════════════════════════════════════════════
+    let _stuTlFilter='all', _stuThFilter='all';
+
+    function _syncStuBtns(prefix, active) {
+      ['all','theory','revision','model'].forEach(t=>{
+        const b=document.getElementById(prefix+t);
+        if(!b)return;
+        const isActive=t===active;
+        b.style.background=isActive?(t==='all'?'var(--bg3)':typeColor(t)+'22'):'transparent';
+        b.style.borderColor=isActive?(t==='all'?'var(--border2)':typeColor(t)):(t==='all'?'var(--border2)':typeColor(t)+'55');
+        b.style.color=isActive?(t==='all'?'var(--text)':typeColor(t)):(t==='all'?'var(--text2)':typeColor(t));
+        b.style.opacity=isActive?'1':'0.55';
+      });
+    }
+    function setStuTimelineFilter(name, school, filter) {
+      _stuTlFilter=filter;
+      _syncStuBtns('stu-tl-',filter);
+      const all=ALL.filter(r=>r.name===name&&r.school===school)
+        .sort((a,b)=>a.exam_type===b.exam_type?a.exam_id.localeCompare(b.exam_id):(TYPE_SORT[a.exam_type]??9)-(TYPE_SORT[b.exam_type]??9));
+      const fa=filter==='all'?all:filter==='model'?all.filter(a=>isModelType(a.exam_type)):all.filter(a=>a.exam_type===filter);
+      if(!fa.length)return;
+      _renderStuChart(fa,Math.max(...fa.map(a=>a.marks)));
+    }
+    function setStuHistoryFilter(name, school, filter) {
+      _stuThFilter=filter;
+      _syncStuBtns('stu-th-',filter);
+      const wrap=document.getElementById('stu-history-table');
+      if(!wrap)return;
+      wrap.querySelectorAll('tbody tr').forEach(row=>{
+        const t=row.dataset.etype||'';
+        row.style.display=(filter==='all'||(filter==='model'?isModelType(t):t===filter))?'':'none';
+      });
+    }
+    function _renderStuChart(sortedApps, best) {
+      const ctx=document.getElementById('stu-chart')?.getContext('2d');
+      if(!ctx)return;
+      if(CHARTS.stuChart)CHARTS.stuChart.destroy();
+      const sortedMarks=sortedApps.map(a=>a.marks);
+      const ptColors=sortedApps.map(a=>typeColor(a.exam_type));
+      const thyCount=sortedApps.filter(a=>a.exam_type==='theory').length;
+      const allReg=sortedApps.every(a=>a.exam_type==='theory'||a.exam_type==='revision');
+      const dynRadius=ctx=>{const w=ctx.chart.width||300;const base=w<320?2:w<500?3:5;return sortedApps[ctx.dataIndex]?.marks===best?base+3:base;};
+      const dynHover=ctx=>{const w=ctx.chart.width||300;return w<500?6:9;};
+      const datasets=[{
+        label:'Score',data:sortedMarks,borderColor:'#60a5fa',
+        backgroundColor:ctx2=>{const c=ctx2.chart.ctx,area=ctx2.chart.chartArea;if(!area)return 'rgba(96,165,250,.08)';const g=c.createLinearGradient(0,area.top,0,area.bottom);g.addColorStop(0,'rgba(96,165,250,.15)');g.addColorStop(1,'rgba(96,165,250,.02)');return g;},
+        borderWidth:2.5,fill:true,tension:.35,
+        pointBackgroundColor:ptColors,pointBorderColor:ptColors,pointBorderWidth:2,pointRadius:dynRadius,pointHoverRadius:dynHover,
+      }];
+      const classAvgs=sortedApps.map(a=>{const e=EXAMS.find(x=>x.id===a.exam_id);return e?+(e.students.reduce((s,st)=>s+st.marks,0)/e.students.length).toFixed(1):null;});
+      datasets.push({label:'Class Avg',data:classAvgs,borderColor:'rgba(255,255,255,.18)',backgroundColor:'transparent',borderWidth:1,borderDash:[5,4],pointRadius:0,fill:false,tension:.3});
+      CHARTS.stuChart=new Chart(ctx,{
+        type:'line',data:{labels:sortedApps.map(a=>a.exam_label),datasets},
+        options:{
+          responsive:true,maintainAspectRatio:false,elements:{point:{hitRadius:18}},
+          plugins:{legend:{display:false},tooltip:{
+            backgroundColor:'rgba(17,17,24,.95)',borderColor:'rgba(255,255,255,.1)',borderWidth:1,
+            titleFont:{family:'DM Mono',size:11},bodyFont:{family:'DM Mono',size:11},
+            callbacks:{label:c=>{if(c.datasetIndex===0){const a=sortedApps[c.dataIndex];return a?`▸ ${typeLabel(a.exam_type)} · ${c.parsed.y} pts`:'';}return `Class avg · ${c.parsed.y}`;}}
+          }},
+          scales:{
+            x:{ticks:{color:'#5a5a78',font:{family:'DM Mono',size:9},maxRotation:30},grid:{color:'rgba(255,255,255,.03)'},
+              afterDrawTickLabels(ax){
+                if(!allReg||thyCount===0||thyCount>=sortedApps.length)return;
+                const chart=ax.chart,meta=chart.getDatasetMeta(0);if(!meta.data[thyCount-1])return;
+                const xA=meta.data[thyCount-1].x,xB=meta.data[thyCount]?.x,x=xA+(xB?xB-xA:0)/2;
+                const ctx3=chart.ctx;ctx3.save();ctx3.beginPath();ctx3.strokeStyle='rgba(255,255,255,.12)';ctx3.lineWidth=1;ctx3.setLineDash([4,4]);
+                ctx3.moveTo(x,chart.chartArea.top);ctx3.lineTo(x,chart.chartArea.bottom);ctx3.stroke();
+                ctx3.fillStyle='#5a5a78';ctx3.font='8px DM Mono,monospace';ctx3.fillText('← Theory   Revision →',x-60,chart.chartArea.top+12);ctx3.restore();
+              }
+            },
+            y:{min:Math.max(0,Math.min(...sortedMarks,...classAvgs.filter(v=>v!==null))-14),max:Math.min(105,Math.max(...sortedMarks,...classAvgs.filter(v=>v!==null))+12),ticks:{color:'#5a5a78',font:{family:'DM Mono',size:9}},grid:{color:'rgba(255,255,255,.04)'}}
+          }
+        }
+      });
     }
 
     // ═══════════════════════════════════════════════════
