@@ -15,6 +15,9 @@
     href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap"
     rel="stylesheet">
 
+  <!-- Phosphor Icons: elegant SVG icon font, cross-platform consistent -->
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+
   <!-- Chart.js: defer so it doesn't block HTML parsing -->
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -359,11 +362,15 @@
     }
 
     .nav-icon {
-      font-size: 16px;
+      font-size: 17px;
       width: 20px;
       text-align: center;
-      flex-shrink: 0
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center
     }
+    i.nav-icon { font-size: 17px; }
 
     .sidebar-footer {
       padding: 16px 20px;
@@ -408,7 +415,14 @@
     }
 
     .search-wrap::before {
-      content: '⌕';
+      content: '';
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256' fill='%235a5a78'%3E%3Cpath d='M229.66,218.34l-50.07-50.07a88.19,88.19,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.31ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 13px 13px;
+      width: 14px;
+      height: 14px;
+      display: inline-block;
       position: absolute;
       left: 10px;
       top: 50%;
@@ -1626,6 +1640,14 @@
       background: linear-gradient(90deg, var(--teal), var(--teal2))
     }
 
+    .test-card.model_theory::before {
+      background: linear-gradient(90deg, #818cf8, #a5b4fc)
+    }
+
+    .test-card.model_revision::before {
+      background: linear-gradient(90deg, var(--pink), #fb7cc0)
+    }
+
     .test-card:hover {
       border-color: var(--border2);
       transform: translateY(-3px);
@@ -1646,6 +1668,14 @@
 
     .test-card.theory .test-card-type {
       color: var(--teal)
+    }
+
+    .test-card.model_theory .test-card-type {
+      color: #818cf8
+    }
+
+    .test-card.model_revision .test-card-type {
+      color: var(--pink)
     }
 
     .test-card-title {
@@ -1720,7 +1750,14 @@
     }
 
     .school-dd-search-wrap::before {
-      content: '⌕';
+      content: '';
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256' fill='%235a5a78'%3E%3Cpath d='M229.66,218.34l-50.07-50.07a88.19,88.19,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.31ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 13px 13px;
+      width: 14px;
+      height: 14px;
+      display: inline-block;
       position: absolute;
       left: 8px;
       top: 50%;
@@ -2227,7 +2264,9 @@
 
     .empty-icon {
       font-size: 32px;
-      margin-bottom: 12px
+      margin-bottom: 12px;
+      display: block;
+      line-height: 1
     }
 
     .chip {
@@ -3452,7 +3491,7 @@
       <button class="picker-btn" id="splash-go-btn" onclick="splashGo()">
         Continue <span class="go-arrow">→</span>
       </button>
-      <div class="picker-no-data" id="splash-no-data">⚠ No data for this combination</div>
+      <div class="picker-no-data" id="splash-no-data"><i class="ph ph-warning" style="margin-right:4px"></i>No data for this combination</div>
     </div>
   </div>
 
@@ -3510,19 +3549,19 @@
       </div>
       <nav>
         <div class="nav-section">Overview</div>
-        <div class="nav-item" onclick="location.hash='dashboard';closeSidebar()"><span class="nav-icon">◈</span>
+        <div class="nav-item" onclick="location.hash='dashboard';closeSidebar()"><i class="ph ph-squares-four nav-icon"></i>
           Dashboard</div>
         <div class="nav-section">Data</div>
-        <div class="nav-item" onclick="location.hash='leaderboard';closeSidebar()"><span class="nav-icon">◉</span>
+        <div class="nav-item" onclick="location.hash='leaderboard';closeSidebar()"><i class="ph ph-trophy nav-icon"></i>
           Leaderboard</div>
-        <div class="nav-item" onclick="location.hash='tests';closeSidebar()"><span class="nav-icon">▦</span> All Tests
+        <div class="nav-item" onclick="location.hash='tests';closeSidebar()"><i class="ph ph-exam nav-icon"></i> All Tests
         </div>
         <div class="nav-section">Analysis</div>
-        <div class="nav-item" onclick="location.hash='students';closeSidebar()"><span class="nav-icon">◎</span> Students
+        <div class="nav-item" onclick="location.hash='students';closeSidebar()"><i class="ph ph-users nav-icon"></i> Students
         </div>
-        <div class="nav-item" onclick="location.hash='schools';closeSidebar()"><span class="nav-icon">▤</span> Schools
+        <div class="nav-item" onclick="location.hash='schools';closeSidebar()"><i class="ph ph-buildings nav-icon"></i> Schools
         </div>
-        <div class="nav-item" onclick="location.hash='analytics';closeSidebar()"><span class="nav-icon">▲</span>
+        <div class="nav-item" onclick="location.hash='analytics';closeSidebar()"><i class="ph ph-chart-line nav-icon"></i>
           Analytics</div>
       </nav>
       <div class="sidebar-footer" id="sidebar-footer">—</div>
@@ -3540,7 +3579,7 @@
               class="context-badge-arrow">▾</span></div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
-          <button class="mobile-search-btn" id="mobile-search-btn" onclick="openMobileSearch()" aria-label="Search">⌕</button>
+          <button class="mobile-search-btn" id="mobile-search-btn" onclick="openMobileSearch()" aria-label="Search"><i class="ph ph-magnifying-glass" style="font-size:18px;line-height:1"></i></button>
           <div class="search-wrap">
             <input class="search-input" id="global-search" placeholder="Search… (/ to focus)" autocomplete="off">
             <div class="search-results" id="search-results"></div>
@@ -3560,7 +3599,7 @@
         <!-- DASHBOARD -->
         <div class="page active" id="page-dashboard">
           <div id="no-data-msg" style="display:none" class="no-data-banner">
-            <strong>⚠ No data loaded</strong>
+            <strong><i class="ph ph-warning" style="margin-right:4px"></i>No data loaded</strong>
             Run <code>python3 parse_results.py</code> in your project folder to generate <code>data/results.js</code>,
             then refresh this page.
           </div>
@@ -3568,14 +3607,14 @@
           <div class="two-col">
             <div class="card">
               <div class="card-header">
-                <div class="card-title">🏆 Top Performers</div>
+                <div class="card-title"><i class="ph ph-trophy" style="color:var(--amber)"></i> Top Performers</div>
                 <div id="podium-sel" class="tdd-wrap"></div>
               </div>
               <div id="podium-wrap"></div>
             </div>
             <div class="card card-dist">
               <div class="card-header">
-                <div class="card-title">📊 Score Distribution</div>
+                <div class="card-title"><i class="ph ph-chart-bar" style="color:var(--teal)"></i> Score Distribution</div>
                 <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)" id="dist-label"></div>
               </div>
               <div class="card-body">
@@ -3591,7 +3630,7 @@
           </div>
           <div class="card" style="margin-bottom:24px">
             <div class="card-header">
-              <div class="card-title">⭐ Top 10</div>
+              <div class="card-title"><i class="ph ph-star" style="color:var(--amber)"></i> Top 10</div>
               <div style="display:flex;align-items:center;gap:8px">
                 <div id="top10-sel" class="tdd-wrap"></div>
                 <button class="t10-sort-btn active" id="t10-rank-btn" onclick="setTop10Sort('rank')">By Rating</button>
@@ -3603,7 +3642,7 @@
           <div class="two-col">
             <div class="card">
               <div class="card-header">
-                <div class="card-title">📈 Tests Overview</div>
+                <div class="card-title"><i class="ph ph-trend-up" style="color:var(--teal)"></i> Tests Overview</div>
               </div>
               <div class="card-body">
                 <div class="chart-wrap"><canvas id="tests-chart"></canvas></div>
@@ -3611,7 +3650,7 @@
             </div>
             <div class="card">
               <div class="card-header">
-                <div class="card-title">🏫 Top Schools (by entries)</div>
+                <div class="card-title"><i class="ph ph-buildings" style="color:var(--blue)"></i> Top Schools <span style="font-size:9px;opacity:.6">(by entries)</span></div>
                 <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">All Tests</div>
               </div>
               <div id="top-schools-bar-wrap">
@@ -3629,8 +3668,10 @@
         <div class="page" id="page-tests">
           <div class="filter-bar">
             <div class="filter-btn active" onclick="filterTests('all',this)">All</div>
-            <div class="filter-btn" onclick="filterTests('theory',this)">Theory Tests</div>
-            <div class="filter-btn" onclick="filterTests('revision',this)">Revision Tests</div>
+            <div class="filter-btn" onclick="filterTests('theory',this)">Theory</div>
+            <div class="filter-btn" onclick="filterTests('revision',this)">Revision</div>
+            <div class="filter-btn" id="ft-model-thy" onclick="filterTests('model_theory',this)" style="display:none;color:#818cf8;border-color:rgba(129,140,248,.35)">Theory Model</div>
+            <div class="filter-btn" id="ft-model-rev" onclick="filterTests('model_revision',this)" style="display:none;color:var(--pink);border-color:rgba(244,114,182,.35)">Revision Model</div>
           </div>
           <div class="tests-grid" id="tests-grid"></div>
         </div>
@@ -3656,8 +3697,8 @@
               <div style="position:relative;display:inline-block" id="export-dd-wrap">
                 <button class="export-icon-btn" onclick="toggleExportDrop(event)" id="export-dd-btn" title="Export"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block"><path d="M7 1v7M4 5.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 10v1.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
                 <div id="export-dd-panel" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);z-index:300;min-width:130px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.5)">
-                  <div onclick="exportLeaderboardCSV();closeExportDrop()" style="padding:9px 16px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s" onmouseenter="this.style.background='var(--bg3)'" onmouseleave="this.style.background=''">⬇ CSV</div>
-                  <div onclick="exportLeaderboardPDF();closeExportDrop()" style="padding:9px 16px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);cursor:pointer;transition:background .1s" onmouseenter="this.style.background='var(--bg3)'" onmouseleave="this.style.background=''">⬇ PDF</div>
+                  <div onclick="exportLeaderboardCSV();closeExportDrop()" style="padding:9px 16px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s" onmouseenter="this.style.background='var(--bg3)'" onmouseleave="this.style.background=''"><i class="ph ph-download-simple" style="font-size:11px;margin-right:4px"></i>CSV</div>
+                  <div onclick="exportLeaderboardPDF();closeExportDrop()" style="padding:9px 16px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);cursor:pointer;transition:background .1s" onmouseenter="this.style.background='var(--bg3)'" onmouseleave="this.style.background=''"><i class="ph ph-download-simple" style="font-size:11px;margin-right:4px"></i>PDF</div>
                 </div>
               </div>
               </div>
@@ -3696,7 +3737,7 @@
                 <div class="card-title">School Rankings</div>
                 <div style="display:flex;align-items:center;gap:6px">
                   <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)">Avg is Bayesian-adjusted</div>
-                  <button class="info-btn" onclick="showInfoPopover(this,'school-ranking')" title="About school rankings">ℹ</button>
+                  <button class="info-btn" onclick="showInfoPopover(this,'school-ranking')" title="About school rankings"><i class="ph ph-info" style="font-size:13px;line-height:1"></i></button>
                 </div>
               </div>
               <div class="card-body" style="max-height:560px;overflow-y:auto" id="school-list"></div>
@@ -3707,7 +3748,7 @@
               </div>
               <div class="card-body" id="school-detail">
                 <div class="empty">
-                  <div class="empty-icon">🏫</div>Click a school to explore
+                  <i class="ph ph-buildings empty-icon" style="font-size:32px;color:var(--text3)"></i><span>Click a school to explore</span>
                 </div>
               </div>
             </div>
@@ -3718,8 +3759,10 @@
         <div class="page" id="page-analytics">
           <div class="filter-bar" style="margin-bottom:20px">
             <div class="filter-btn active" id="at-all" onclick="setAvgType('all',this)">All Tests</div>
-            <div class="filter-btn" id="at-thy" onclick="setAvgType('theory',this)">Theory Only</div>
-            <div class="filter-btn" id="at-rev" onclick="setAvgType('revision',this)">Revision Only</div>
+            <div class="filter-btn" id="at-thy" onclick="setAvgType('theory',this)">Theory</div>
+            <div class="filter-btn" id="at-rev" onclick="setAvgType('revision',this)">Revision</div>
+            <div class="filter-btn" id="at-mthy" onclick="setAvgType('model_theory',this)" style="display:none;color:#818cf8;border-color:rgba(129,140,248,.35)">Theory Model</div>
+            <div class="filter-btn" id="at-mrev" onclick="setAvgType('model_revision',this)" style="display:none;color:var(--pink);border-color:rgba(244,114,182,.35)">Revision Model</div>
           </div>
           <div class="three-col">
             <div class="card">
@@ -3800,7 +3843,7 @@
     <div class="modal" style="width:min(960px,96vw)">
       <div class="modal-header">
         <div class="modal-title" id="compare-title">COMPARE STUDENTS</div>
-        <button class="modal-close" onclick="closeCompare()">✕</button>
+        <button class="modal-close" onclick="closeCompare()"><i class="ph ph-x"></i></button>
       </div>
       <div class="modal-body" id="compare-body"></div>
     </div>
@@ -3811,7 +3854,7 @@
     <div class="modal">
       <div class="modal-header">
         <div class="modal-title" id="modal-title"></div>
-        <button class="modal-close" onclick="closeModal()">✕</button>
+        <button class="modal-close" onclick="closeModal()"><i class="ph ph-x"></i></button>
       </div>
       <div class="modal-body" id="modal-body"></div>
     </div>
@@ -3823,7 +3866,7 @@
     <div class="school-drawer-handle"></div>
     <div class="school-drawer-header">
       <div class="school-drawer-title" id="school-drawer-title">School Detail</div>
-      <button class="school-drawer-close" onclick="closeSchoolDrawer()">✕</button>
+      <button class="school-drawer-close" onclick="closeSchoolDrawer()"><i class="ph ph-x"></i></button>
     </div>
     <div class="school-drawer-body" id="school-drawer-body"></div>
   </div>
@@ -4536,6 +4579,8 @@
       buildStuRegistry();
       buildTestDropdowns();
       buildGlobalRankMap();
+      syncTestsFilterBtns();
+      syncAvgFilterBtns();
       renderOverviewStats();
       renderPodium();
       renderTop10();
@@ -4723,10 +4768,35 @@
     }
 
     // ═══════════════════════════════════════════════════
+    //  EXAM-TYPE HELPERS
+    // ═══════════════════════════════════════════════════
+    const TYPE_SORT = { theory: 0, revision: 1, model_theory: 2, model_revision: 3 };
+    function isModelType(t) { return t === 'model_theory' || t === 'model_revision'; }
+    function typeColor(t) {
+      if (t === 'theory')         return 'var(--teal)';
+      if (t === 'revision')       return 'var(--amber)';
+      if (t === 'model_theory')   return '#818cf8';
+      if (t === 'model_revision') return 'var(--pink)';
+      return 'var(--text2)';
+    }
+    function typeColorRgba(t, a) {
+      const map = { theory:'45,212,191', revision:'232,160,32', model_theory:'129,140,248', model_revision:'244,114,182' };
+      return `rgba(${map[t] || '144,144,176'},${a})`;
+    }
+    function typeLabel(t) {
+      return { theory:'Theory', revision:'Revision', model_theory:'Theory Model', model_revision:'Revision Model' }[t] || t;
+    }
+    function typeShort(t) {
+      return { theory:'THE', revision:'REV', model_theory:'THM', model_revision:'RVM' }[t] || t.slice(0,3).toUpperCase();
+    }
+
+    // ═══════════════════════════════════════════════════
     //  GLOBAL RANK MAP
     // ═══════════════════════════════════════════════════
     let _thyRankMap = {};
     let _revRankMap = {};
+    let _modThyRankMap = {};
+    let _modRevRankMap = {};
 
     function buildRankMapFromRows(rows) {
       if (!rows.length) return {};
@@ -4743,7 +4813,11 @@
 
     function buildGlobalRankMap() {
       if (!ALL.length) return;
-      _globalRankMap = buildRankMapFromRows(ALL);
+      // Global rank uses only regular (non-model) exams
+      _globalRankMap = buildRankMapFromRows(ALL.filter(r => {
+        const e = EXAMS.find(x => x.id === r.exam_id);
+        return e && !isModelType(e.type);
+      }));
       _thyRankMap = buildRankMapFromRows(ALL.filter(r => {
         const e = EXAMS.find(x => x.id === r.exam_id);
         return e && e.type === 'theory';
@@ -4752,22 +4826,36 @@
         const e = EXAMS.find(x => x.id === r.exam_id);
         return e && e.type === 'revision';
       }));
+      _modThyRankMap = buildRankMapFromRows(ALL.filter(r => {
+        const e = EXAMS.find(x => x.id === r.exam_id);
+        return e && e.type === 'model_theory';
+      }));
+      _modRevRankMap = buildRankMapFromRows(ALL.filter(r => {
+        const e = EXAMS.find(x => x.id === r.exam_id);
+        return e && e.type === 'model_revision';
+      }));
     }
-    function globalRank(name, school) { return _globalRankMap[name + '\x00' + school] || '—'; }
-    function thyRank(name, school) { return _thyRankMap[name + '\x00' + school] || '—'; }
-    function revRank(name, school) { return _revRankMap[name + '\x00' + school] || '—'; }
+    function globalRank(name, school)  { return _globalRankMap[name + '\x00' + school] || '—'; }
+    function thyRank(name, school)     { return _thyRankMap[name + '\x00' + school] || '—'; }
+    function revRank(name, school)     { return _revRankMap[name + '\x00' + school] || '—'; }
+    function modThyRank(name, school)  { return _modThyRankMap[name + '\x00' + school] || '—'; }
+    function modRevRank(name, school)  { return _modRevRankMap[name + '\x00' + school] || '—'; }
 
     // ═══════════════════════════════════════════════════
     //  TEST SELECTION ENGINE — multi-select, range, type filter
     // ═══════════════════════════════════════════════════
 
-    // sel = { mode: 'all'|'theory'|'revision'|'custom', ids?: Set<string> }
+    // sel = { mode: 'all'|'theory'|'revision'|'model_theory'|'model_revision'|'model_all'|'custom' }
+    // 'all' excludes model papers (they use dedicated preset modes)
     function resolveExamIds(sel) {
-      if (!sel || sel.mode === 'all') return EXAMS.map(e => e.id);
-      if (sel.mode === 'theory') return EXAMS.filter(e => e.type === 'theory').map(e => e.id);
-      if (sel.mode === 'revision') return EXAMS.filter(e => e.type === 'revision').map(e => e.id);
-      if (sel.mode === 'custom') return [...(sel.ids || [])];
-      return EXAMS.map(e => e.id);
+      if (!sel || sel.mode === 'all')    return EXAMS.filter(e => !isModelType(e.type)).map(e => e.id);
+      if (sel.mode === 'theory')         return EXAMS.filter(e => e.type === 'theory').map(e => e.id);
+      if (sel.mode === 'revision')       return EXAMS.filter(e => e.type === 'revision').map(e => e.id);
+      if (sel.mode === 'model_theory')   return EXAMS.filter(e => e.type === 'model_theory').map(e => e.id);
+      if (sel.mode === 'model_revision') return EXAMS.filter(e => e.type === 'model_revision').map(e => e.id);
+      if (sel.mode === 'model_all')      return EXAMS.filter(e => isModelType(e.type)).map(e => e.id);
+      if (sel.mode === 'custom')         return [...(sel.ids || [])];
+      return EXAMS.filter(e => !isModelType(e.type)).map(e => e.id);
     }
 
     function getRowsForSel(sel) {
@@ -4780,9 +4868,12 @@
     function isAgg(sel) { return resolveExamIds(sel).length !== 1; }
 
     function selLabel(sel) {
-      if (!sel || sel.mode === 'all') return 'All Tests';
-      if (sel.mode === 'theory') return `Theory Only (${EXAMS.filter(e => e.type === 'theory').length})`;
-      if (sel.mode === 'revision') return `Revision Only (${EXAMS.filter(e => e.type === 'revision').length})`;
+      if (!sel || sel.mode === 'all')         return 'All Tests';
+      if (sel.mode === 'theory')              return `Theory Only (${EXAMS.filter(e => e.type === 'theory').length})`;
+      if (sel.mode === 'revision')            return `Revision Only (${EXAMS.filter(e => e.type === 'revision').length})`;
+      if (sel.mode === 'model_theory')        return `Theory Model (${EXAMS.filter(e => e.type === 'model_theory').length})`;
+      if (sel.mode === 'model_revision')      return `Revision Model (${EXAMS.filter(e => e.type === 'model_revision').length})`;
+      if (sel.mode === 'model_all')           return `All Model Papers (${EXAMS.filter(e => isModelType(e.type)).length})`;
       if (sel.mode === 'custom') {
         const ids = [...(sel.ids || [])];
         if (ids.length === 0) return 'None Selected';
@@ -4796,9 +4887,12 @@
     }
 
     function selDotColor(sel) {
-      if (!sel || sel.mode === 'all') return 'var(--blue)';
-      if (sel.mode === 'theory') return 'var(--teal)';
-      if (sel.mode === 'revision') return 'var(--amber)';
+      if (!sel || sel.mode === 'all')         return 'var(--blue)';
+      if (sel.mode === 'theory')              return 'var(--teal)';
+      if (sel.mode === 'revision')            return 'var(--amber)';
+      if (sel.mode === 'model_theory')        return '#818cf8';
+      if (sel.mode === 'model_revision')      return 'var(--pink)';
+      if (sel.mode === 'model_all')           return '#818cf8';
       if (sel.mode === 'custom') {
         const ids = [...(sel.ids || [])];
         if (ids.length === 1) {
@@ -4885,10 +4979,14 @@
       const multi = isMultiMode(cid);
       const checked = new Set(resolveExamIds(sel));
       // Display order in dropdown: newest first (descending number)
-      const thy = EXAMS.filter(e => e.type === 'theory').slice().sort((a, b) => (b.number || 0) - (a.number || 0));
-      const rev = EXAMS.filter(e => e.type === 'revision').slice().sort((a, b) => (b.number || 0) - (a.number || 0));
+      const thy    = EXAMS.filter(e => e.type === 'theory').slice().sort((a, b) => (b.number || 0) - (a.number || 0));
+      const rev    = EXAMS.filter(e => e.type === 'revision').slice().sort((a, b) => (b.number || 0) - (a.number || 0));
+      const modThy = EXAMS.filter(e => e.type === 'model_theory').slice().sort((a, b) => (b.number || 0) - (a.number || 0));
+      const modRev = EXAMS.filter(e => e.type === 'model_revision').slice().sort((a, b) => (b.number || 0) - (a.number || 0));
+      const hasModels = modThy.length > 0 || modRev.length > 0;
       const allCount = EXAMS.length;
       const thyCount = thy.length, revCount = rev.length;
+      const modThyCount = modThy.length, modRevCount = modRev.length;
       const selCount = resolveExamIds(sel).length;
 
       const presetActive = (m) => sel.mode === m && m !== 'custom' ? 'active' : '';
@@ -4930,6 +5028,8 @@
           <button class="tdd-preset ${allActive}" onclick="event.stopPropagation();applyPreset('${cid}','all')">All</button>
           <button class="tdd-preset ${presetActive('theory')}" onclick="event.stopPropagation();applyPreset('${cid}','theory')">Theory</button>
           <button class="tdd-preset ${presetActive('revision')}" onclick="event.stopPropagation();applyPreset('${cid}','revision')">Revision</button>
+          ${hasModels ? `<button class="tdd-preset ${presetActive('model_theory')}" onclick="event.stopPropagation();applyPreset('${cid}','model_theory')" style="color:#818cf8;border-color:rgba(129,140,248,.35)">T-Model</button>` : ''}
+          ${hasModels ? `<button class="tdd-preset ${presetActive('model_revision')}" onclick="event.stopPropagation();applyPreset('${cid}','model_revision')" style="color:var(--pink);border-color:rgba(244,114,182,.35)">R-Model</button>` : ''}
           <button class="tdd-preset-multi ${multi ? 'active' : ''}" onclick="event.stopPropagation();setMultiMode('${cid}',${!multi})">Multi</button>
         </div>
         <div class="tdd-cols-wrap">
@@ -4947,6 +5047,8 @@
             </div>
             <div class="tdd-col-scroll">${rev.length ? rev.map(e => opt(e, 'var(--amber)')).join('') : '<div class="tdd-empty">None loaded</div>'}</div>
           </div>
+          ${modThy.length ? `<div class="tdd-col"><div class="tdd-col-head" style="color:#818cf8"><span>Theory Model (${modThyCount})</span>${colToggle('model_theory', modThy)}</div><div class="tdd-col-scroll">${modThy.map(e => opt(e, '#818cf8')).join('')}</div></div>` : ''}
+          ${modRev.length ? `<div class="tdd-col"><div class="tdd-col-head" style="color:var(--pink)"><span>Revision Model (${modRevCount})</span>${colToggle('model_revision', modRev)}</div><div class="tdd-col-scroll">${modRev.map(e => opt(e, 'var(--pink)')).join('')}</div></div>` : ''}
         </div>
         <div class="tdd-footer">
           <span class="tdd-footer-count">${footerText}</span>
@@ -4979,19 +5081,19 @@
       let ids = new Set(resolveExamIds(sel));
       if (ids.has(examId)) ids.delete(examId);
       else ids.add(examId);
-      // Snap back to preset modes if matches
-      let newSel;
-      if (ids.size === allIds.length)
-        newSel = { mode: 'all' };
-      else if (ids.size === EXAMS.filter(e => e.type === 'theory').length &&
-        EXAMS.filter(e => e.type === 'theory').every(e => ids.has(e.id)))
-        newSel = { mode: 'theory' };
-      else if (ids.size === EXAMS.filter(e => e.type === 'revision').length &&
-        EXAMS.filter(e => e.type === 'revision').every(e => ids.has(e.id)))
-        newSel = { mode: 'revision' };
-      else
-        newSel = { mode: 'custom', ids };
-      TDD_CONFIGS[cid].set(newSel);
+      // Snap back to a named preset mode if the selection exactly matches one
+      const _snapSel = (ids) => {
+        const regIds = EXAMS.filter(e => !isModelType(e.type)).map(e => e.id);
+        if (ids.size === regIds.length && regIds.every(id => ids.has(id))) return { mode: 'all' };
+        for (const m of ['theory','revision','model_theory','model_revision']) {
+          const g = EXAMS.filter(e => e.type === m);
+          if (g.length && ids.size === g.length && g.every(e => ids.has(e.id))) return { mode: m };
+        }
+        const modIds = EXAMS.filter(e => isModelType(e.type)).map(e => e.id);
+        if (modIds.length && ids.size === modIds.length && modIds.every(id => ids.has(id))) return { mode: 'model_all' };
+        return { mode: 'custom', ids };
+      };
+      TDD_CONFIGS[cid].set(_snapSel(ids));
       buildOneDropdown(cid);
     }
 
@@ -5003,18 +5105,18 @@
       const allOn = typeExams.every(id => ids.has(id));
       if (allOn) typeExams.forEach(id => ids.delete(id));
       else typeExams.forEach(id => ids.add(id));
-      const allIds = EXAMS.map(e => e.id);
+      const regIds = EXAMS.filter(e => !isModelType(e.type)).map(e => e.id);
       let newSel;
-      if (ids.size === allIds.length)
+      if (ids.size === regIds.length && regIds.every(id => ids.has(id)))
         newSel = { mode: 'all' };
-      else if (ids.size === EXAMS.filter(e => e.type === 'theory').length &&
-        EXAMS.filter(e => e.type === 'theory').every(e => ids.has(e.id)))
-        newSel = { mode: 'theory' };
-      else if (ids.size === EXAMS.filter(e => e.type === 'revision').length &&
-        EXAMS.filter(e => e.type === 'revision').every(e => ids.has(e.id)))
-        newSel = { mode: 'revision' };
-      else
-        newSel = { mode: 'custom', ids };
+      else {
+        let m = null;
+        for (const mode of ['theory','revision','model_theory','model_revision']) {
+          const g = EXAMS.filter(e => e.type === mode);
+          if (g.length && ids.size === g.length && g.every(e => ids.has(e.id))) { m = mode; break; }
+        }
+        newSel = m ? { mode: m } : { mode: 'custom', ids };
+      }
       TDD_CONFIGS[cid].set(newSel);
       buildOneDropdown(cid);
     }
@@ -5210,15 +5312,15 @@
     //  RANK TIER HELPER
     // ═══════════════════════════════════════════════════
     function getRankTier(rank, total) {
-      if (rank === 1) return { tier: 1, icon: '🥇', label: 'Rank #1', tierClass: 'rank-tier-1' };
-      if (rank <= 3) return { tier: 1, icon: '🏆', label: 'Top 3', tierClass: 'rank-tier-1' };
-      if (rank <= 10) return { tier: 2, icon: '⭐', label: 'Top 10', tierClass: 'rank-tier-2' };
+      if (rank === 1) return { tier: 1, icon: '<i class="ph ph-medal" style="color:#ffd700"></i>', label: 'Rank #1', tierClass: 'rank-tier-1' };
+      if (rank <= 3) return { tier: 1, icon: '<i class="ph ph-trophy" style="color:var(--amber)"></i>', label: 'Top 3', tierClass: 'rank-tier-1' };
+      if (rank <= 10) return { tier: 2, icon: '<i class="ph ph-star" style="color:var(--amber)"></i>', label: 'Top 10', tierClass: 'rank-tier-2' };
       if (rank <= 25) return { tier: 2, icon: '🔥', label: 'Top 25', tierClass: 'rank-tier-2' };
       const pct = total > 0 ? (rank / total) * 100 : 100;
       if (pct <= 10) return { tier: 3, icon: '💎', label: 'Top 10%', tierClass: 'rank-tier-3' };
       if (pct <= 25) return { tier: 4, icon: '🌟', label: 'Top 25%', tierClass: 'rank-tier-4' };
-      if (pct <= 50) return { tier: 5, icon: '📈', label: 'Top Half', tierClass: 'rank-tier-5' };
-      return { tier: 6, icon: '📊', label: 'Ranked', tierClass: 'rank-tier-6' };
+      if (pct <= 50) return { tier: 5, icon: '<i class="ph ph-trend-up" style="color:#4ade80"></i>', label: 'Top Half', tierClass: 'rank-tier-5' };
+      return { tier: 6, icon: '<i class="ph ph-chart-bar" style="color:var(--text2)"></i>', label: 'Ranked', tierClass: 'rank-tier-6' };
     }
 
     // ═══════════════════════════════════════════════════
@@ -5244,10 +5346,12 @@
       const unique = new Set(ALL.map(r => r.name + '||' + r.school)).size;
       const avg = total ? (ALL.reduce((s, r) => s + r.marks, 0) / total).toFixed(1) : 0;
       const top = total ? Math.max(...ALL.map(r => r.marks)) : 0;
-      const revs = EXAMS.filter(x => x.type === 'revision').length;
-      const thys = EXAMS.filter(x => x.type === 'theory').length;
+      const revs    = EXAMS.filter(x => x.type === 'revision').length;
+      const thys    = EXAMS.filter(x => x.type === 'theory').length;
+      const modCnt  = EXAMS.filter(x => isModelType(x.type)).length;
+      const modelSub = modCnt ? ` · ${modCnt} model` : '';
       const cards = [
-        { label: 'Tests Loaded', value: EXAMS.length, color: 'amber', sub: `${thys} theory · ${revs} revision` },
+        { label: 'Tests Loaded', value: EXAMS.length, color: 'amber', sub: `${thys} theory · ${revs} revision${modelSub}` },
         { label: 'Total Entries', value: total, color: 'blue', sub: 'across all tests', fmt: true },
         { label: 'Unique Students', value: unique, color: 'teal', sub: 'name + school', fmt: true },
         { label: 'Schools', value: SCHOOLS.length, color: 'pink', sub: 'participating' },
@@ -5282,7 +5386,7 @@
 
     function renderPodium() {
       const wrap = document.getElementById('podium-wrap');
-      if (!EXAMS.length) { wrap.innerHTML = '<div class="empty"><div class="empty-icon">🏆</div>No data</div>'; return; }
+      if (!EXAMS.length) { wrap.innerHTML = '<div class="empty"><i class="ph ph-trophy empty-icon" style="font-size:32px;color:var(--text3)"></i><span>No data</span></div>'; return; }
       const sel = podiumTestSel;
       const isAvg = isAgg(sel);
       let top3;
@@ -5291,12 +5395,12 @@
       } else {
         const eid = resolveExamIds(sel)[0];
         const exam = EXAMS.find(x => x.id === eid);
-        if (!exam) { wrap.innerHTML = '<div class="empty"><div class="empty-icon">🏆</div>No data</div>'; return; }
+        if (!exam) { wrap.innerHTML = '<div class="empty"><i class="ph ph-trophy empty-icon" style="font-size:32px;color:var(--text3)"></i><span>No data</span></div>'; return; }
         top3 = deduplicateStudents([...exam.students]).sort((a, b) => b.marks - a.marks).slice(0, 3);
       }
-      if (!top3.length) { wrap.innerHTML = '<div class="empty"><div class="empty-icon">🏆</div>No data</div>'; return; }
+      if (!top3.length) { wrap.innerHTML = '<div class="empty"><i class="ph ph-trophy empty-icon" style="font-size:32px;color:var(--text3)"></i><span>No data</span></div>'; return; }
       const order = top3.length === 3 ? [top3[1], top3[0], top3[2]] : top3;
-      const medals = ['🥈', '🥇', '🥉'];
+      const medals = ['<i class="ph ph-medal" style="color:#C0C0C0"></i>', '<i class="ph ph-medal" style="color:#ffd700"></i>', '<i class="ph ph-medal" style="color:#CD7F32"></i>'];
       const ini = n => (n || '').split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
       wrap.innerHTML = `
         <div class="podium">
@@ -5372,7 +5476,7 @@
       CHARTS.tests = new Chart(ctx, {
         type: 'bar', data: {
           labels, datasets: [
-            { label: 'Avg Score', data: avgs, backgroundColor: EXAMS.map(e => e.type === 'theory' ? 'rgba(45,212,191,.4)' : 'rgba(232,160,32,.4)'), borderColor: EXAMS.map(e => e.type === 'theory' ? '#2dd4bf' : '#e8a020'), borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
+            { label: 'Avg Score', data: avgs, backgroundColor: EXAMS.map(e => typeColorRgba(e.type,.4)), borderColor: EXAMS.map(e => typeColor(e.type)), borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
             { label: 'Students', data: counts, borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,.1)', type: 'line', pointRadius: 3, fill: true, tension: .3, yAxisID: 'y1' }
           ]
         }, options: cOpts({ dual: true })
@@ -5400,7 +5504,7 @@
       } else {
         const eid = resolveExamIds(sel)[0];
         const exam = EXAMS.find(x => x.id === eid);
-        if (!exam) { document.getElementById('top10-table').innerHTML = '<div class="empty"><div class="empty-icon">📋</div>No data</div>'; return; }
+        if (!exam) { document.getElementById('top10-table').innerHTML = '<div class="empty"><i class="ph ph-clipboard-text empty-icon" style="font-size:32px;color:var(--text3)"></i><span>No data</span></div>'; return; }
         rows = deduplicateStudents([...exam.students]).sort((a, b) => b.marks - a.marks);
       }
       if (rows.length > 10) {
@@ -5429,7 +5533,7 @@
       let tieRank = 1;
       data.forEach((r, i) => {
         if (i > 0 && scoreKey(r) !== scoreKey(data[i - 1])) tieRank = i + 1;
-        const medal = tieRank === 1 ? '🥇' : tieRank === 2 ? '🥈' : tieRank === 3 ? '🥉' : '';
+        const medal = tieRank === 1 ? '<i class="ph ph-medal" style="color:#ffd700"></i>' : tieRank === 2 ? '<i class="ph ph-medal" style="color:#C0C0C0"></i>' : tieRank === 3 ? '<i class="ph ph-medal" style="color:#CD7F32"></i>' : '';
         const gold = tieRank <= 3 ? 'class="row-gold"' : '';
         const rankColor = tieRank <= 3 ? 'var(--amber)' : 'var(--text3)';
         const ratingCol = isAll ? (r.rating >= 60 ? '#4ade80' : r.rating >= 45 ? 'var(--amber)' : 'var(--pink)') : '';
@@ -5447,6 +5551,15 @@
     // ═══════════════════════════════════════════════════
     //  TESTS PAGE
     // ═══════════════════════════════════════════════════
+    function syncTestsFilterBtns() {
+      const hasMT = EXAMS.some(e => e.type === 'model_theory');
+      const hasMR = EXAMS.some(e => e.type === 'model_revision');
+      const mtBtn = document.getElementById('ft-model-thy');
+      const mrBtn = document.getElementById('ft-model-rev');
+      if (mtBtn) mtBtn.style.display = hasMT ? '' : 'none';
+      if (mrBtn) mrBtn.style.display = hasMR ? '' : 'none';
+    }
+
     let testsFilter = 'all';
     function filterTests(type, btn) {
       testsFilter = type;
@@ -5460,7 +5573,7 @@
       if (!EXAMS.length) { grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📂</div>Run parse_results.py first</div>'; return; }
       const baseList = testsFilter === 'all' ? EXAMS : EXAMS.filter(e => e.type === testsFilter);
       const list = baseList.slice().sort((a, b) => {
-        if (a.type !== b.type) return a.type === 'revision' ? -1 : 1;
+        if (a.type !== b.type) return (TYPE_SORT[a.type] ?? 9) - (TYPE_SORT[b.type] ?? 9);
         return (b.number || 0) - (a.number || 0);
       });
       grid.innerHTML = list.map(exam => {
@@ -5469,7 +5582,7 @@
         const top = m.length ? Math.max(...m) : 0;
         const schools = new Set(exam.students.map(s => s.school)).size;
         return `<div class="test-card ${exam.type}" onclick="openTestModal('${esc(exam.id)}')">
-          <div class="test-card-type">${exam.type} test</div>
+          <div class="test-card-type">${typeLabel(exam.type)}</div>
           <div class="test-card-title">${exam.label}</div>
           <div class="test-card-stats">
             <div class="test-stat"><strong>${exam.students.length}</strong>Students</div>
@@ -5503,7 +5616,7 @@
           <div>
             <div class="card-title" style="margin-bottom:12px">Top 3</div>
             ${top3.map((s, i) => `<div class="score-bar">
-              <div class="score-bar-label">${['🥇', '🥈', '🥉'][i]} ${s.name}</div>
+              <div class="score-bar-label">${['<i class="ph ph-medal" style="color:#ffd700"></i>', '<i class="ph ph-medal" style="color:#C0C0C0"></i>', '<i class="ph ph-medal" style="color:#CD7F32"></i>'][i]} ${s.name}</div>
               <div class="score-bar-track"><div class="score-bar-fill" style="width:${s.marks}%;background:${['#e8a020', '#60a5fa', '#2dd4bf'][i]}"></div></div>
               <div class="score-bar-val">${s.marks}</div></div>`).join('')}
           </div>
@@ -5848,7 +5961,7 @@
         const gRankVal = useGlobalRank ? (globalRanks[gRankKey] || (isAgg ? globalRank(r.name, r.school) : (r.rank || '—'))) : (i + 1);
         const numRank = typeof gRankVal === 'number' ? gRankVal : parseInt(gRankVal);
         const isTop3 = rowHighlight > 0 && numRank >= 1 && numRank <= 3;
-        const medal = isTop3 ? (numRank === 1 ? '🥇' : numRank === 2 ? '🥈' : '🥉') : '';
+        const medal = isTop3 ? (numRank === 1 ? '<i class="ph ph-medal" style="color:#ffd700"></i>' : numRank === 2 ? '<i class="ph ph-medal" style="color:#C0C0C0"></i>' : '<i class="ph ph-medal" style="color:#CD7F32"></i>') : '';
         const gold = isTop3 ? 'class="row-gold"' : '';
         const gBadge = r.gender === GEN_MALE ? `<span class="badge badge-b">Boy</span>` : r.gender === GEN_FEMALE ? `<span class="badge badge-g">Girl</span>` : '';
         const ratingCol = (r.rating || 0) >= 60 ? '#4ade80' : (r.rating || 0) >= 45 ? 'var(--amber)' : 'var(--pink)';
@@ -5906,7 +6019,7 @@
       const fb = document.getElementById('stu-filter-bar');
       if (fb) fb.style.display = '';
       if (!q && !sch && !stuGender) {
-        document.getElementById('stu-grid').innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔍</div>Type a name or pick a school</div>';
+        document.getElementById('stu-grid').innerHTML = '<div class="empty" style="grid-column:1/-1"><i class="ph ph-magnifying-glass empty-icon" style="font-size:32px;color:var(--text3)"></i><span>Type a name or pick a school</span></div>';
         return;
       }
       let students = STU_REGISTRY.map((s, i) => ({ ...s, idx: i }));
@@ -6034,7 +6147,7 @@
 
       apps.sort((a, b) => {
         if (a.exam_type === b.exam_type) return a.exam_id.localeCompare(b.exam_id);
-        return a.exam_type === 'theory' ? -1 : 1;
+        return (TYPE_SORT[a.exam_type] ?? 9) - (TYPE_SORT[b.exam_type] ?? 9);
       });
 
       const marks = apps.map(a => a.marks);
@@ -6043,10 +6156,14 @@
       const avg = marks.reduce((a, b) => a + b, 0) / marks.length;
       const avgStr = avg.toFixed(1);
       const bestRank = Math.min(...apps.map(a => a.rank));
-      const revApps = apps.filter(a => a.exam_type === 'revision');
-      const thyApps = apps.filter(a => a.exam_type === 'theory');
-      const revAvg = revApps.length ? revApps.reduce((s, a) => s + a.marks, 0) / revApps.length : null;
-      const thyAvg = thyApps.length ? thyApps.reduce((s, a) => s + a.marks, 0) / thyApps.length : null;
+      const revApps    = apps.filter(a => a.exam_type === 'revision');
+      const thyApps    = apps.filter(a => a.exam_type === 'theory');
+      const modThyApps = apps.filter(a => a.exam_type === 'model_theory');
+      const modRevApps = apps.filter(a => a.exam_type === 'model_revision');
+      const revAvg    = revApps.length    ? revApps.reduce((s,a)=>s+a.marks,0)    / revApps.length    : null;
+      const thyAvg    = thyApps.length    ? thyApps.reduce((s,a)=>s+a.marks,0)    / thyApps.length    : null;
+      const modThyAvg = modThyApps.length ? modThyApps.reduce((s,a)=>s+a.marks,0) / modThyApps.length : null;
+      const modRevAvg = modRevApps.length ? modRevApps.reduce((s,a)=>s+a.marks,0) / modRevApps.length : null;
 
       const zList = apps.map(a => examZ(a.exam_id, a.marks));
       const post = computePosterior(zList);
@@ -6054,11 +6171,15 @@
       const meanRating = post.meanRating; // best-estimate skill level
 
       const gRank = globalRank(stuData.name, stuData.school);
-      const tRank = thyApps.length ? thyRank(stuData.name, stuData.school) : null;
-      const rRank = revApps.length ? revRank(stuData.name, stuData.school) : null;
+      const tRank  = thyApps.length    ? thyRank(stuData.name, stuData.school)    : null;
+      const rRank  = revApps.length    ? revRank(stuData.name, stuData.school)    : null;
+      const mtRank = modThyApps.length ? modThyRank(stuData.name, stuData.school) : null;
+      const mrRank = modRevApps.length ? modRevRank(stuData.name, stuData.school) : null;
       const totalStudents = Object.keys(_globalRankMap).length;
-      const totalThy = Object.keys(_thyRankMap).length;
-      const totalRev = Object.keys(_revRankMap).length;
+      const totalThy    = Object.keys(_thyRankMap).length;
+      const totalRev    = Object.keys(_revRankMap).length;
+      const totalModThy = Object.keys(_modThyRankMap).length;
+      const totalModRev = Object.keys(_modRevRankMap).length;
       const rankTierInfo = typeof gRank === 'number' ? getRankTier(gRank, totalStudents) : null;
 
       const stdDev = marks.length > 1 ? Math.sqrt(marks.reduce((s, m) => s + (m - avg) ** 2, 0) / marks.length) : 0;
@@ -6105,14 +6226,14 @@
 
       let archetype, archetypeDesc = '', archetypeIcon, archetypeColor;
       if (avg >= 93 && consistency >= 80) { archetype = 'Exceptional'; archetypeIcon = '🌠'; archetypeColor = '#e8a020'; }
-      else if (avg >= 90) { archetype = 'Elite Performer'; archetypeIcon = '🏆'; archetypeColor = '#e8a020'; }
+      else if (avg >= 90) { archetype = 'Elite Performer'; archetypeIcon = '<i class="ph ph-trophy"></i>'; archetypeColor = '#e8a020'; }
       else if (avg >= 85 && consistency < 65) { archetype = 'Varied Results'; archetypeIcon = '⚡'; archetypeColor = '#f59e0b'; }
       else if (avg >= 80 && trend > 1.2) { archetype = 'Rising Force'; archetypeIcon = '🚀'; archetypeColor = '#4ade80'; }
       else if (avg >= 80 && trend < -1.0) { archetype = 'Trending Down'; archetypeIcon = '📉'; archetypeColor = '#9090b0'; }
-      else if (avg >= 80) { archetype = 'Solid Performer'; archetypeIcon = '🎯'; archetypeColor = '#60a5fa'; }
-      else if (avg >= 72 && consistency >= 82) { archetype = 'The Grinder'; archetypeIcon = '⚙️'; archetypeColor = '#818cf8'; }
+      else if (avg >= 80) { archetype = 'Solid Performer'; archetypeIcon = '<i class="ph ph-target"></i>'; archetypeColor = '#60a5fa'; }
+      else if (avg >= 72 && consistency >= 82) { archetype = 'The Grinder'; archetypeIcon = '<i class="ph ph-gear"></i>'; archetypeColor = '#818cf8'; }
       else if (avg >= 72 && revTheoryGap !== null && Math.abs(revTheoryGap) > 10) { archetype = revTheoryGap > 0 ? 'Revision Specialist' : 'Theory Specialist'; archetypeIcon = revTheoryGap > 0 ? '🗂️' : '📖'; archetypeColor = 'var(--teal)'; }
-      else if (avg >= 72 && trend > 1.0) { archetype = 'Climbing'; archetypeIcon = '📈'; archetypeColor = '#4ade80'; }
+      else if (avg >= 72 && trend > 1.0) { archetype = 'Climbing'; archetypeIcon = '<i class="ph ph-trend-up"></i>'; archetypeColor = '#4ade80'; }
       else if (avg >= 65) { archetype = 'Mid-Field'; archetypeIcon = '🌱'; archetypeColor = '#9090b0'; }
       else if (avg >= 55 && trend > 0.5) { archetype = 'Developing'; archetypeIcon = '🌱'; archetypeColor = '#9090b0'; }
       else if (avg >= 55) { archetype = ''; archetypeIcon = ''; archetypeColor = 'var(--text3)'; }
@@ -6131,11 +6252,23 @@
             <span style="color:var(--teal);font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1">#${tRank}</span>
             <span style="color:var(--teal);font-family:'DM Mono',monospace;font-size:9px;opacity:.5">of ${totalThy}</span>
           </div>` : '';
-        const rRankHTML = (rRank && typeof rRank === 'number' && totalRev > 1) ? `
+        const rRankHTML  = (rRank && typeof rRank === 'number' && totalRev > 1) ? `
           <div class="type-rank-chip" style="border-color:rgba(232,160,32,.3);background:rgba(232,160,32,.06)">
             <span style="color:var(--amber);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;opacity:.7">Revision</span>
             <span style="color:var(--amber);font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1">#${rRank}</span>
             <span style="color:var(--amber);font-family:'DM Mono',monospace;font-size:9px;opacity:.5">of ${totalRev}</span>
+          </div>` : '';
+        const mtRankHTML = (mtRank && typeof mtRank === 'number' && totalModThy > 1) ? `
+          <div class="type-rank-chip" style="border-color:rgba(129,140,248,.3);background:rgba(129,140,248,.06)">
+            <span style="color:#818cf8;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;opacity:.7">T-Model</span>
+            <span style="color:#818cf8;font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1">#${mtRank}</span>
+            <span style="color:#818cf8;font-family:'DM Mono',monospace;font-size:9px;opacity:.5">of ${totalModThy}</span>
+          </div>` : '';
+        const mrRankHTML = (mrRank && typeof mrRank === 'number' && totalModRev > 1) ? `
+          <div class="type-rank-chip" style="border-color:rgba(244,114,182,.3);background:rgba(244,114,182,.06)">
+            <span style="color:var(--pink);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;opacity:.7">R-Model</span>
+            <span style="color:var(--pink);font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1">#${mrRank}</span>
+            <span style="color:var(--pink);font-family:'DM Mono',monospace;font-size:9px;opacity:.5">of ${totalModRev}</span>
           </div>` : '';
 
         rankBadgeHTML = `
@@ -6153,7 +6286,7 @@
               </div>
             </div>
             <div style="display:flex;gap:10px;flex-shrink:0">
-              ${tRankHTML}${rRankHTML}
+              ${tRankHTML}${rRankHTML}${mtRankHTML}${mrRankHTML}
             </div>
           </div>`;
       }
@@ -6204,7 +6337,7 @@
               <div class="pill gold">Best: ${best}</div>
               <div class="pill teal">Avg: ${avgStr}</div>
               <div class="pill" style="background:rgba(74,222,128,.1);border-color:#4ade80;color:#4ade80" title="Rank rating: conservative lower-bound estimate. Skill estimate: ${meanRating}">Rating: ${rating.toFixed(2)}<span style="opacity:.5;font-size:9px;margin-left:4px">/ ${meanRating.toFixed(2)}</span></div>
-              <button class="info-btn" style="margin-top:2px" onclick="showInfoPopover(this,'rating')" title="About the rating">ℹ</button>
+              <button class="info-btn" style="margin-top:2px" onclick="showInfoPopover(this,'rating')" title="About the rating"><i class="ph ph-info" style="font-size:13px;line-height:1"></i></button>
               <div class="pill">Worst: ${worst}</div>
               <div class="pill">Best Rank: #${bestRank}</div>
               <div class="pill">${apps.length} test${apps.length > 1 ? 's' : ''}</div>
@@ -6238,6 +6371,8 @@
            ${classPercentile !== null ? `<div class="insight-card pink" style="animation-delay:.2s"><div class="insight-label">Best Percentile</div><div class="insight-value pink">${classPercentile}<span style="font-size:14px">th</span></div><div class="insight-sub">In ${bestExamEntry?.exam_label || ''}</div></div>` : ''}
            ${revAvg !== null ? `<div class="insight-card amber" style="animation-delay:.25s"><div class="insight-label">Revision Avg</div><div class="insight-value amber">${revAvg.toFixed(1)}</div><div class="insight-sub">${revApps.length} test${revApps.length > 1 ? 's' : ''}</div></div>` : ''}
            ${thyAvg !== null ? `<div class="insight-card teal" style="animation-delay:.3s"><div class="insight-label">Theory Avg</div><div class="insight-value teal">${thyAvg.toFixed(1)}</div><div class="insight-sub">${thyApps.length} test${thyApps.length > 1 ? 's' : ''}</div></div>` : ''}
+           ${modThyAvg !== null ? `<div class="insight-card" style="border-color:rgba(129,140,248,.4);background:rgba(129,140,248,.06);animation-delay:.35s"><div class="insight-label" style="color:#818cf8">T-Model Avg</div><div class="insight-value" style="color:#818cf8;font-size:26px">${modThyAvg.toFixed(1)}</div><div class="insight-sub">${modThyApps.length} test${modThyApps.length>1?'s':''}</div></div>` : ''}
+           ${modRevAvg !== null ? `<div class="insight-card" style="border-color:rgba(244,114,182,.4);background:rgba(244,114,182,.06);animation-delay:.4s"><div class="insight-label" style="color:var(--pink)">R-Model Avg</div><div class="insight-value" style="color:var(--pink);font-size:26px">${modRevAvg.toFixed(1)}</div><div class="insight-sub">${modRevApps.length} test${modRevApps.length>1?'s':''}</div></div>` : ''}
            ${(() => {
              const thyBooks = apps.filter(a => a.exam_type === 'theory' && a.rank <= 50).length;
              const revBooks = apps.filter(a => a.exam_type === 'revision' && a.rank <= 30).length;
@@ -6254,10 +6389,12 @@
          </div>
         <div class="card" style="margin-bottom:20px">
           <div class="card-header">
-            <div class="card-title">📈 Performance Timeline</div>
+            <div class="card-title"><i class="ph ph-trend-up" style="color:var(--teal)"></i> Performance Timeline</div>
             <div style="display:flex;gap:14px;font-family:'DM Mono',monospace;font-size:10px">
-              ${thyApps.length ? `<span style="color:var(--teal)">● Theory</span>` : ''}
-              ${revApps.length ? `<span style="color:var(--amber)">● Revision</span>` : ''}
+              ${thyApps.length    ? `<span style="color:var(--teal)">● Theory</span>`  : ''}
+              ${revApps.length    ? `<span style="color:var(--amber)">● Revision</span>` : ''}
+              ${modThyApps.length ? `<span style="color:#818cf8">● T-Model</span>`     : ''}
+              ${modRevApps.length ? `<span style="color:var(--pink)">● R-Model</span>`  : ''}
             </div>
           </div>
           <div class="card-body"><div style="height:240px;position:relative"><canvas id="stu-chart"></canvas></div></div>
@@ -6265,8 +6402,8 @@
 
         <div class="two-col" style="margin-bottom:24px">
           <div class="card">
-            <div class="card-header"><div class="card-title">📋 Test History</div>
-              <button class="info-btn" onclick="showInfoPopover(this,'test-history')" title="How this works">ℹ</button>
+            <div class="card-header"><div class="card-title"><i class="ph ph-clipboard-text" style="color:var(--text2)"></i> Test History</div>
+              <button class="info-btn" onclick="showInfoPopover(this,'test-history')" title="How this works"><i class="ph ph-info" style="font-size:13px;line-height:1"></i></button>
             </div>
             <div class="table-wrap"><table>
               <thead><tr><th>Test</th><th>Type</th><th>Marks</th><th>Rank</th><th>vs Class</th><th title="How exceptional relative to class spread">Impact</th></tr></thead>
@@ -6282,7 +6419,7 @@
         const zLabel = z >= 2 ? '🔥 exceptional' : z >= 1 ? '✦ above avg' : z >= -0.5 ? '· average' : z >= -1.5 ? '▼ below avg' : '▼ below avg';
         return `<tr>
                   <td class="td-school">${a.exam_label}</td>
-                  <td><span style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 6px;border-radius:3px;${a.exam_type === 'theory' ? 'background:rgba(45,212,191,.15);color:var(--teal)' : 'background:rgba(232,160,32,.15);color:var(--amber)'}">${a.exam_type.slice(0, 3).toUpperCase()}</span></td>
+                  <td><span style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 6px;border-radius:3px;background:${typeColorRgba(a.exam_type,.15)};color:${typeColor(a.exam_type)}">${typeShort(a.exam_type)}</span></td>
                   <td class="td-marks">${a.marks}</td>
                   <td class="td-rank">#${a.rank}</td>
                   <td style="font-family:'DM Mono',monospace;font-size:11px;color:${diffCol}">${diff !== null ? (diff > 0 ? '+' : '') + diff : '—'}</td>
@@ -6293,7 +6430,7 @@
             </table></div>
           </div>
           <div class="card">
-            <div class="card-header"><div class="card-title">🏫 vs School Peers</div></div>
+            <div class="card-header"><div class="card-title"><i class="ph ph-buildings" style="color:var(--blue)"></i> vs School Peers</div></div>
             <div class="card-body">
               ${rival ? `<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);margin-bottom:12px">Top classmates by average score</div>
               ${schoolMates.slice(0, 8).map((s, i) => {
@@ -6311,7 +6448,7 @@
                 <div class="score-bar-label" style="width:130px;color:var(--amber);font-weight:600">${name.split(' ')[0]} (you)</div>
                 <div class="score-bar-track"><div class="score-bar-fill" style="width:${avg / Math.max(...schoolMates.slice(0, 8).map(x => x.marks), avg) * 100}%;background:var(--amber)"></div></div>
                 <div class="score-bar-val" style="color:var(--amber)">${avgStr}</div>
-              </div>` : '<div class="empty" style="padding:24px"><div class="empty-icon">🏫</div>No classmates found</div>'}
+              </div>` : '<div class="empty" style="padding:24px"><i class="ph ph-buildings empty-icon" style="font-size:32px;color:var(--text3)"></i><span>No classmates found</span></div>'}
             </div>
           </div>
         </div>`;
@@ -6322,8 +6459,9 @@
         if (CHARTS.stuChart) CHARTS.stuChart.destroy();
         const sortedApps = apps;
         const sortedMarks = sortedApps.map(a => a.marks);
-        const ptColors = sortedApps.map(a => a.exam_type === 'theory' ? '#2dd4bf' : '#e8a020');
-        const thyCount = sortedApps.filter(a => a.exam_type === 'theory').length;
+        const ptColors = sortedApps.map(a => typeColor(a.exam_type));
+        const _regThy = sortedApps.filter(a => a.exam_type === 'theory').length;
+        const _allReg = sortedApps.every(a => a.exam_type === 'theory' || a.exam_type === 'revision');
 
         // Scriptable point radius — scales with the chart's actual rendered width
         const dynRadius = (ctx) => {
@@ -6364,7 +6502,7 @@
                 backgroundColor: 'rgba(17,17,24,.95)', borderColor: 'rgba(255,255,255,.1)', borderWidth: 1, titleFont: { family: 'DM Mono', size: 11 }, bodyFont: { family: 'DM Mono', size: 11 },
                 callbacks: {
                   label: (c) => {
-                    if (c.datasetIndex === 0) { const a = sortedApps[c.dataIndex]; return a ? `${a.exam_type === 'theory' ? '▸ Theory' : '▸ Revision'} · ${c.parsed.y} pts` : ''; }
+                    if (c.datasetIndex === 0) { const a = sortedApps[c.dataIndex]; return a ? `▸ ${typeLabel(a.exam_type)} · ${c.parsed.y} pts` : ''; }
                     return `Class avg · ${c.parsed.y}`;
                   }
                 }
@@ -6374,10 +6512,10 @@
               x: {
                 ticks: { color: '#5a5a78', font: { family: 'DM Mono', size: 9 }, maxRotation: 30 }, grid: { color: 'rgba(255,255,255,.03)' },
                 afterDrawTickLabels(ax) {
-                  if (thyCount === 0 || thyCount >= sortedApps.length) return;
+                  if (!_allReg || _regThy === 0 || _regThy >= sortedApps.length) return;
                   const chart = ax.chart, meta = chart.getDatasetMeta(0);
-                  if (!meta.data[thyCount - 1]) return;
-                  const xA = meta.data[thyCount - 1].x, xB = meta.data[thyCount]?.x;
+                  if (!meta.data[_regThy - 1]) return;
+                  const xA = meta.data[_regThy - 1].x, xB = meta.data[_regThy]?.x;
                   const x = xA + (xB ? xB - xA : 0) / 2;
                   const ctx3 = chart.ctx;
                   ctx3.save(); ctx3.beginPath(); ctx3.strokeStyle = 'rgba(255,255,255,.12)'; ctx3.lineWidth = 1; ctx3.setLineDash([4, 4]);
@@ -6483,7 +6621,7 @@
           <div class="score-bar">
             <div class="score-bar-label" style="width:140px;cursor:pointer;transition:color .15s"
               onclick="${window.innerWidth <= 768 ? 'closeSchoolDrawer();' : ''}navToStudent('${_ns(s.name)}','${esc(schoolName)}')"
-              onmouseenter="this.style.color='var(--amber)'" onmouseleave="this.style.color=''">${['🥇', '🥈', '🥉', '4.', '5.', '6.', '7.', '8.'][i]} ${s.name}<span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-left:4px">(${s.tests}t)</span></div>
+              onmouseenter="this.style.color='var(--amber)'" onmouseleave="this.style.color=''">${['<i class="ph ph-medal" style="color:#ffd700"></i>', '<i class="ph ph-medal" style="color:#C0C0C0"></i>', '<i class="ph ph-medal" style="color:#CD7F32"></i>', '4.', '5.', '6.', '7.', '8.'][i]} ${s.name}<span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);margin-left:4px">(${s.tests}t)</span></div>
             <div class="score-bar-track"><div class="score-bar-fill" style="width:${s.avg}%;background:${i < d.eliteTopN ? '#60a5fa' : 'var(--text3)'}"></div></div>
             <div class="score-bar-val" style="color:${i < d.eliteTopN ? 'var(--blue)' : 'var(--text3)'}">${s.avg.toFixed(1)}</div>
           </div>`).join('')}
@@ -6491,7 +6629,7 @@
           <div style="margin-top:16px;margin-bottom:8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">PER-TEST AVERAGES</div>
           ${examRows.map(ex => `<div class="score-bar">
             <div class="score-bar-label">${ex.label}</div>
-            <div class="score-bar-track"><div class="score-bar-fill" style="width:${ex.avg}%;background:${ex.type === 'theory' ? 'var(--teal)' : 'var(--amber)'}"></div></div>
+            <div class="score-bar-track"><div class="score-bar-fill" style="width:${ex.avg}%;background:${typeColor(ex.type)}"></div></div>
             <div class="score-bar-val">${ex.avg}</div>
           </div>`).join('')}` : ''}`;
 
@@ -6508,18 +6646,26 @@
     //  ANALYTICS
     // ═══════════════════════════════════════════════════
     function filteredExams() {
-      return avgType === 'all' ? EXAMS : EXAMS.filter(e => e.type === avgType);
+      if (avgType === 'all') return EXAMS.filter(e => !isModelType(e.type));
+      return EXAMS.filter(e => e.type === avgType);
     }
     function filteredAll() {
-      return avgType === 'all' ? ALL : ALL.filter(r => {
-        const e = EXAMS.find(x => x.id === r.exam_id);
-        return e && e.type === avgType;
-      });
+      const exs = filteredExams();
+      const ids = new Set(exs.map(e => e.id));
+      return ALL.filter(r => ids.has(r.exam_id));
+    }
+    function syncAvgFilterBtns() {
+      const hasMT = EXAMS.some(e => e.type === 'model_theory');
+      const hasMR = EXAMS.some(e => e.type === 'model_revision');
+      const mtBtn = document.getElementById('at-mthy');
+      const mrBtn = document.getElementById('at-mrev');
+      if (mtBtn) mtBtn.style.display = hasMT ? '' : 'none';
+      if (mrBtn) mrBtn.style.display = hasMR ? '' : 'none';
     }
 
     function setAvgType(t, btn) {
       avgType = t;
-      document.querySelectorAll('#at-all,#at-rev,#at-thy').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#at-all,#at-rev,#at-thy,#at-mthy,#at-mrev').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       renderAnalytics();
     }
@@ -6566,7 +6712,7 @@
       document.getElementById('test-summary-list').innerHTML = filteredExams().map(e => {
         const m = e.students.map(s => s.marks);
         const avg = (m.reduce((a, b) => a + b) / m.length).toFixed(1);
-        const col = e.type === 'theory' ? 'var(--teal)' : 'var(--amber)';
+        const col = typeColor(e.type);
         return `<div class="score-bar"><div class="score-bar-label">${e.label}</div><div class="score-bar-track"><div class="score-bar-fill" style="width:${avg}%;background:${col}"></div></div><div class="score-bar-val">${avg}</div></div>`;
       }).join('');
     }
@@ -7213,10 +7359,10 @@
         html: `
           <p style="margin-bottom:10px">The <strong>Overall Rank</strong> is calculated by sorting all unique students by their Rating (difficulty-adjusted score). The tier label shows where you stand in the entire cohort.</p>
           <div class="info-sep"></div>
-          <div class="info-row"><span class="info-key" style="color:#ffd700">⭐ Elite</span><span class="info-val">Top 1% — exceptional across all tests.</span></div>
-          <div class="info-row"><span class="info-key" style="color:var(--amber)">🏆 Gold</span><span class="info-val">Top 5% — consistently high performance.</span></div>
-          <div class="info-row"><span class="info-key" style="color:var(--teal)">🥈 Silver</span><span class="info-val">Top 15% — well above average.</span></div>
-          <div class="info-row"><span class="info-key" style="color:var(--blue)">🥉 Bronze</span><span class="info-val">Top 30% — above average performer.</span></div>
+          <div class="info-row"><span class="info-key" style="color:#ffd700"><i class="ph ph-star" style="color:#ffd700"></i> Elite</span><span class="info-val">Top 1% — exceptional across all tests.</span></div>
+          <div class="info-row"><span class="info-key" style="color:var(--amber)"><i class="ph ph-trophy" style="color:var(--amber)"></i> Gold</span><span class="info-val">Top 5% — consistently high performance.</span></div>
+          <div class="info-row"><span class="info-key" style="color:var(--teal)"><i class="ph ph-medal" style="color:#C0C0C0"></i> Silver</span><span class="info-val">Top 15% — well above average.</span></div>
+          <div class="info-row"><span class="info-key" style="color:var(--blue)"><i class="ph ph-medal" style="color:#CD7F32"></i> Bronze</span><span class="info-val">Top 30% — above average performer.</span></div>
           <div class="info-row"><span class="info-key" style="color:#a78bfa">◈ Rising</span><span class="info-val">Top 55% — above the midpoint.</span></div>
           <div class="info-row"><span class="info-key">· Standard</span><span class="info-val">Remaining participants.</span></div>
           <div class="info-sep"></div>
