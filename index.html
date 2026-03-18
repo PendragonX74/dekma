@@ -104,8 +104,8 @@
       --bg3: #18181f;
       --border: #2a2a38;
       --border2: #3a3a50;
-      --amber: #ff6b47;
-      --amber2: #ff9472;
+      --amber: #e8a020;
+      --amber2: #f5c060;
       --teal: #2dd4bf;
       --teal2: #99f6e4;
       --pink: #f472b6;
@@ -290,7 +290,7 @@
 
     .logo-drop-item.selected {
       color: var(--amber);
-      background: rgba(255, 107, 71, .07)
+      background: rgba(232, 160, 32, .07)
     }
 
     .logo-drop-item.disabled {
@@ -358,7 +358,7 @@
     .nav-item.active {
       color: var(--amber);
       border-left-color: var(--amber);
-      background: rgba(255, 107, 71, .07)
+      background: rgba(232, 160, 32, .07)
     }
 
     .nav-icon {
@@ -612,11 +612,11 @@
 
       0%,
       100% {
-        box-shadow: 0 0 0 0 rgba(255, 107, 71, 0)
+        box-shadow: 0 0 0 0 rgba(232, 160, 32, 0)
       }
 
       50% {
-        box-shadow: 0 0 16px 4px rgba(255, 107, 71, .18)
+        box-shadow: 0 0 16px 4px rgba(232, 160, 32, .18)
       }
     }
 
@@ -789,7 +789,7 @@
       content: '';
       position: absolute;
       inset: -40px;
-      background: radial-gradient(circle at 70% 30%, rgba(255, 107, 71, .06), transparent 60%);
+      background: radial-gradient(circle at 70% 30%, rgba(232, 160, 32, .06), transparent 60%);
       pointer-events: none
     }
 
@@ -1062,7 +1062,7 @@
 
     .tdd-option.selected {
       color: var(--text);
-      background: rgba(255, 107, 71, .07)
+      background: rgba(232, 160, 32, .07)
     }
 
     .tdd-option.selected .tdd-check {
@@ -1120,7 +1120,7 @@
     .tdd-preset-multi.active {
       border-color: var(--amber);
       color: var(--amber);
-      background: rgba(255, 107, 71, .1)
+      background: rgba(232, 160, 32, .1)
     }
 
     /* In single mode, options look like plain rows — no checkbox space */
@@ -1133,7 +1133,7 @@
     }
 
     .tdd-option.single-mode.selected {
-      background: rgba(255, 107, 71, .12)
+      background: rgba(232, 160, 32, .12)
     }
 
     .tdd-col-head-actions {
@@ -1186,7 +1186,7 @@
     .tdd-preset.active {
       border-color: var(--amber);
       color: var(--amber);
-      background: rgba(255, 107, 71, .1)
+      background: rgba(232, 160, 32, .1)
     }
 
     /* When preset has inline type color, active state enhances it */
@@ -1197,7 +1197,7 @@
     }
     .tdd-preset[style*="color:var(--amber)"].active,
     .tdd-preset[style*="color: var(--amber)"].active {
-      background: rgba(255, 107, 71, .12) !important;
+      background: rgba(232, 160, 32, .12) !important;
       border-color: var(--amber) !important
     }
     .tdd-preset[style*="color:#818cf8"].active {
@@ -1254,7 +1254,7 @@
 
     .tdd-checkbox.checked {
       border-color: var(--amber);
-      background: rgba(255, 107, 71, .15)
+      background: rgba(232, 160, 32, .15)
     }
 
     .tdd-checkbox.checked::after {
@@ -1392,7 +1392,7 @@
     }
 
     .podium-slot:nth-child(2) .podium-avatar {
-      background: rgba(255, 107, 71, .2);
+      background: rgba(232, 160, 32, .2);
       color: var(--amber);
       border: 2px solid var(--amber);
       width: 60px;
@@ -1485,7 +1485,7 @@
     }
 
     .podium-slot:nth-child(2) .podium-bar {
-      background: rgba(255, 107, 71, .15);
+      background: rgba(232, 160, 32, .15);
       height: 90px;
       width: 100%
     }
@@ -1881,7 +1881,7 @@
 
     .school-dd-item.selected {
       color: var(--amber);
-      background: rgba(255, 107, 71, .07)
+      background: rgba(232, 160, 32, .07)
     }
 
     .school-dd-item-name {
@@ -1947,7 +1947,7 @@
     }
 
     .filter-btn.active {
-      background: rgba(255, 107, 71, .1);
+      background: rgba(232, 160, 32, .1);
       border-color: var(--amber);
       color: var(--amber)
     }
@@ -2010,7 +2010,7 @@
     }
 
     .pill.gold {
-      background: rgba(255, 107, 71, .1);
+      background: rgba(232, 160, 32, .1);
       border-color: var(--amber);
       color: var(--amber)
     }
@@ -2227,8 +2227,8 @@
     }
 
     .rank-tier-2 {
-      background: linear-gradient(135deg, rgba(255, 107, 71, .15), rgba(245, 192, 96, .08));
-      border: 1px solid rgba(255, 107, 71, .4);
+      background: linear-gradient(135deg, rgba(232, 160, 32, .15), rgba(245, 192, 96, .08));
+      border: 1px solid rgba(232, 160, 32, .4);
       color: var(--amber)
     }
 
@@ -2435,7 +2435,7 @@
     }
 
     .row-gold td {
-      background: rgba(255, 107, 71, .05) !important
+      background: rgba(232, 160, 32, .05) !important
     }
 
     .row-gold .td-rank {
@@ -2496,7 +2496,7 @@
       position: fixed; inset: 0; background: #09090e;
       display: flex; align-items: center; justify-content: center; z-index: 2000;
     }
-    .loading-dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(255, 107, 71,.4); }
+    .loading-dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(232, 160, 32,.4); }
 
     /* ══ SPLASH ══════════════════════════════════════════════════════════════ */
     /* hidden by default — JS sets display:block then triggers .s-run */
@@ -2521,13 +2521,13 @@
     .splash-eyebrow {
       font-family: 'DM Mono', monospace; font-size: 9px;
       letter-spacing: 4px; text-transform: uppercase;
-      color: rgba(255, 107, 71,.5);
+      color: rgba(232, 160, 32,.5);
       display: flex; align-items: center; justify-content: center; gap: 12px;
       margin-bottom: 28px;
     }
     .spl-line {
       display: inline-block; height: 1px; width: 0;
-      background: rgba(255, 107, 71,.35);
+      background: rgba(232, 160, 32,.35);
       transition: width 1.1s cubic-bezier(.77,0,.18,1);
     }
     .spl-etext { opacity: 0; transition: opacity .8s ease; }
@@ -2556,7 +2556,7 @@
 
     .splash-rule {
       width: 0; height: 1px; margin: 16px auto 0;
-      background: linear-gradient(90deg, transparent, rgba(255, 107, 71,.55), transparent);
+      background: linear-gradient(90deg, transparent, rgba(232, 160, 32,.55), transparent);
       transition: width 1.2s cubic-bezier(.77,0,.18,1);
     }
     .splash-sub {
@@ -2611,7 +2611,7 @@
     }
     .picker-logo {
       font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 8px;
-      color: rgba(255, 107, 71,.45); margin-bottom: 36px;
+      color: rgba(232, 160, 32,.45); margin-bottom: 36px;
       opacity: 0; transform: translateY(6px);
       transition: opacity .6s ease, transform .6s cubic-bezier(.22,1,.36,1);
     }
@@ -2646,7 +2646,7 @@
       color: var(--text2); cursor: pointer; transition: all .18s;
     }
     .splash-opt:hover { border-color: var(--border2); color: var(--text); background: rgba(255,255,255,.04); }
-    .splash-opt.selected { background: rgba(255, 107, 71,.1); border-color: rgba(255, 107, 71,.5); color: var(--amber); }
+    .splash-opt.selected { background: rgba(232, 160, 32,.1); border-color: rgba(232, 160, 32,.5); color: var(--amber); }
     .splash-opt.disabled { opacity: .2; pointer-events: none; }
 
     .picker-btn {
@@ -2661,7 +2661,7 @@
     }
     .picker-btn .go-arrow { transition: transform .22s cubic-bezier(.22,1,.36,1); }
     .picker-btn.ready { opacity: 1; pointer-events: all; transform: translateY(0); }
-    .picker-btn:hover { background: var(--amber2); transform: translateY(-2px); box-shadow: 0 8px 36px rgba(255, 107, 71,.28); }
+    .picker-btn:hover { background: var(--amber2); transform: translateY(-2px); box-shadow: 0 8px 36px rgba(232, 160, 32,.28); }
     .picker-btn:hover .go-arrow { transform: translateX(5px); }
     .picker-no-data {
       font-family: 'DM Mono', monospace; font-size: 10px; color: var(--pink);
@@ -2681,8 +2681,8 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(255, 107, 71, .08);
-      border: 1px solid rgba(255, 107, 71, .25);
+      background: rgba(232, 160, 32, .08);
+      border: 1px solid rgba(232, 160, 32, .25);
       border-radius: 20px;
       padding: 4px 12px;
       font-family: 'DM Mono', monospace;
@@ -2695,12 +2695,12 @@
     }
 
     .context-badge:hover {
-      background: rgba(255, 107, 71, .14);
-      border-color: rgba(255, 107, 71, .5)
+      background: rgba(232, 160, 32, .14);
+      border-color: rgba(232, 160, 32, .5)
     }
 
     .context-badge.open {
-      background: rgba(255, 107, 71, .14);
+      background: rgba(232, 160, 32, .14);
       border-color: var(--amber)
     }
 
@@ -2715,8 +2715,8 @@
     }
 
     .no-data-banner {
-      background: rgba(255, 107, 71, .08);
-      border: 1px solid rgba(255, 107, 71, .3);
+      background: rgba(232, 160, 32, .08);
+      border: 1px solid rgba(232, 160, 32, .3);
       border-radius: var(--radius2);
       padding: 20px 24px;
       margin-bottom: 24px;
@@ -2843,7 +2843,7 @@
 
     .expand-btn:hover {
       color: var(--amber);
-      background: rgba(255, 107, 71, .04)
+      background: rgba(232, 160, 32, .04)
     }
 
     .expand-btn-icon {
@@ -2930,7 +2930,7 @@
       cursor: pointer; transition: all .15s; flex-shrink: 0;
       vertical-align: middle; line-height: 1; user-select: none
     }
-    .info-btn:hover { background: rgba(255, 107, 71,.15); border-color: var(--amber); color: var(--amber) }
+    .info-btn:hover { background: rgba(232, 160, 32,.15); border-color: var(--amber); color: var(--amber) }
 
     .info-popover {
       position: fixed; background: var(--bg2);
@@ -2963,7 +2963,7 @@
       background: var(--bg3); transition: all .15s; user-select: none
     }
     .kbd-hint:hover { border-color: var(--border2); color: var(--text2) }
-    .kbd-hint.active { border-color: var(--amber); color: var(--amber); background: rgba(255, 107, 71,.08) }
+    .kbd-hint.active { border-color: var(--amber); color: var(--amber); background: rgba(232, 160, 32,.08) }
     .kbd-hint kbd { background: none; border: none; padding: 0; font-family: inherit; font-size: inherit; color: inherit; pointer-events: none }
     .kbd-panel {
       position: fixed; background: var(--bg2);
@@ -3038,7 +3038,7 @@
     .t10-sort-btn.active {
       border-color: var(--amber);
       color: var(--amber);
-      background: rgba(255, 107, 71, .08)
+      background: rgba(232, 160, 32, .08)
     }
 
     .t10-sort-seg {
@@ -3073,7 +3073,7 @@
 
     .t10-seg-opt.active {
       color: var(--amber);
-      background: rgba(255, 107, 71, .1)
+      background: rgba(232, 160, 32, .1)
     }
 
     .t10-more-btn {
@@ -3081,8 +3081,8 @@
       align-items: center;
       gap: 4px;
       padding: 8px 10px;
-      background: rgba(255,107,71,.08);
-      border: 1px solid rgba(255,107,71,.25);
+      background: rgba(232,160,32,.08);
+      border: 1px solid rgba(232,160,32,.25);
       border-radius: var(--radius);
       color: var(--amber);
       font-family: 'DM Mono', monospace;
@@ -3095,8 +3095,8 @@
     }
 
     .t10-more-btn:hover {
-      background: rgba(255,107,71,.18);
-      border-color: rgba(255,107,71,.5)
+      background: rgba(232,160,32,.18);
+      border-color: rgba(232,160,32,.5)
     }
 
     .school-row {
@@ -4331,7 +4331,7 @@
     }
 
     .page-btn.active {
-      background: rgba(255, 107, 71, .1);
+      background: rgba(232, 160, 32, .1);
       border-color: var(--amber);
       color: var(--amber)
     }
@@ -4694,7 +4694,7 @@
         if (t > 2) {
           const ga = Math.min((t-2)/4,1) * .017;
           const gs = 58, ox = cx%gs, oy = cy%gs;
-          ctx.strokeStyle = `rgba(255, 107, 71,${ga})`; ctx.lineWidth = .4;
+          ctx.strokeStyle = `rgba(232, 160, 32,${ga})`; ctx.lineWidth = .4;
           ctx.beginPath();
           for (let x=ox; x<W; x+=gs){ ctx.moveTo(x,0); ctx.lineTo(x,H); }
           for (let y=oy; y<H; y+=gs){ ctx.moveTo(0,y); ctx.lineTo(W,y); }
@@ -5998,7 +5998,7 @@
     function filterTests(type, btn) {
       testsFilter = type;
       const typeColors = { theory:'var(--teal)', revision:'var(--amber)', model:'#818cf8' };
-      const typeBorders = { theory:'rgba(45,212,191,.3)', revision:'rgba(255, 107, 71,.3)', model:'rgba(129,140,248,.35)' };
+      const typeBorders = { theory:'rgba(45,212,191,.3)', revision:'rgba(232, 160, 32,.3)', model:'rgba(129,140,248,.35)' };
       document.querySelectorAll('#page-tests .filter-btn').forEach(b => {
         b.classList.remove('active');
         // restore per-type base color when de-activating
@@ -6068,7 +6068,7 @@
             <div class="card-title" style="margin-bottom:12px">Top 3</div>
             ${top3.map((s, i) => `<div class="score-bar">
               <div class="score-bar-label">${['<i class="ph ph-medal" style="color:#ffd700"></i>', '<i class="ph ph-medal" style="color:#C0C0C0"></i>', '<i class="ph ph-medal" style="color:#CD7F32"></i>'][i]} ${s.name}</div>
-              <div class="score-bar-track"><div class="score-bar-fill" style="width:${s.marks}%;background:${['#ff6b47', '#60a5fa', '#2dd4bf'][i]}"></div></div>
+              <div class="score-bar-track"><div class="score-bar-fill" style="width:${s.marks}%;background:${['#e8a020', '#60a5fa', '#2dd4bf'][i]}"></div></div>
               <div class="score-bar-val">${s.marks}</div></div>`).join('')}
           </div>
           <div>
@@ -6110,7 +6110,7 @@
         })()}
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
           <div class="card-title">Top 10</div>
-          <button onclick="openLeaderboardForTest('${esc(exam.id)}')" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:rgba(255, 107, 71,.12);border:1px solid rgba(255, 107, 71,.35);border-radius:6px;color:var(--amber);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.8px;cursor:pointer;transition:all .15s;text-transform:uppercase" onmouseenter="this.style.background='rgba(255, 107, 71,.2)'" onmouseleave="this.style.background='rgba(255, 107, 71,.12)'">Full Leaderboard ↗</button>
+          <button onclick="openLeaderboardForTest('${esc(exam.id)}')" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:rgba(232, 160, 32,.12);border:1px solid rgba(232, 160, 32,.35);border-radius:6px;color:var(--amber);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.8px;cursor:pointer;transition:all .15s;text-transform:uppercase" onmouseenter="this.style.background='rgba(232, 160, 32,.2)'" onmouseleave="this.style.background='rgba(232, 160, 32,.12)'">Full Leaderboard ↗</button>
         </div>
         ${(()=>{
           const sortedS = deduplicateStudents([...exam.students]).sort((a,b)=>b.marks-a.marks);
@@ -6718,8 +6718,8 @@
       const revTheoryGap = revAvg && thyAvg ? revAvg - thyAvg : null;
 
       let archetype, archetypeDesc = '', archetypeIcon, archetypeColor;
-      if (avg >= 93 && consistency >= 80) { archetype = 'Exceptional'; archetypeIcon = '🌠'; archetypeColor = '#ff6b47'; }
-      else if (avg >= 90) { archetype = 'Elite Performer'; archetypeIcon = '<i class="ph ph-trophy"></i>'; archetypeColor = '#ff6b47'; }
+      if (avg >= 93 && consistency >= 80) { archetype = 'Exceptional'; archetypeIcon = '🌠'; archetypeColor = '#e8a020'; }
+      else if (avg >= 90) { archetype = 'Elite Performer'; archetypeIcon = '<i class="ph ph-trophy"></i>'; archetypeColor = '#e8a020'; }
       else if (avg >= 85 && consistency < 65) { archetype = 'Varied Results'; archetypeIcon = '⚡'; archetypeColor = '#f59e0b'; }
       else if (avg >= 80 && trend > 1.2) { archetype = 'Rising Force'; archetypeIcon = '🚀'; archetypeColor = '#2dd4bf'; }
       else if (avg >= 80 && trend < -1.0) { archetype = 'Trending Down'; archetypeIcon = '📉'; archetypeColor = '#9090b0'; }
@@ -6746,7 +6746,7 @@
             <span style="color:var(--teal);font-family:'DM Mono',monospace;font-size:9px;opacity:.5">of ${totalThy}</span>
           </div>` : '';
         const rRankHTML = (rRank && typeof rRank === 'number' && totalRev > 1) ? `
-          <div class="type-rank-chip" style="border-color:rgba(255, 107, 71,.3);background:rgba(255, 107, 71,.06)">
+          <div class="type-rank-chip" style="border-color:rgba(232, 160, 32,.3);background:rgba(232, 160, 32,.06)">
             <span style="color:var(--amber);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;opacity:.7">Revision</span>
             <span style="color:var(--amber);font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1">#${rRank}</span>
             <span style="color:var(--amber);font-family:'DM Mono',monospace;font-size:9px;opacity:.5">of ${totalRev}</span>
@@ -6801,7 +6801,7 @@
         const cmpBtn = document.getElementById('cmp-btn-profile');
         if (cmpBtn) {
           if (_compareSet.has(_currentProfileIdx)) {
-            cmpBtn.textContent = '✓ In Compare'; cmpBtn.style.background = 'rgba(255, 107, 71,.12)'; cmpBtn.style.borderColor = 'var(--amber)'; cmpBtn.style.color = 'var(--amber)';
+            cmpBtn.textContent = '✓ In Compare'; cmpBtn.style.background = 'rgba(232, 160, 32,.12)'; cmpBtn.style.borderColor = 'var(--amber)'; cmpBtn.style.color = 'var(--amber)';
           } else {
             cmpBtn.textContent = '+ Compare'; cmpBtn.style.background = ''; cmpBtn.style.borderColor = ''; cmpBtn.style.color = '';
           }
@@ -6866,9 +6866,9 @@
              const total = thyBooks + revBooks + modBooks;
              if (!total) return '';
              const thyChip = thyBooks ? '<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(45,212,191,.1);border:1px solid rgba(45,212,191,.25);border-radius:3px;padding:1px 5px"><span style=\"font-family:\'DM Mono\',monospace;font-size:8px;color:var(--teal);opacity:.7;letter-spacing:.5px\">THE</span><span style=\"font-family:\'DM Mono\',monospace;font-size:9px;color:var(--teal);font-weight:500\">' + thyBooks + '</span></span>' : '';
-             const revChip = revBooks ? '<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(255, 107, 71,.1);border:1px solid rgba(255, 107, 71,.25);border-radius:3px;padding:1px 5px"><span style=\"font-family:\'DM Mono\',monospace;font-size:8px;color:var(--amber);opacity:.7;letter-spacing:.5px\">REV</span><span style=\"font-family:\'DM Mono\',monospace;font-size:9px;color:var(--amber);font-weight:500\">' + revBooks + '</span></span>' : '';
+             const revChip = revBooks ? '<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(232, 160, 32,.1);border:1px solid rgba(232, 160, 32,.25);border-radius:3px;padding:1px 5px"><span style=\"font-family:\'DM Mono\',monospace;font-size:8px;color:var(--amber);opacity:.7;letter-spacing:.5px\">REV</span><span style=\"font-family:\'DM Mono\',monospace;font-size:9px;color:var(--amber);font-weight:500\">' + revBooks + '</span></span>' : '';
              const modChip = modBooks ? '<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(129,140,248,.1);border:1px solid rgba(129,140,248,.25);border-radius:3px;padding:1px 5px"><span style=\"font-family:\'DM Mono\',monospace;font-size:8px;color:#818cf8;opacity:.7;letter-spacing:.5px\">MOD</span><span style=\"font-family:\'DM Mono\',monospace;font-size:9px;color:#818cf8;font-weight:500\">' + modBooks + '</span></span>' : '';
-             return '<div class="insight-card" style="border-color:rgba(255, 107, 71,.55);background:linear-gradient(135deg,rgba(255, 107, 71,.09),rgba(245,192,96,.04));animation-delay:.35s">'
+             return '<div class="insight-card" style="border-color:rgba(232, 160, 32,.55);background:linear-gradient(135deg,rgba(232, 160, 32,.09),rgba(245,192,96,.04));animation-delay:.35s">'
                + '<div class="insight-label" style="color:var(--amber2);letter-spacing:1.5px">BOOKS EARNED</div>'
                + '<div style=\"font-family:\'Bebas Neue\',sans-serif;font-size:28px;color:var(--amber);line-height:1;margin-bottom:6px\">' + total + '</div>'
                + '<div style="display:flex;gap:5px;flex-wrap:wrap">' + thyChip + revChip + modChip + '</div>'
@@ -6943,7 +6943,7 @@
                   <div class="score-bar-val">${s.marks}</div>
                 </div>`;
       }).join('')}
-              <div class="score-bar" style="background:rgba(255, 107, 71,.05);border-radius:4px;margin-top:4px">
+              <div class="score-bar" style="background:rgba(232, 160, 32,.05);border-radius:4px;margin-top:4px">
                 <div class="score-bar-label" style="width:130px;color:var(--amber);font-weight:600">${name.split(' ')[0]} (you)</div>
                 <div class="score-bar-track"><div class="score-bar-fill" style="width:${avg / Math.max(...schoolMates.slice(0, 8).map(x => x.marks), avg) * 100}%;background:var(--amber)"></div></div>
                 <div class="score-bar-val" style="color:var(--amber)">${avgStr}</div>
@@ -7088,7 +7088,7 @@
       podiumTestSel = { mode: type };
       top10TestSel = { mode: type };
       const typeColors = { theory: 'var(--teal)', revision: 'var(--amber)', model: '#818cf8' };
-      const typeBorders = { theory: 'rgba(45,212,191,.3)', revision: 'rgba(255,107,71,.3)', model: 'rgba(129,140,248,.35)' };
+      const typeBorders = { theory: 'rgba(45,212,191,.3)', revision: 'rgba(232,160,32,.3)', model: 'rgba(129,140,248,.35)' };
       document.querySelectorAll('#dash-filter-bar .filter-btn').forEach(b => {
         b.classList.remove('active');
         const bid = b.id?.replace('db-', '');
@@ -7189,7 +7189,7 @@
       CHARTS.avg = new Chart(ctx, {
         type: 'line', data: {
           labels: filtered.map(e => e.label), datasets: [
-            { label: 'Average Score', data: filtered.map(e => (e.students.reduce((s, r) => s + r.marks, 0) / e.students.length).toFixed(1)), borderColor: '#ff6b47', backgroundColor: 'rgba(255, 107, 71,.1)', fill: true, tension: .35, pointRadius: 5, pointBackgroundColor: '#ff6b47' },
+            { label: 'Average Score', data: filtered.map(e => (e.students.reduce((s, r) => s + r.marks, 0) / e.students.length).toFixed(1)), borderColor: '#e8a020', backgroundColor: 'rgba(232, 160, 32,.1)', fill: true, tension: .35, pointRadius: 5, pointBackgroundColor: '#e8a020' },
             { label: 'Top Score', data: filtered.map(e => Math.max(...e.students.map(s => s.marks))), borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,.05)', fill: false, tension: .35, pointRadius: 3, borderDash: [5, 3] },
             { label: 'Median', data: filtered.map(e => { const s = [...e.students].sort((a, b) => a.marks - b.marks); return s[Math.floor(s.length / 2)]?.marks || 0; }), borderColor: '#2dd4bf', backgroundColor: 'rgba(45,212,191,.05)', fill: false, tension: .35, pointRadius: 3, borderDash: [3, 3] }
           ]
@@ -7328,10 +7328,10 @@
 
     function _syncCmpBtn(idx, active) {
       const btn = document.getElementById('cmp-btn-' + idx);
-      if (btn) { btn.textContent = active ? '✓ Added' : '+ Compare'; btn.style.background = active ? 'rgba(255, 107, 71,.08)' : ''; btn.style.borderColor = active ? 'var(--amber)' : ''; btn.style.color = active ? 'var(--amber)' : ''; }
+      if (btn) { btn.textContent = active ? '✓ Added' : '+ Compare'; btn.style.background = active ? 'rgba(232, 160, 32,.08)' : ''; btn.style.borderColor = active ? 'var(--amber)' : ''; btn.style.color = active ? 'var(--amber)' : ''; }
       if (_currentProfileIdx === idx) {
         const pb = document.getElementById('cmp-btn-profile');
-        if (pb) { pb.textContent = active ? '✓ In Compare' : '+ Compare'; pb.style.background = active ? 'rgba(255, 107, 71,.08)' : ''; pb.style.borderColor = active ? 'var(--amber)' : ''; pb.style.color = active ? 'var(--amber)' : ''; }
+        if (pb) { pb.textContent = active ? '✓ In Compare' : '+ Compare'; pb.style.background = active ? 'rgba(232, 160, 32,.08)' : ''; pb.style.borderColor = active ? 'var(--amber)' : ''; pb.style.color = active ? 'var(--amber)' : ''; }
       }
     }
 
@@ -7473,7 +7473,7 @@
         return i === 3 || i === 6 ? Math.min(...v) : Math.max(...v); // worst and rank: lower is better
       };
 
-      const colors = ['#ff6b47', '#2dd4bf', '#60a5fa', '#f472b6'];
+      const colors = ['#e8a020', '#2dd4bf', '#60a5fa', '#f472b6'];
       const colorVars = ['var(--amber)', 'var(--teal)', 'var(--blue)', 'var(--pink)'];
       const ini = n => n.split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
 
@@ -7843,7 +7843,7 @@
           <div class="info-row"><span class="info-key" style="color:var(--amber)"><i class="ph ph-trophy" style="color:var(--amber)"></i> Gold</span><span class="info-val">Top 5% — consistently high performance.</span></div>
           <div class="info-row"><span class="info-key" style="color:var(--teal)"><i class="ph ph-medal" style="color:#C0C0C0"></i> Silver</span><span class="info-val">Top 15% — well above average.</span></div>
           <div class="info-row"><span class="info-key" style="color:var(--blue)"><i class="ph ph-medal" style="color:#CD7F32"></i> Bronze</span><span class="info-val">Top 30% — above average performer.</span></div>
-          <div class="info-row"><span class="info-key" style="color:#ff6b47">◈ Rising</span><span class="info-val">Top 55% — above the midpoint.</span></div>
+          <div class="info-row"><span class="info-key" style="color:#e8a020">◈ Rising</span><span class="info-val">Top 55% — above the midpoint.</span></div>
           <div class="info-row"><span class="info-key">· Standard</span><span class="info-val">Remaining participants.</span></div>
           <div class="info-sep"></div>
           <p style="color:var(--text3);font-size:11px">The <strong>Theory</strong> and <strong>Revision</strong> rank chips show separate rankings using only the respective test type — useful for identifying type specialists.</p>
