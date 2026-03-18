@@ -2925,8 +2925,8 @@
     .info-btn {
       display: inline-flex; align-items: center; justify-content: center;
       width: 16px; height: 16px; border-radius: 50%;
-      background: rgba(144,144,176,.12); border: 1px solid var(--border2);
-      color: var(--text3); font-size: 9px; font-family: 'DM Mono', monospace;
+      background: transparent; border: 1px solid transparent;
+      color: var(--text3); font-size: 13px; font-family: 'DM Mono', monospace;
       cursor: pointer; transition: all .15s; flex-shrink: 0;
       vertical-align: middle; line-height: 1; user-select: none
     }
@@ -3802,27 +3802,27 @@
     <div class="tab-bubble" id="tab-bubble"></div>
 
     <div class="tab-item active" id="tab-dashboard" onclick="tabNav('dashboard')" role="tab" aria-label="Dashboard">
-      <span class="tab-icon">◈</span>
+      <span class="tab-icon"><i class="ph ph-house"></i></span>
       <span class="tab-label">Home</span>
     </div>
     <div class="tab-item" id="tab-leaderboard" onclick="tabNav('leaderboard')" role="tab" aria-label="Leaderboard">
-      <span class="tab-icon">◉</span>
+      <span class="tab-icon"><i class="ph ph-ranking"></i></span>
       <span class="tab-label">Ranks</span>
     </div>
     <div class="tab-item" id="tab-tests" onclick="tabNav('tests')" role="tab" aria-label="Tests">
-      <span class="tab-icon">▦</span>
+      <span class="tab-icon"><i class="ph ph-exam"></i></span>
       <span class="tab-label">Tests</span>
     </div>
     <div class="tab-item" id="tab-students" onclick="tabNav('students')" role="tab" aria-label="Students">
-      <span class="tab-icon">◎</span>
+      <span class="tab-icon"><i class="ph ph-users"></i></span>
       <span class="tab-label">Students</span>
     </div>
     <div class="tab-item" id="tab-schools" onclick="tabNav('schools')" role="tab" aria-label="Schools">
-      <span class="tab-icon">▤</span>
+      <span class="tab-icon"><i class="ph ph-buildings"></i></span>
       <span class="tab-label">Schools</span>
     </div>
     <div class="tab-item" id="tab-analytics" onclick="tabNav('analytics')" role="tab" aria-label="Analytics">
-      <span class="tab-icon">▲</span>
+      <span class="tab-icon"><i class="ph ph-chart-bar"></i></span>
       <span class="tab-label">Stats</span>
     </div>
   </nav>
@@ -3940,7 +3940,7 @@
                   <button class="t10-seg-opt active" id="t10-rank-btn" onclick="setTop10Sort('rank')">Rating</button>
                   <button class="t10-seg-opt" id="t10-avg-btn" onclick="setTop10Sort('avg')">Avg</button>
                 </div>
-                <button class="t10-more-btn" onclick="goToLeaderboardFromTop10()">More ↗</button>
+                <button class="t10-more-btn" onclick="goToLeaderboardFromTop10()">More <i class="ph ph-arrow-up-right"></i></button>
               </div>
             </div>
             <div class="table-wrap" id="top10-table"></div>
@@ -3991,8 +3991,8 @@
             <div id="lb-school-wrap" class="tdd-wrap"></div>
             <div class="t10-sort-seg" id="lb-gender-seg" style="flex-shrink:0">
               <button class="t10-seg-opt active" id="lb-g-all" onclick="setLbGender('',this)">All</button>
-              <button class="t10-seg-opt" id="lb-g-b" onclick="setLbGender('B',this)"><span style="color:var(--male)">♂</span> Boys</button>
-              <button class="t10-seg-opt" id="lb-g-g" onclick="setLbGender('G',this)"><span style="color:var(--female)">♀</span> Girls</button>
+              <button class="t10-seg-opt" id="lb-g-b" onclick="setLbGender('B',this)"><i class="ph ph-gender-male" style="color:var(--male)"></i> Boys</button>
+              <button class="t10-seg-opt" id="lb-g-g" onclick="setLbGender('G',this)"><i class="ph ph-gender-female" style="color:var(--female)"></i> Girls</button>
             </div>
             <input class="search-input" id="lb-name" placeholder="Filter by name…"
               oninput="lbPage=1;renderLeaderboard()" style="width:200px;max-width:100%">
@@ -4876,13 +4876,16 @@
         return a.type === 'theory' ? -1 : 1;
       });
 
+      // Normalize school: treat literal 'no' (any case) as unaffiliated — not a real school name
+      const normSchool = v => (!v || v.trim().toLowerCase() === 'no') ? '' : v.trim();
+
       ALL = [];
       for (const exam of EXAMS) {
         for (const s of (exam.students || [])) {
           let g = (s.gender || 'U').toUpperCase();
           if (g === 'M') g = 'B';
           if (g === 'F') g = 'G';
-          ALL.push({ ...s, gender: g, exam_id: exam.id, exam_label: exam.label, exam_type: exam.type });
+          ALL.push({ ...s, school: normSchool(s.school), gender: g, exam_id: exam.id, exam_label: exam.label, exam_type: exam.type });
         }
       }
       SCHOOLS = [...new Set(ALL.map(r => r.school).filter(Boolean))].sort();
@@ -5956,7 +5959,7 @@
       const scoreKey = r => isAll ? (top10SortField === 'avg' ? r.marks : r.rating) : r.marks;
       const ratingActive = isAll && top10SortField === 'rank';
       const avgActive    = isAll && top10SortField === 'avg';
-      const arr = a => `<span class="th-arrow">${a ? '↓' : '↕'}</span>`;
+      const arr = a => `<span class="th-arrow"><i class="ph ${a ? 'ph-caret-down' : 'ph-caret-up-down'}"></i></span>`;
       // data-sort drives CSS to hide the inactive column on mobile
       const sortAttr = isAll ? `data-sort="${top10SortField === 'avg' ? 'avg' : 'rating'}"` : '';
       let h = `<table ${sortAttr}><thead><tr>
@@ -6435,7 +6438,7 @@
       if (!data.length) return '<div class="empty"><div class="empty-icon">📭</div>No results</div>';
       const { rowHighlight = 0, showExam = false, isAgg = false, isAvg = false, globalRanks = {}, useGlobalRank = false } = opts;
       // Fixed-width arrow: always same space, just opacity changes
-      const arr = active => `<span class="th-arrow">${active ? (lbSortAsc ? '↑' : '↓') : '↕'}</span>`;
+      const arr = active => `<span class="th-arrow"><i class="ph ${active ? (lbSortAsc ? 'ph-caret-up' : 'ph-caret-down') : 'ph-caret-up-down'}"></i></span>`;
       const sh = (f, lbl) => {
         const active = lbSortField === f;
         return `<th onclick="setSort('${f}')" class="${active ? 'sorted' : ''}">${lbl} ${arr(active)}</th>`;
@@ -6547,7 +6550,7 @@
               <div class="test-stat"><strong style="color:var(--amber)">${best}</strong>Best</div>
               <div class="test-stat"><strong style="color:var(--teal)">${avg}</strong>Avg</div>
               <div class="test-stat"><strong>${s.apps.length}</strong>Tests</div>
-              ${s.gender !== 'U' ? `<div class="test-stat"><strong>${s.gender === GEN_MALE ? '♂' : '♀'}</strong></div>` : ''}
+              ${s.gender !== 'U' ? `<div class="test-stat"><i class="ph ${s.gender === GEN_MALE ? 'ph-gender-male' : 'ph-gender-female'}" style="color:${s.gender === GEN_MALE ? 'var(--male)' : 'var(--female)'}"></i></div>` : ''}
               <button style="margin-left:auto;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);cursor:pointer;letter-spacing:.5px;transition:all .15s"
                 onclick="event.stopPropagation();toggleCompare(${s.idx})" id="cmp-btn-${s.idx}"
                 onmouseenter="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'"
@@ -6912,7 +6915,7 @@
         const z = examZ(a.exam_id, a.marks);
         const zStr = (z >= 0 ? '+' : '') + z.toFixed(2) + 'σ';
         const zCol = z >= 1.5 ? '#2dd4bf' : z >= 0.5 ? 'var(--teal)' : z >= -0.5 ? 'var(--text2)' : z >= -1.5 ? '#fb923c' : 'var(--pink)';
-        const zLabel = z >= 2 ? '🔥 exceptional' : z >= 1 ? '✦ above avg' : z >= -0.5 ? '· average' : z >= -1.5 ? '▼ below avg' : '▼ below avg';
+        const zLabel = z >= 2 ? '★ exceptional' : z >= 1 ? '+ above avg' : z >= -0.5 ? '· average' : z >= -1.5 ? '− below avg' : '− below avg';
         return `<tr data-etype="${a.exam_type}">
                   <td class="td-school">${a.exam_label}</td>
                   <td><span style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 6px;border-radius:3px;background:${typeColorRgba(a.exam_type,.15)};color:${typeColor(a.exam_type)}">${typeShort(a.exam_type)}</span></td>
@@ -7758,7 +7761,7 @@
 </style></head><body>
 <div class="print-bar">
   <span class="print-bar-title">DEKMA ${city} ${selectedYear} — ${label}</span>
-  <button class="print-btn" onclick="window.print()">Save as PDF ↓</button>
+  <button class="print-btn" onclick="window.print()">Save as PDF <i class="ph ph-arrow-down"></i></button>
 </div>
 <div class="doc">
 <header>
