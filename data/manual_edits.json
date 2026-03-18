@@ -200,5 +200,20 @@
       },
       "timestamp": 1773159602906
     }
+  ],
+  "addedEntries": [
+    {
+      "examId": "R-2026-009",
+      "city": "Galle",
+      "year": "2026",
+      "student": {
+        "name": "Ruchin Himasha",
+        "school": "Richmond College",
+        "marks": 88,
+        "gender": "B"
+      },
+      "isNewStudent": false,
+      "timestamp": 1773848634288
+    }
   ]
 }
