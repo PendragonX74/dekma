@@ -171,9 +171,11 @@ def load_manual_edits() -> dict:
 
 def apply_edits(data_by_city_year: dict, edits: dict) -> None:
     """
-    Apply student renames, score edits, and deletions to the in-memory data.
+    Apply all manual edits to the in-memory data in dependency order:
+      1. Renames (with gender)  2. Merges  3. Deletions
+      4. Added entries          5. Score edits
     data_by_city_year: {(city, year): [exam, …]}
-    edits: dict with keys "studentRenames", "scoreEdits", "deletions"
+    edits keys: "studentRenames", "merges", "deletions", "addedEntries", "scoreEdits"
     """
     # 1. Renames — applied first so subsequent edits can find renamed students
     for rename in edits.get("studentRenames", []):
@@ -181,38 +183,124 @@ def apply_edits(data_by_city_year: dict, edits: dict) -> None:
         old_school = rename["oldSchool"]
         new_name   = rename["newName"]
         new_school = rename["newSchool"]
+        new_gender = rename.get("newGender")   # present in edits logged after this fix
         for exams in data_by_city_year.values():
             for exam in exams:
                 for s in exam["students"]:
                     if s["name"] == old_name and s["school"] == old_school:
                         s["name"]   = new_name
                         s["school"] = new_school
+                        if new_gender:
+                            s["gender"] = new_gender
 
-    # 2. Deletions — remove entries before score edits to avoid matching ghosts
-    for deletion in edits.get("deletions", []):
-        if deletion.get("type") != "scoreEntry":
-            continue
-        exam_id      = deletion["examId"]
-        edit_city    = deletion.get("city")
-        student_info = deletion["student"]
-        for (city, year), exams in data_by_city_year.items():
-            if edit_city and city != edit_city:
-                continue
+    # 2. Merges — replay each merge: rename B → A identity, resolve collisions
+    for merge in edits.get("merges", []):
+        a_name      = merge["profileA"]["name"]
+        a_school    = merge["profileA"]["school"]
+        b_name      = merge["profileB"]["name"]
+        b_school    = merge["profileB"]["school"]
+        final_name  = merge["finalName"]
+        final_school= merge["finalSchool"]
+
+        for exams in data_by_city_year.values():
             for exam in exams:
-                if exam["id"] == exam_id:
+                # Check if profile A already exists in this exam
+                a_entry = next(
+                    (s for s in exam["students"]
+                     if s["name"] == a_name and s["school"] == a_school), None
+                )
+                kept, removed = [], []
+                for s in exam["students"]:
+                    if s["name"] == b_name and s["school"] == b_school:
+                        if a_entry:
+                            # Collision: keep higher mark on A, drop B
+                            a_entry["marks"] = max(a_entry["marks"], s["marks"])
+                            removed.append(s)
+                        else:
+                            # No collision: rename B → final identity
+                            s["name"]   = final_name
+                            s["school"] = final_school
+                    else:
+                        kept.append(s)
+                if removed:
+                    exam["students"] = [s for s in exam["students"]
+                                        if s not in removed]
+
+        # Also rename any remaining A records to the chosen final name/school
+        if final_name != a_name or final_school != a_school:
+            for exams in data_by_city_year.values():
+                for exam in exams:
+                    for s in exam["students"]:
+                        if s["name"] == a_name and s["school"] == a_school:
+                            s["name"]   = final_name
+                            s["school"] = final_school
+
+    # 3. Deletions — scoreEntry removes one student from one exam;
+    #                profileWipe removes a student from every exam
+    for deletion in edits.get("deletions", []):
+        dtype        = deletion.get("type")
+        student_info = deletion["student"]
+
+        if dtype == "scoreEntry":
+            exam_id   = deletion["examId"]
+            edit_city = deletion.get("city")
+            for (city, year), exams in data_by_city_year.items():
+                if edit_city and city != edit_city:
+                    continue
+                for exam in exams:
+                    if exam["id"] == exam_id:
+                        before = len(exam["students"])
+                        exam["students"] = [
+                            s for s in exam["students"]
+                            if not (s["name"] == student_info["name"]
+                                    and s["school"] == student_info["school"])
+                        ]
+                        if before - len(exam["students"]):
+                            print(f"  [DELETE] Removed {student_info['name']} "
+                                  f"from {exam_id}")
+                        break
+
+        elif dtype == "profileWipe":
+            wiped = 0
+            for exams in data_by_city_year.values():
+                for exam in exams:
                     before = len(exam["students"])
                     exam["students"] = [
                         s for s in exam["students"]
                         if not (s["name"] == student_info["name"]
                                 and s["school"] == student_info["school"])
                     ]
-                    removed = before - len(exam["students"])
-                    if removed:
-                        print(f"  [DELETE] Removed {student_info['name']} "
-                              f"from {exam_id}")
+                    wiped += before - len(exam["students"])
+            if wiped:
+                print(f"  [WIPE] Removed {student_info['name']} "
+                      f"({wiped} entr{'ies' if wiped != 1 else 'y'})")
+
+    # 4. Added entries — inject manually added students into the right exam
+    for entry in edits.get("addedEntries", []):
+        exam_id   = entry["examId"]
+        edit_city = entry.get("city")
+        stu       = entry["student"]
+        for (city, year), exams in data_by_city_year.items():
+            if edit_city and city != edit_city:
+                continue
+            for exam in exams:
+                if exam["id"] == exam_id:
+                    already = any(
+                        s["name"] == stu["name"] and s["school"] == stu["school"]
+                        for s in exam["students"]
+                    )
+                    if not already:
+                        exam["students"].append({
+                            "name":   stu["name"],
+                            "school": stu["school"],
+                            "marks":  stu["marks"],
+                            "gender": stu.get("gender", ""),
+                            "rank":   0,   # recomputed after all edits
+                        })
+                        print(f"  [ADD] {stu['name']} → {exam_id}")
                     break
 
-    # 3. Score edits — after renames, so we look up the post-rename name
+    # 5. Score edits — last, after all structural changes are settled
     for score_edit in edits.get("scoreEdits", []):
         exam_id      = score_edit["examId"]
         edit_city    = score_edit.get("city")
@@ -243,13 +331,21 @@ def apply_edits(data_by_city_year: dict, edits: dict) -> None:
 
 # ─── output writers ───────────────────────────────────────────────────────────
 
-def write_chunk(city: str, year: int, exams: list[dict]) -> None:
+def write_chunk(city: str, year: int, exams: list[dict]) -> bool:
+    """Write a data chunk. Returns True if the file was actually written (content changed)."""
     chunk_file = OUTPUT_DIR / f"results_{slug(city)}_{year}.js"
     var_name   = f"window.dekmaChunk_{slug(city)}_{year}"
     exams.sort(key=lambda e: (TYPE_ORDER.get(e["type"], 9), e["number"]))
-    json_str = json.dumps({"exams": exams}, ensure_ascii=False, separators=(',', ':'))
-    chunk_file.write_text(f"{var_name}={json_str};\n", encoding="utf-8")
+    json_str  = json.dumps({"exams": exams}, ensure_ascii=False, separators=(',', ':'))
+    new_text  = f"{var_name}={json_str};\n"
+
+    if chunk_file.exists() and chunk_file.read_text(encoding="utf-8") == new_text:
+        print(f"  Unchanged {chunk_file.name} — skipped")
+        return False
+
+    chunk_file.write_text(new_text, encoding="utf-8")
     print(f"  Wrote {chunk_file} ({len(exams)} exams)")
+    return True
 
 
 def build_index() -> list[dict]:
@@ -358,9 +454,13 @@ def main():
     rename_count = len(edits.get("studentRenames", []))
     edit_count   = len(edits.get("scoreEdits", []))
     del_count    = len(edits.get("deletions", []))
-    if rename_count or edit_count or del_count:
+    add_count    = len(edits.get("addedEntries", []))
+    merge_count  = len(edits.get("merges", []))
+    if any([rename_count, edit_count, del_count, add_count, merge_count]):
         print(f"Loaded manual edits: {rename_count} rename(s), "
-              f"{edit_count} score edit(s), {del_count} deletion(s)\n")
+              f"{edit_count} score edit(s), {del_count} deletion(s), "
+              f"{add_count} added entr{'ies' if add_count != 1 else 'y'}, "
+              f"{merge_count} merge(s)\n")
 
     # ── First pass: gather all XML files per (city, year) ────────────────────
     city_year_exams: dict = {}
@@ -422,9 +522,11 @@ def main():
     print(f"\nRecomputed ranks for {total_recomputed} exam(s).")
 
     # ── Write data chunks ─────────────────────────────────────────────────────
+    any_chunk_changed = False
     for (city, year), exams in city_year_exams.items():
         print(f"\nWriting {city} {year}...")
-        write_chunk(city, year, exams)
+        if write_chunk(city, year, exams):
+            any_chunk_changed = True
 
     # ── Write results_index.js ────────────────────────────────────────────────
     chunks    = build_index()
@@ -455,7 +557,10 @@ def main():
     for tkey, count in sorted(type_counts.items(), key=lambda x: TYPE_ORDER.get(x[0], 9)):
         print(f"  {tkey}: {count}")
 
-    bump_version()
+    if any_chunk_changed:
+        bump_version()
+    else:
+        print("\nAll chunks unchanged — version not bumped.")
     print("Done.")
 
 

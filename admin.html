@@ -1755,7 +1755,7 @@
       await appendManualEdit(edits => {
         edits.studentRenames.push({
           oldName: origName, oldSchool: origSchool,
-          newName, newSchool, timestamp: Date.now()
+          newName, newSchool, newGender, timestamp: Date.now()
         });
       });
       bumpVersion();
