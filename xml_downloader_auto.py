@@ -35,8 +35,8 @@ EXAM_TYPES = ["R", "T"]
 ACTIVE_YEARS = [2026, 2027]
 
 # Years whose regular exams are finalized but may still have model papers
-# we have not downloaded yet.  Add 2024, 2023 etc. if you have earlier data.
-HISTORICAL_YEARS = [2025]
+# we have not downloaded yet.
+HISTORICAL_YEARS = [2025, 2024, 2023, 2022, 2021, 2020, 2019]
 
 # How many of the most-recent T and R exams to re-check for updates
 # in active years.  2 covers the typical DEKMA correction window.
