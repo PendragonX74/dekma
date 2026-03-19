@@ -85,7 +85,8 @@
         mergeChunks();
         window._dataVersion = version;
 
-        // Step 5: invoke app boot once DOM is ready
+        // Step 5: mark data as loaded, then invoke loadData once DOM is ready
+        window._dekmaBootstrapDone = true;
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', function () { loadData(); });
         } else {
@@ -2296,6 +2297,9 @@
     .chart-fs-overlay {
       position: fixed;
       inset: 0;
+      /* on mobile, clamp to the stable visible area so the backdrop
+         itself doesn't stretch behind address bar / nav bar */
+      max-height: 100svh;
       background: rgba(0,0,0,.92);
       backdrop-filter: blur(8px);
       z-index: 9000;
@@ -2355,29 +2359,32 @@
       flex: 1;
       min-height: 0
     }
-    /* Mobile: rotate the whole inner panel to landscape and stretch to fill screen */
+    /* Mobile: rotate the whole inner panel to landscape and fit to the
+       VISIBLE area (excluding browser address bar + system nav bar).
+       svh/svw = "small viewport" units — always the smallest stable size,
+       so they never reach behind the browser chrome bars.
+       We also apply safe-area-inset padding for notch/gesture-bar devices. */
     @media (max-width: 768px) and (orientation: portrait) {
       .chart-fs-inner {
         position: fixed;
         top: 50%;
         left: 50%;
-        /* dvh/dvw = dynamic viewport units: shrink when browser chrome (address bar /
-           nav bar) is visible, so the panel never hides behind those bars */
+        /* svh/svw guarantee the panel never bleeds under address-bar or nav-bar */
         transform: translate(-50%,-50%) rotate(90deg);
-        width: 100dvh;
-        height: 100dvw;
+        width: 100svh;
+        height: 100svw;
         max-height: none;
         border-radius: 0;
         border: none
       }
-      /* After 90° rotation the device's home-indicator edge becomes one of the
-         short sides of the panel. Pad the chart body so the canvas doesn't
-         render behind it (and account for the rotated safe-area edges). */
+      /* After 90° rotation the rotated edges map to the physical top/bottom.
+         Use safe-area insets so canvas doesn't render behind the home indicator
+         or status bar on notched/gesture devices. */
       .chart-fs-inner .chart-fs-body {
-        padding-top: max(8px, env(safe-area-inset-left));
-        padding-bottom: max(8px, env(safe-area-inset-right));
-        padding-left: max(8px, env(safe-area-inset-bottom));
-        padding-right: max(8px, env(safe-area-inset-top))
+        padding-top:    max(10px, env(safe-area-inset-left));
+        padding-bottom: max(10px, env(safe-area-inset-right));
+        padding-left:   max(10px, env(safe-area-inset-bottom));
+        padding-right:  max(10px, env(safe-area-inset-top))
       }
     }
     .chart-scroll-inner {
@@ -2507,7 +2514,58 @@
       position: fixed; inset: 0; background: #09090e;
       display: flex; align-items: center; justify-content: center; z-index: 2000;
     }
-    .loading-dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(232, 160, 32,.4); }
+    /* Minimal amber bar that grows to match the splash rule aesthetic */
+    .loading-dot {
+      width: 40px; height: 2px; border-radius: 1px;
+      background: linear-gradient(90deg, transparent, rgba(232,160,32,.35), transparent);
+      animation: ldPulse 1.1s ease-in-out infinite;
+    }
+    @keyframes ldPulse {
+      0%,100% { opacity:.3; transform: scaleX(.5); }
+      50%      { opacity:1;  transform: scaleX(1.4); }
+    }
+
+    /* ── In-splash data-wait indicator ── */
+    #spl-wait {
+      position: absolute;
+      bottom: 44px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      opacity: 0;
+      transition: opacity .5s ease;
+    }
+    #spl-wait.visible { display: flex; }
+    #spl-wait.in { opacity: 1; }
+    .spl-wait-bar {
+      width: 56px; height: 2px; border-radius: 1px;
+      background: rgba(232,160,32,.18);
+      overflow: hidden; position: relative;
+    }
+    .spl-wait-bar::after {
+      content: '';
+      position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, var(--amber), transparent);
+      animation: splWaitScan 1.4s ease-in-out infinite;
+    }
+    @keyframes splWaitScan {
+      0%   { left: -100%; }
+      100% { left:  100%; }
+    }
+    .spl-wait-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text3);
+      animation: splWaitBlink 2s ease-in-out infinite;
+    }
+    @keyframes splWaitBlink {
+      0%,100% { opacity:.4; } 50% { opacity:.8; }
+    }
 
     /* ══ SPLASH ══════════════════════════════════════════════════════════════ */
     /* hidden by default — JS sets display:block then triggers .s-run */
@@ -3794,6 +3852,10 @@
 
     </div>
     <button class="splash-skip" id="splash-skip" style="display:none"></button>
+    <div id="spl-wait">
+      <div class="spl-wait-bar"></div>
+      <span class="spl-wait-label">Loading</span>
+    </div>
   </div>
 
   <div id="picker">
@@ -4737,7 +4799,7 @@
     // ═══════════════════════════════════════════════════════════════════════
     (function(){
       let amb = null, exitTimer = null, dest = 'picker';
-      let _exitCalled = false;
+      let _exitCalled = false, _splashWaiting = false;
 
       function Q(id){ return document.getElementById(id); }
 
@@ -4759,7 +4821,23 @@
       }
 
       function doExit() {
-        if (_exitCalled) return; // guard against double-calls
+        if (_exitCalled) return;
+
+        // If data hasn't arrived yet, show the in-splash wait indicator
+        // and park here — _splashReady() will call us again once data lands
+        if (!window._dekmaBootstrapDone) {
+          _splashWaiting = true;
+          clearTimeout(exitTimer);
+          if (amb) { amb.stop(); amb = null; }
+          const waitEl = document.getElementById('spl-wait');
+          if (waitEl) {
+            waitEl.classList.add('visible');
+            requestAnimationFrame(() => requestAnimationFrame(() => waitEl.classList.add('in')));
+          }
+          return;
+        }
+
+        _splashWaiting = false;
         _exitCalled = true;
         clearTimeout(exitTimer);
         if (amb) { amb.stop(); amb = null; }
@@ -4784,6 +4862,25 @@
           }
         }, 720);
       }
+
+      window._splashSetDest = function(d) { dest = d || 'picker'; };
+
+      // Called by loadData() once data has arrived.
+      // If the splash animation already finished and is parked, resume exit now.
+      // If animation is still running, _dekmaBootstrapDone=true so doExit() will
+      // proceed naturally when the timer fires.
+      window._splashReady = function() {
+        if (_splashWaiting) {
+          _splashWaiting = false;
+          const waitEl = document.getElementById('spl-wait');
+          if (waitEl) {
+            waitEl.classList.remove('in');
+            setTimeout(() => { waitEl.classList.remove('visible'); }, 320);
+          }
+          // Small pause so the bar fades before we exit
+          setTimeout(doExit, 340);
+        }
+      };
 
       window._splashSkip = function() {
         clearTimeout(exitTimer);
@@ -4822,6 +4919,22 @@
       };
     })();
 
+    // ══ EARLY SPLASH START ══════════════════════════════════════════════
+    // Show the splash immediately at DOM-ready — before data arrives —
+    // so the animation covers actual network/parse time rather than
+    // playing as a post-load vanity sequence.
+    document.addEventListener('DOMContentLoaded', function () {
+      if (window._splashEarlyStarted) return;
+      window._splashEarlyStarted = true;
+      document.getElementById('loading').style.display = 'none';
+      var sp = document.getElementById('splash');
+      sp.style.display = 'block';
+      // 2 rAFs so display:block is painted before canvas sizing + CSS transitions
+      requestAnimationFrame(function () { requestAnimationFrame(function () {
+        if (window.startSplashAnimation) window.startSplashAnimation('picker');
+      }); });
+    }, { once: true });
+
     // ═══════════════════════════════════════════════════════════════════════
     //  PICKER SCREEN
     // ═══════════════════════════════════════════════════════════════════════
@@ -4855,12 +4968,45 @@
     //  DATA LOADING
     // ═══════════════════════════════════════════════════
     function loadData() {
-      // Hide loader immediately
+      if (window._splashEarlyStarted) {
+        // Splash already playing — just update its destination and signal readiness.
+        // The animation will exit (or wake from wait-state) on its own schedule.
+
+        if (!window.dekmaData || !Object.keys(window.dekmaData).length) {
+          // No data at all — bypass splash entirely, show empty app
+          document.getElementById('splash').style.display = 'none';
+          selectedCity = ''; selectedYear = '';
+          document.getElementById('app').style.display = 'flex';
+          document.getElementById('no-data-msg').style.display = 'block';
+          initUIShell();
+          return;
+        }
+
+        let city = '', year = '';
+        try {
+          city = localStorage.getItem('dekma_city') || '';
+          year = localStorage.getItem('dekma_year') || '';
+        } catch(e) {}
+
+        if (city && year && hasData(city, year)) {
+          selectedCity = city; selectedYear = year;
+          splashCity = city;   splashYear = year;
+          if (window._splashSetDest) window._splashSetDest('app');
+          // Preload app in background while the splash finishes playing
+          setTimeout(() => { reloadForSelection(); window._appPreloaded = true; }, 80);
+        } else {
+          splashCity = ''; splashYear = '';
+          if (window._splashSetDest) window._splashSetDest('picker');
+        }
+
+        if (window._splashReady) window._splashReady();
+        return;
+      }
+
+      // ── Fallback: data arrived before DOM ready (very fast / offline cache) ──
       document.getElementById('loading').style.display = 'none';
 
-      // Check if dekmaData exists (from results.js)
       if (!window.dekmaData || !Object.keys(window.dekmaData).length) {
-        // No data at all — show app with empty state
         selectedCity = ''; selectedYear = '';
         document.getElementById('app').style.display = 'flex';
         document.getElementById('no-data-msg').style.display = 'block';
@@ -4868,7 +5014,6 @@
         return;
       }
 
-      // Always show splash first. Determine destination after.
       let city = '', year = '';
       try {
         city = localStorage.getItem('dekma_city') || '';
@@ -4876,18 +5021,14 @@
       } catch(e) {}
 
       if (city && year && hasData(city, year)) {
-        // Has saved selection — splash exits directly to app
         selectedCity = city; selectedYear = year;
         splashCity = city;   splashYear = year;
         showSplash('app');
-        // Preload: render the app in the background while the splash plays
-        // The app div is hidden so nothing is visible yet
         setTimeout(() => {
           reloadForSelection();
           window._appPreloaded = true;
         }, 80);
       } else {
-        // No selection — splash exits to picker
         splashCity = ''; splashYear = '';
         showSplash('picker');
       }
