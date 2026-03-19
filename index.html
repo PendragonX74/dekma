@@ -2361,12 +2361,23 @@
         position: fixed;
         top: 50%;
         left: 50%;
+        /* dvh/dvw = dynamic viewport units: shrink when browser chrome (address bar /
+           nav bar) is visible, so the panel never hides behind those bars */
         transform: translate(-50%,-50%) rotate(90deg);
-        width: 100vh;
-        height: 100vw;
+        width: 100dvh;
+        height: 100dvw;
         max-height: none;
         border-radius: 0;
         border: none
+      }
+      /* After 90° rotation the device's home-indicator edge becomes one of the
+         short sides of the panel. Pad the chart body so the canvas doesn't
+         render behind it (and account for the rotated safe-area edges). */
+      .chart-fs-inner .chart-fs-body {
+        padding-top: max(8px, env(safe-area-inset-left));
+        padding-bottom: max(8px, env(safe-area-inset-right));
+        padding-left: max(8px, env(safe-area-inset-bottom));
+        padding-right: max(8px, env(safe-area-inset-top))
       }
     }
     .chart-scroll-inner {
@@ -3687,11 +3698,24 @@
         display: none
       }
 
-      /* Compact Top 10 sort buttons */
+      /* Compact Top 10 sort / more buttons on narrow screens */
       .t10-sort-btn {
         font-size: 9px;
         padding: 4px 8px;
         letter-spacing: .3px
+      }
+
+      .t10-seg-opt {
+        font-size: 9px;
+        padding: 5px 7px;
+        letter-spacing: .2px
+      }
+
+      .t10-more-btn {
+        font-size: 9px;
+        padding: 5px 7px;
+        letter-spacing: .2px;
+        gap: 3px
       }
 
       /* Compact leaderboard filter bar */
