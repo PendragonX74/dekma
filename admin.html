@@ -1985,9 +1985,8 @@
     btn.style.color  = '';
     if (tick) { tick.classList.add('visible'); setTimeout(() => tick.classList.remove('visible'), 2400); }
 
-    // Update rank cell in desktop table
-    const row = inp.closest('tr');
-    if (row) { const rc = row.querySelector('.tbl-rank'); if (rc) rc.textContent = '#' + student._displayRank; }
+    // Re-render the full table so row order and all rank cells reflect the new scores
+    filterTestSheet(document.getElementById('test-search-inp')?.value || '');
 
     showToast(`${origName}: ${prevMarks} → ${newVal}, saved to GitHub.`, 'success');
   }
