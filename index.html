@@ -6547,7 +6547,9 @@
         });
         data = Object.values(dedupMap);
       }
-      const sf = isAll && (lbSortField === 'rank' || lbSortField === 'marks' || lbSortField === 'avg' || lbSortField === 'rating' || lbSortField === 'best' || lbSortField === 'name') ? lbSortField : (isAll ? 'rating' : lbSortField);
+      const _sf0 = isAll && (lbSortField === 'rank' || lbSortField === 'marks' || lbSortField === 'avg' || lbSortField === 'rating' || lbSortField === 'best' || lbSortField === 'name') ? lbSortField : (isAll ? 'rating' : lbSortField);
+      // Single-exam rows have no .rating — fall back to marks so rows are actually ordered
+      const sf = (!isAll && _sf0 === 'rating') ? 'marks' : _sf0;
       data = [...data].sort((a, b) => {
         let v;
         if (sf === 'rating') v = (b.rating || 0) - (a.rating || 0);
