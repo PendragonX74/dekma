@@ -162,7 +162,7 @@
 </div>
 
 <script>
-const API = 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://loversquarrel.lk/api/scorecard');
+const API = 'https://corsproxy.io/?url=https://loversquarrel.lk/api/scorecard';
 let timer = null;
 let curTab = 0;
 
@@ -172,8 +172,7 @@ async function load() {
   try {
     const res = await fetch(API, { cache: 'no-store' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const wrapper = await res.json();
-    const json = JSON.parse(wrapper.contents);
+    const json = await res.json();
     render(json.data);
     const t = new Date();
     document.getElementById('upd').textContent =
@@ -182,10 +181,9 @@ async function load() {
     document.getElementById('upd').textContent = '⚠ ' + e.message;
     if (!document.querySelector('.itab')) {
       document.getElementById('scoreArea').innerHTML =
-        '<div class="err">Could not reach loversquarrel.lk API directly from this browser (CORS restriction).<br><br>' +
-        'The site works when opened from a local server or a domain that the API allows.<br>' +
-        'Try: <b>python3 -m http.server 8080</b> in the file folder, then open localhost:8080.<br><br>' +
-        'Alternatively, open <a href="https://loversquarrel.lk" target="_blank" style="color:var(--gold-light)">loversquarrel.lk</a> directly for live scores.</div>';
+        '<div class="err">Failed to fetch live score.<br><br>' +
+        'The CORS proxy may be temporarily unavailable. Try hitting <b>↻ REFRESH</b> in a moment.<br><br>' +
+        'Or view directly at <a href="https://loversquarrel.lk" target="_blank" style="color:var(--gold-light)">loversquarrel.lk</a></div>';
     }
   }
   btn.disabled = false; btn.textContent = '↻ REFRESH';
