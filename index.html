@@ -2022,38 +2022,7 @@
       color: var(--teal)
     }
 
-    .verdict-box {
-      display: flex;
-      align-items: flex-start;
-      gap: 16px;
-      padding: 18px 22px;
-      background: var(--bg3);
-      border: 1px solid var(--border2);
-      border-radius: var(--radius2);
-      margin-bottom: 20px;
-      animation: cardIn .5s ease-out .1s both
-    }
 
-    .verdict-icon {
-      font-size: 32px;
-      flex-shrink: 0;
-      line-height: 1;
-      margin-top: 2px
-    }
-
-    .verdict-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 22px;
-      letter-spacing: 2px;
-      color: var(--amber);
-      margin-bottom: 4px
-    }
-
-    .verdict-text {
-      font-size: 14px;
-      color: var(--text2);
-      line-height: 1.6
-    }
 
     .insight-grid {
       display: grid;
@@ -3225,6 +3194,26 @@
       flex-shrink: 0
     }
 
+    .school-sort-seg {
+      display: flex;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 16px;
+      flex-shrink: 0
+    }
+    .school-sort-seg .t10-seg-opt { flex: 1; text-align: center; justify-content: center }
+    .school-sort-seg .t10-seg-opt + .t10-seg-opt { border-left: 1px solid var(--border) }
+
+    #page-schools { display: none; flex-direction: column; height: calc(100vh - 70px); overflow: hidden }
+    #page-schools.active { display: flex }
+    #schools-two-col { flex: 1; min-height: 0; margin-bottom: 0 }
+
+    @media(max-width:768px) {
+      .school-detail-desktop { display: none }
+      #schools-two-col { grid-template-columns: 1fr }
+    }
+
     .hist-bar:nth-child(1) {
       animation-delay: .05s
     }
@@ -3481,23 +3470,6 @@
       .pill {
         font-size: 9px;
         padding: 3px 8px
-      }
-
-      .verdict-box {
-        padding: 14px 16px;
-        gap: 12px
-      }
-
-      .verdict-icon {
-        font-size: 26px
-      }
-
-      .verdict-title {
-        font-size: 18px
-      }
-
-      .verdict-text {
-        font-size: 13px
       }
 
       .insight-grid {
@@ -4061,9 +4033,9 @@
         <div class="page" id="page-tests">
           <div class="filter-bar">
             <div class="filter-btn active" id="ft-all" onclick="filterTests('all',this)">All</div>
-            <div class="filter-btn" id="ft-theory" onclick="filterTests('theory',this)" style="color:var(--teal);border-color:rgba(45,212,191,.3)">Theory</div>
-            <div class="filter-btn" id="ft-revision" onclick="filterTests('revision',this)" style="color:#f97316;border-color:rgba(249,115,22,.3)">Revision</div>
-            <div class="filter-btn" id="ft-model" onclick="filterTests('model',this)" style="display:none;color:#818cf8;border-color:rgba(129,140,248,.35)">Model</div>
+            <div class="filter-btn" id="ft-theory" onclick="filterTests('theory',this)">Theory</div>
+            <div class="filter-btn" id="ft-revision" onclick="filterTests('revision',this)">Revision</div>
+            <div class="filter-btn" id="ft-model" onclick="filterTests('model',this)" style="display:none">Model</div>
           </div>
           <div class="tests-grid" id="tests-grid"></div>
         </div>
@@ -4119,24 +4091,28 @@
 
         <!-- SCHOOLS -->
         <div class="page" id="page-schools">
-          <div class="filter-bar">
+          <div class="filter-bar" style="flex-wrap:wrap">
             <div id="school-test-sel" class="tdd-wrap"></div>
-            <div class="filter-btn" id="ss-count" onclick="setSchoolSort('count',this)">By Students</div>
-            <div class="filter-btn" id="ss-avg" onclick="setSchoolSort('avg',this)">By Avg Score</div>
-            <div class="filter-btn active" id="ss-top" onclick="setSchoolSort('elite',this)">By Elite Score</div>
+            <input id="school-search-inp" class="search-input" placeholder="Search school…" autocomplete="off"
+              oninput="renderSchools()" style="flex:1;min-width:140px;padding-left:12px;width:auto">
           </div>
-          <div class="two-col">
-            <div class="card">
-              <div class="card-header">
+          <div class="school-sort-seg" id="school-sort-seg">
+            <button class="t10-seg-opt" id="ss-count" onclick="setSchoolSort('count',this)">By Students</button>
+            <button class="t10-seg-opt" id="ss-avg" onclick="setSchoolSort('avg',this)">By Avg Score</button>
+            <button class="t10-seg-opt active" id="ss-top" onclick="setSchoolSort('elite',this)">By Elite Score</button>
+          </div>
+          <div class="two-col" id="schools-two-col">
+            <div class="card" style="display:flex;flex-direction:column;min-height:0">
+              <div class="card-header" style="flex-shrink:0">
                 <div class="card-title">School Rankings</div>
                 <div style="display:flex;align-items:center;gap:6px">
                   <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)">Avg is Bayesian-adjusted</div>
                   <button class="info-btn" onclick="showInfoPopover(this,'school-ranking')" title="About school rankings"><i class="ph ph-info" style="font-size:13px;line-height:1"></i></button>
                 </div>
               </div>
-              <div class="card-body" style="max-height:560px;overflow-y:auto" id="school-list"></div>
+              <div class="card-body" style="overflow-y:auto;flex:1;min-height:0" id="school-list"></div>
             </div>
-            <div class="card">
+            <div class="card school-detail-desktop">
               <div class="card-header">
                 <div class="card-title" id="school-detail-title">School Detail</div>
               </div>
@@ -4155,7 +4131,7 @@
             <div class="filter-btn active" id="at-all" onclick="setAvgType('all',this)">All Tests</div>
             <div class="filter-btn" id="at-thy" onclick="setAvgType('theory',this)">Theory</div>
             <div class="filter-btn" id="at-rev" onclick="setAvgType('revision',this)">Revision</div>
-            <div class="filter-btn" id="at-mod" onclick="setAvgType('model',this)" style="display:none;color:#818cf8;border-color:rgba(129,140,248,.35)">Model</div>
+            <div class="filter-btn" id="at-mod" onclick="setAvgType('model',this)" style="display:none">Model</div>
           </div>
           <div class="three-col">
             <div class="card">
@@ -6454,7 +6430,7 @@
         panel.innerHTML = ''; // clear so rebuildSchoolPanel creates fresh structure
         rebuildSchoolPanel('');
         const rect = btn.getBoundingClientRect();
-        const W = 240;
+        const W = Math.max(240, rect.width);
         const left = Math.max(8, Math.min(rect.left, window.innerWidth - W - 8));
         const spaceB = window.innerHeight - rect.bottom - 8;
         const top = spaceB >= 320 ? rect.bottom + 4 : Math.max(8, rect.top - 320 - 4);
@@ -6548,7 +6524,6 @@
         data = Object.values(dedupMap);
       }
       const _sf0 = isAll && (lbSortField === 'rank' || lbSortField === 'marks' || lbSortField === 'avg' || lbSortField === 'rating' || lbSortField === 'best' || lbSortField === 'name') ? lbSortField : (isAll ? 'rating' : lbSortField);
-      // Single-exam rows have no .rating — fall back to marks so rows are actually ordered
       const sf = (!isAll && _sf0 === 'rating') ? 'marks' : _sf0;
       data = [...data].sort((a, b) => {
         let v;
@@ -6884,20 +6859,7 @@
 
       const revTheoryGap = revAvg && thyAvg ? revAvg - thyAvg : null;
 
-      let archetype, archetypeDesc = '', archetypeIcon, archetypeColor;
-      if (avg >= 93 && consistency >= 80) { archetype = 'Exceptional'; archetypeIcon = '🌠'; archetypeColor = '#e8a020'; }
-      else if (avg >= 90) { archetype = 'Elite Performer'; archetypeIcon = '<i class="ph ph-trophy"></i>'; archetypeColor = '#e8a020'; }
-      else if (avg >= 85 && consistency < 65) { archetype = 'Varied Results'; archetypeIcon = '⚡'; archetypeColor = '#f59e0b'; }
-      else if (avg >= 80 && trend > 1.2) { archetype = 'Rising Force'; archetypeIcon = '🚀'; archetypeColor = '#2dd4bf'; }
-      else if (avg >= 80 && trend < -1.0) { archetype = 'Trending Down'; archetypeIcon = '📉'; archetypeColor = '#9090b0'; }
-      else if (avg >= 80) { archetype = 'Solid Performer'; archetypeIcon = '<i class="ph ph-target"></i>'; archetypeColor = '#60a5fa'; }
-      else if (avg >= 72 && consistency >= 82) { archetype = 'The Grinder'; archetypeIcon = '<i class="ph ph-gear"></i>'; archetypeColor = '#818cf8'; }
-      else if (avg >= 72 && revTheoryGap !== null && Math.abs(revTheoryGap) > 10) { archetype = revTheoryGap > 0 ? 'Revision Specialist' : 'Theory Specialist'; archetypeIcon = revTheoryGap > 0 ? '🗂️' : '📖'; archetypeColor = 'var(--teal)'; }
-      else if (avg >= 72 && trend > 1.0) { archetype = 'Climbing'; archetypeIcon = '<i class="ph ph-trend-up"></i>'; archetypeColor = '#2dd4bf'; }
-      else if (avg >= 65) { archetype = 'Mid-Field'; archetypeIcon = '🌱'; archetypeColor = '#9090b0'; }
-      else if (avg >= 55 && trend > 0.5) { archetype = 'Developing'; archetypeIcon = '🌱'; archetypeColor = '#9090b0'; }
-      else if (avg >= 55) { archetype = ''; archetypeIcon = ''; archetypeColor = 'var(--text3)'; }
-      else { archetype = ''; archetypeIcon = ''; archetypeColor = 'var(--text3)'; }
+
 
       const name = stuData.name, school = stuData.school;
       const ini = name.split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
@@ -6999,13 +6961,6 @@
             </div>
           </div>
         </div>
-        ${archetype ? `<div class="verdict-box" style="border-color:${archetypeColor}33;background:${archetypeColor}08">
-          <div class="verdict-icon">${archetypeIcon}</div>
-          <div>
-            <div class="verdict-title" style="color:${archetypeColor}">${archetype}</div>
-            <div class="verdict-text">${archetypeDesc}</div>
-          </div>
-        </div>` : ''}
          <div class="insight-grid">
            <div class="insight-card amber" style="animation-delay:.05s">
              <div class="insight-label">Consistency</div>
@@ -7170,7 +7125,9 @@
     function renderSchools() {
       const data = getRowsForSel(schoolTestSel);
       schoolData = buildSchoolStats(data);
+      const q = (document.getElementById('school-search-inp')?.value || '').toLowerCase().trim();
       let schools = Object.entries(schoolData).map(([name, d]) => ({ name, ...d }));
+      if (q) schools = schools.filter(s => s.name.toLowerCase().includes(q));
       if (schoolSort === 'count') schools.sort((a, b) => b.totalEntries - a.totalEntries);
       else if (schoolSort === 'avg') schools.sort((a, b) => b.bayesAvg - a.bayesAvg);
       else schools.sort((a, b) => b.eliteScore - a.eliteScore);
@@ -8070,19 +8027,51 @@
       document.getElementById('school-drawer-title').textContent = title;
       document.getElementById('school-drawer-body').innerHTML = html;
       document.getElementById('school-drawer-overlay').classList.add('open');
-      // Small delay so the display:block renders before transform
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           document.getElementById('school-drawer').classList.add('open');
         });
       });
       document.body.style.overflow = 'hidden';
+
+      const drawer = document.getElementById('school-drawer');
+      let _ty = 0, _startY = 0, _dragging = false;
+      function onTouchStart(e) {
+        const body = document.getElementById('school-drawer-body');
+        const fromHandle = e.target.closest('.school-drawer-handle, .school-drawer-header');
+        if (!fromHandle && body.scrollTop > 0) return;
+        _startY = e.touches[0].clientY; _dragging = true; _ty = 0;
+        drawer.style.transition = 'none';
+      }
+      function onTouchMove(e) {
+        if (!_dragging) return;
+        _ty = Math.max(0, e.touches[0].clientY - _startY);
+        drawer.style.transform = `translateY(${_ty}px)`;
+      }
+      function onTouchEnd() {
+        if (!_dragging) return;
+        _dragging = false; drawer.style.transition = ''; drawer.style.transform = '';
+        if (_ty > 80) closeSchoolDrawer(); else drawer.style.transform = 'translateY(0)';
+      }
+      drawer._swipeTouchStart = onTouchStart;
+      drawer._swipeTouchMove = onTouchMove;
+      drawer._swipeTouchEnd  = onTouchEnd;
+      drawer.addEventListener('touchstart', onTouchStart, { passive: true });
+      drawer.addEventListener('touchmove',  onTouchMove,  { passive: true });
+      drawer.addEventListener('touchend',   onTouchEnd);
     }
 
     function closeSchoolDrawer() {
-      document.getElementById('school-drawer').classList.remove('open');
+      const drawer = document.getElementById('school-drawer');
+      drawer.classList.remove('open');
       document.getElementById('school-drawer-overlay').classList.remove('open');
       document.body.style.overflow = '';
+      if (drawer._swipeTouchStart) {
+        drawer.removeEventListener('touchstart', drawer._swipeTouchStart);
+        drawer.removeEventListener('touchmove',  drawer._swipeTouchMove);
+        drawer.removeEventListener('touchend',   drawer._swipeTouchEnd);
+        delete drawer._swipeTouchStart; delete drawer._swipeTouchMove; delete drawer._swipeTouchEnd;
+      }
     }
 
     // ═══════════════════════════════════════════════════
