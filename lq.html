@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>121st Lovers' Quarrel — Live Score</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;600&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold:#c9a84c;--gold-light:#e8c97a;--cream:#f0e8d8;
+    --dark:#0c1118;--dark3:#161f2b;--text:#ddd6c4;--text-dim:#7a7060;
+    --border:rgba(201,168,76,0.2);--live-red:#e05050;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--dark);color:var(--text);font-family:'Crimson Text',Georgia,serif;min-height:100vh;
+    background-image:radial-gradient(ellipse 70% 50% at 15% 0%,rgba(26,58,107,.18) 0%,transparent 55%),
+    radial-gradient(ellipse 70% 50% at 85% 100%,rgba(139,26,26,.14) 0%,transparent 55%);}
+  .wrap{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:0 14px 56px;}
+
+  .header{text-align:center;padding:24px 0 16px;border-bottom:1px solid var(--border);}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:8px;}
+  .h1{font-family:'Playfair Display',serif;font-size:clamp(26px,6vw,50px);font-weight:900;color:var(--cream);line-height:1;letter-spacing:-1px;}
+  .h1 em{font-style:italic;color:var(--gold-light);}
+  .h-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--text-dim);margin-top:10px;}
+
+  .sbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:9px 14px;background:rgba(201,168,76,.04);border-bottom:1px solid var(--border);}
+  .live-badge{display:flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--live-red);font-weight:600;}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:var(--live-red);animation:pulse 1.3s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.65)}}
+  .upd{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-dim);}
+  .rbtn{background:transparent;border:1px solid var(--border);color:var(--gold);padding:4px 12px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;cursor:pointer;transition:all .2s;border-radius:2px;}
+  .rbtn:hover{background:rgba(201,168,76,.1);}
+  .rbtn:disabled{opacity:.4;cursor:not-allowed;}
+
+  .day-tabs{display:flex;gap:8px;justify-content:center;padding:14px 0;border-bottom:1px solid var(--border);}
+  .dtab{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;padding:5px 14px;border:1px solid var(--border);color:var(--text-dim);border-radius:2px;}
+  .dtab.today{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.07);}
+  .dtab.done{opacity:.45;}
+
+  .teams{display:grid;grid-template-columns:1fr 40px 1fr;align-items:center;padding:22px 0;border-bottom:1px solid var(--border);gap:8px;}
+  .team{text-align:center;}
+  .tname{font-family:'Playfair Display',serif;font-size:clamp(13px,2.8vw,20px);font-weight:700;margin-bottom:3px;}
+  .team.rcg .tname{color:#6b9be8;}.team.mcg .tname{color:#e06060;}
+  .tscore{font-family:'IBM Plex Mono',monospace;font-size:clamp(20px,4.5vw,38px);font-weight:600;line-height:1;color:var(--cream);}
+  .tscore.tbd{font-size:clamp(11px,2vw,15px);color:var(--text-dim);font-weight:300;padding-top:6px;}
+  .tovers{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);margin-top:3px;}
+  .tbadge{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--gold);margin-top:5px;min-height:14px;}
+  .vs{font-family:'Playfair Display',serif;font-size:13px;color:var(--gold);font-style:italic;text-align:center;opacity:.6;}
+
+  .pills{display:flex;flex-wrap:wrap;gap:7px;padding:12px 0;border-bottom:1px solid var(--border);}
+  .pill{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:2px;padding:4px 11px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-dim);}
+  .pill b{color:var(--gold-light);font-weight:600;}
+
+  .cur-bat{display:none;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.25);padding:12px 16px;margin-top:14px;border-radius:2px;flex-wrap:wrap;gap:12px;align-items:center;}
+  .cur-bat.show{display:flex;}
+  .cur-label{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:3px;color:var(--gold);}
+  .cur-inner{display:flex;gap:16px;flex-wrap:wrap;}
+  .cbatter{display:flex;align-items:baseline;gap:8px;}
+  .cb-name{font-family:'Playfair Display',serif;font-size:17px;color:var(--cream);}
+  .cb-runs{font-family:'IBM Plex Mono',monospace;font-size:20px;color:var(--gold-light);font-weight:600;}
+  .cb-balls{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);}
+
+  .inn-tabs{display:flex;border-bottom:1px solid var(--border);margin-top:22px;}
+  .itab{padding:9px 18px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--text-dim);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;transition:all .2s;}
+  .itab:hover{color:var(--gold);}
+  .itab.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+  .section{margin-top:20px;}
+  .stitle{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:4px;color:var(--gold);padding-bottom:9px;border-bottom:1px solid var(--border);}
+
+  table{width:100%;border-collapse:collapse;}
+  thead th{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;padding:9px 7px 7px;border-bottom:1px solid var(--border);text-align:right;font-weight:400;}
+  thead th:first-child{text-align:left;}
+  tbody tr{border-bottom:1px solid rgba(201,168,76,.07);}
+  tbody tr:hover{background:rgba(255,255,255,.02);}
+  td{padding:8px 7px;text-align:right;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;font-size:11px;}
+  td.bn{text-align:left;color:var(--cream);font-family:'Crimson Text',serif;font-size:15px;}
+  td.bn .dis{display:block;font-size:11px;color:var(--text-dim);font-style:italic;line-height:1.3;margin-top:1px;font-family:'Crimson Text',serif;}
+  td.br{color:var(--cream);font-weight:600;font-size:13px;}
+  tr.cur{background:rgba(201,168,76,.05);}
+  tr.cur td.bn{color:var(--gold-light);}
+  tr.notout td.bn .dis{color:#7ecf9a;}
+  tr.tot td{color:var(--cream);font-weight:600;border-top:1px solid var(--border);padding-top:11px;}
+  tr.tot td.bn{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;}
+  .whi{color:var(--gold-light)!important;font-weight:600;}
+
+  .fow-wrap{display:flex;flex-wrap:wrap;gap:7px;padding:11px 0;}
+  .fowi{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:2px;padding:4px 10px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);}
+  .fowi b{color:var(--cream);}
+
+  .loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:56px 20px;gap:14px;}
+  .spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .ltxt{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:2px;}
+
+  .err{background:rgba(224,80,80,.08);border:1px solid rgba(224,80,80,.3);padding:14px 18px;border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#e08080;line-height:1.7;margin-top:16px;}
+
+  .footer{text-align:center;padding:22px 0 0;font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--text-dim);letter-spacing:2px;border-top:1px solid var(--border);margin-top:28px;opacity:.45;}
+
+  @media(max-width:480px){
+    .teams{grid-template-columns:1fr 20px 1fr;}
+    td,thead th{padding:6px 4px;font-size:10px;}
+    thead th{font-size:7px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="eyebrow">121st Edition · Galle International Stadium · 19–21 March 2026</div>
+    <div class="h1">The <em>Lovers'</em> Quarrel</div>
+    <div class="h-sub">RICHMOND COLLEGE vs MAHINDA COLLEGE · LIVE SCORECARD</div>
+  </div>
+
+  <div class="sbar">
+    <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+    <div class="upd" id="upd">Connecting…</div>
+    <button class="rbtn" id="rbtn" onclick="load()">↻ REFRESH</button>
+  </div>
+
+  <div class="day-tabs">
+    <div class="dtab done">DAY 1 · MAR 19</div>
+    <div class="dtab today">DAY 2 · MAR 20 ◀ TODAY</div>
+    <div class="dtab">DAY 3 · MAR 21</div>
+  </div>
+
+  <div class="teams">
+    <div class="team rcg">
+      <div class="tname">Richmond College</div>
+      <div class="tscore" id="rcgScore">—</div>
+      <div class="tovers" id="rcgOvers"></div>
+      <div class="tbadge" id="rcgBadge"></div>
+    </div>
+    <div class="vs">vs</div>
+    <div class="team mcg">
+      <div class="tname">Mahinda College</div>
+      <div class="tscore" id="mcgScore">—</div>
+      <div class="tovers" id="mcgOvers"></div>
+      <div class="tbadge" id="mcgBadge"></div>
+    </div>
+  </div>
+
+  <div class="pills">
+    <div class="pill">Toss: <b>Mahinda, elected to bowl</b></div>
+    <div class="pill">Venue: <b>Galle International Stadium</b></div>
+    <div class="pill" id="pStatus">Status: <b>Loading…</b></div>
+    <div class="pill" id="pRR" style="display:none">Run Rate: <b id="rrv">—</b></div>
+  </div>
+
+  <div class="cur-bat" id="curBat">
+    <div class="cur-label">NOW BATTING</div>
+    <div class="cur-inner" id="curInner"></div>
+  </div>
+
+  <div id="scoreArea">
+    <div class="loading"><div class="spinner"></div><div class="ltxt">FETCHING LIVE DATA…</div></div>
+  </div>
+
+  <div class="footer">DATA: LOVERSQUARREL.LK/API/SCORECARD · AUTO-REFRESH EVERY 60s</div>
+</div>
+
+<script>
+const API = 'https://loversquarrel.lk/api/scorecard';
+let timer = null;
+let curTab = 0;
+
+async function load() {
+  const btn = document.getElementById('rbtn');
+  btn.disabled = true; btn.textContent = '↻ …';
+  try {
+    const res = await fetch(API, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    render(json.data);
+    const t = new Date();
+    document.getElementById('upd').textContent =
+      'Updated ' + t.toLocaleTimeString('en-LK',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  } catch(e) {
+    document.getElementById('upd').textContent = '⚠ ' + e.message;
+    if (!document.querySelector('.itab')) {
+      document.getElementById('scoreArea').innerHTML =
+        '<div class="err">Could not reach loversquarrel.lk API directly from this browser (CORS restriction).<br><br>' +
+        'The site works when opened from a local server or a domain that the API allows.<br>' +
+        'Try: <b>python3 -m http.server 8080</b> in the file folder, then open localhost:8080.<br><br>' +
+        'Alternatively, open <a href="https://loversquarrel.lk" target="_blank" style="color:var(--gold-light)">loversquarrel.lk</a> directly for live scores.</div>';
+    }
+  }
+  btn.disabled = false; btn.textContent = '↻ REFRESH';
+  clearTimeout(timer);
+  timer = setTimeout(load, 60000);
+}
+
+function render(innings) {
+  if (!innings || !innings.length) return;
+
+  // Aggregate scores per team
+  const rcgI = innings.filter(i => i.battingTeam === 'RCG');
+  const mcgI = innings.filter(i => i.battingTeam === 'MCG');
+
+  function hdr(teamInnings) {
+    if (!teamInnings.length) return null;
+    return {
+      score: teamInnings.map(i => i.score).join(' & '),
+      overs: teamInnings.map(i => '(' + i.overs + ' ov)').join(' ')
+    };
+  }
+
+  const rcg = hdr(rcgI), mcg = hdr(mcgI);
+
+  ['rcg','mcg'].forEach(t => {
+    const d = t === 'rcg' ? rcg : mcg;
+    const sc = document.getElementById(t + 'Score');
+    const ov = document.getElementById(t + 'Overs');
+    if (d) {
+      sc.textContent = d.score; sc.classList.remove('tbd');
+      ov.textContent = d.overs;
+    } else {
+      sc.textContent = 'Yet to bat'; sc.classList.add('tbd');
+      ov.textContent = '';
+    }
+    document.getElementById(t + 'Badge').textContent = '';
+  });
+
+  // Find live innings
+  const live = innings.find(i => i.batters && i.batters.some(b => b.isCurrent && !b.out));
+
+  if (live) {
+    const bt = live.battingTeam.toLowerCase();
+    document.getElementById(bt + 'Badge').textContent = '← BATTING NOW';
+    document.getElementById('pRR').style.display = '';
+    document.getElementById('rrv').textContent = live.runRate + '/ov';
+
+    const nowBat = live.batters.filter(b => b.isCurrent && !b.out);
+    document.getElementById('curInner').innerHTML = nowBat.map(b =>
+      '<div class="cbatter"><span class="cb-name">' + b.name + '</span>' +
+      '<span class="cb-runs">' + b.runs + '</span>' +
+      '<span class="cb-balls">(' + b.balls + 'b)</span></div>'
+    ).join('<span style="color:var(--text-dim);margin:0 6px;font-family:\'IBM Plex Mono\',monospace">·</span>');
+    document.getElementById('curBat').classList.add('show');
+
+    document.getElementById('pStatus').innerHTML =
+      'Status: <b>' + live.innings + ' · ' + live.battingTeam + ' batting</b>';
+  } else {
+    document.getElementById('curBat').classList.remove('show');
+    const last = innings[innings.length - 1];
+    document.getElementById('pStatus').innerHTML =
+      'Status: <b>' + last.innings + ' · Stumps / Break</b>';
+  }
+
+  buildTabs(innings);
+}
+
+function buildTabs(innings) {
+  const area = document.getElementById('scoreArea');
+  let tabs = '<div class="inn-tabs">';
+  innings.forEach((inn, i) => {
+    tabs += '<button class="itab' + (i === curTab ? ' active' : '') +
+      '" id="t' + i + '" onclick="showTab(' + i + ',' + innings.length + ')">' +
+      inn.battingTeam + ' ' + inn.innings.replace(' Innings', ' Inn.') + '</button>';
+  });
+  tabs += '</div>';
+
+  let panels = '';
+  innings.forEach((inn, i) => {
+    panels += '<div id="inn' + i + '" style="display:' + (i === curTab ? 'block' : 'none') + '">' +
+      buildInn(inn) + '</div>';
+  });
+
+  area.innerHTML = tabs + panels;
+}
+
+window.showTab = function(idx, total) {
+  curTab = idx;
+  for (let i = 0; i < total; i++) {
+    const el = document.getElementById('inn' + i);
+    const t = document.getElementById('t' + i);
+    if (el) el.style.display = i === idx ? 'block' : 'none';
+    if (t) t.classList.toggle('active', i === idx);
+  }
+};
+
+function buildInn(inn) {
+  const batters = inn.batters || [];
+  const dismissed = batters.filter(b => b.out);
+  const notOut = batters.filter(b => !b.out);
+  const ordered = [...dismissed, ...notOut];
+
+  // BATTING
+  let html = '<div class="section"><div class="stitle">BATTING — ' + teamFull(inn.battingTeam) + '</div>' +
+    '<table><thead><tr><th>BATSMAN</th><th>R</th><th>B</th><th>4s</th><th>6s</th><th>SR</th></tr></thead><tbody>';
+
+  ordered.forEach(b => {
+    const isCur = b.isCurrent && !b.out;
+    const rowCls = isCur ? 'cur' : !b.out ? 'notout' : '';
+    const dot = isCur ? ' <span style="color:var(--gold);font-size:9px">●</span>' : '';
+    const disText = b.out ? b.dismissalString : '<span style="color:#7ecf9a">not out</span>';
+    html += '<tr class="' + rowCls + '"><td class="bn">' + b.name + dot +
+      '<span class="dis">' + disText + '</span></td>' +
+      '<td class="br">' + b.runs + '</td><td>' + b.balls + '</td>' +
+      '<td>' + b.fours + '</td><td>' + b.sixes + '</td><td>' + b.sr + '</td></tr>';
+  });
+
+  html += '<tr class="tot"><td class="bn">TOTAL</td><td class="br">' + inn.score + '</td>' +
+    '<td colspan="4" style="text-align:right;font-size:10px;color:var(--text-dim)">' +
+    inn.overs + ' ov &nbsp;·&nbsp; RR ' + inn.runRate + '</td></tr>';
+  html += '</tbody></table></div>';
+
+  // BOWLING
+  const bowlers = (inn.bowlers || []).filter(b => b.hasBowled);
+  html += '<div class="section"><div class="stitle">BOWLING — ' + teamFull(inn.bowlingTeam) + '</div>' +
+    '<table><thead><tr><th>BOWLER</th><th>O</th><th>M</th><th>R</th><th>W</th><th>ECO</th></tr></thead><tbody>';
+
+  bowlers.forEach(b => {
+    const ov = parseFloat(b.overs) || 0;
+    const eco = ov > 0 ? (b.runs / ov).toFixed(2) : '—';
+    html += '<tr><td class="bn">' + b.name + '</td><td>' + b.overs +
+      '</td><td>—</td><td>' + b.runs + '</td>' +
+      '<td' + (b.wickets > 0 ? ' class="whi"' : '') + '>' + b.wickets + '</td>' +
+      '<td>' + eco + '</td></tr>';
+  });
+  html += '</tbody></table></div>';
+
+  // FOW — only dismissed batters, use their run tallies
+  if (dismissed.length) {
+    html += '<div class="section"><div class="stitle">FALL OF WICKETS</div><div class="fow-wrap">';
+    // We can't derive cumulative total exactly without ball-by-ball, so show per-wicket run
+    dismissed.forEach((b, i) => {
+      html += '<div class="fowi"><b>' + (i+1) + '</b> ' + b.name + ' ' + b.runs + '</div>';
+    });
+    html += '</div></div>';
+  }
+
+  return html;
+}
+
+function teamFull(a) {
+  return a === 'RCG' ? 'RICHMOND COLLEGE' : 'MAHINDA COLLEGE';
+}
+
+load();
+</script>
+</body>
+</html>
