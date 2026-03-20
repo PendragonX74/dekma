@@ -209,6 +209,16 @@
       },
       "newMarks": 93,
       "timestamp": 1773971493063
+    },
+    {
+      "examId": "R-2026-010",
+      "city": "Galle",
+      "student": {
+        "name": "Nadula Nimnaka",
+        "school": "Richmond College"
+      },
+      "newMarks": 94,
+      "timestamp": 1773971570137
     }
   ],
   "studentRenames": [
