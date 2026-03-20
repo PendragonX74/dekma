@@ -158,11 +158,11 @@
     <div class="loading"><div class="spinner"></div><div class="ltxt">FETCHING LIVE DATA…</div></div>
   </div>
 
-  <div class="footer">DATA: LOVERSQUARREL.LK/API/SCORECARD · AUTO-REFRESH EVERY 60s</div>
+  <div class="footer">DATA: LOVERSQUARREL.LK · VIA ALLORIGINS CORS PROXY · AUTO-REFRESH EVERY 60s</div>
 </div>
 
 <script>
-const API = 'https://loversquarrel.lk/api/scorecard';
+const API = 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://loversquarrel.lk/api/scorecard');
 let timer = null;
 let curTab = 0;
 
@@ -172,7 +172,8 @@ async function load() {
   try {
     const res = await fetch(API, { cache: 'no-store' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const json = await res.json();
+    const wrapper = await res.json();
+    const json = JSON.parse(wrapper.contents);
     render(json.data);
     const t = new Date();
     document.getElementById('upd').textContent =
