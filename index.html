@@ -2945,13 +2945,6 @@
       text-overflow: ellipsis; white-space: nowrap
     }
 
-    .school-drawer-close {
-      background: none; border: none;
-      color: var(--text3); font-size: 20px;
-      cursor: pointer; padding: 2px 6px;
-      flex-shrink: 0
-    }
-
     .school-drawer-body {
       overflow-y: auto; overflow-x: hidden;
       padding: 16px 20px;
@@ -3194,14 +3187,8 @@
       flex-shrink: 0
     }
 
-    /* Match school search input height exactly to the tdd-btn beside it */
-    .school-search-inp {
-      padding: 7px 12px;
-      font-size: 11px;
-      width: auto
-    }
+    .school-search-inp { padding: 7px 12px; font-size: 11px; width: auto }
 
-    /* Schools sort segmented control — full width like gender selector */
     .school-sort-seg {
       display: flex;
       border: 1px solid var(--border);
@@ -3213,14 +3200,12 @@
     .school-sort-seg .t10-seg-opt { flex: 1; text-align: center; justify-content: center }
     .school-sort-seg .t10-seg-opt + .t10-seg-opt { border-left: 1px solid var(--border) }
 
-    /* Schools page fills available content height exactly — no fixed pixels */
     .main:has(#page-schools.active) { height: 100dvh; overflow: hidden }
     .main:has(#page-schools.active) .content { min-height: 0; overflow: hidden }
     #page-schools { display: none; flex-direction: column; overflow: hidden }
     #page-schools.active { display: flex; height: 100% }
     #schools-two-col { flex: 1; min-height: 0; margin-bottom: 0 }
 
-    /* Hide desktop school detail panel on mobile — drawer handles it */
     @media(max-width:768px) {
       .school-detail-desktop { display: none }
       #schools-two-col { grid-template-columns: 1fr }
@@ -4251,7 +4236,6 @@
     <div class="school-drawer-handle"></div>
     <div class="school-drawer-header">
       <div class="school-drawer-title" id="school-drawer-title">School Detail</div>
-      <button class="school-drawer-close" onclick="closeSchoolDrawer()"><i class="ph ph-x"></i></button>
     </div>
     <div class="school-drawer-body" id="school-drawer-body"></div>
   </div>
@@ -6356,7 +6340,7 @@
         panel.innerHTML = '';
         rebuildStuSchoolPanel('');
         const rect = btn.getBoundingClientRect();
-        const W = 240;
+        const W = Math.max(240, rect.width);
         const left = Math.max(8, Math.min(rect.left, window.innerWidth - W - 8));
         const top = (window.innerHeight - rect.bottom - 8) >= 320 ? rect.bottom + 4 : Math.max(8, rect.top - 320 - 4);
         panel.style.cssText = `top:${top}px;left:${left}px;width:${W}px`;
