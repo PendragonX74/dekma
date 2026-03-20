@@ -3194,6 +3194,14 @@
       flex-shrink: 0
     }
 
+    /* Match school search input height exactly to the tdd-btn beside it */
+    .school-search-inp {
+      padding: 7px 12px;
+      font-size: 11px;
+      width: auto
+    }
+
+    /* Schools sort segmented control — full width like gender selector */
     .school-sort-seg {
       display: flex;
       border: 1px solid var(--border);
@@ -3205,10 +3213,14 @@
     .school-sort-seg .t10-seg-opt { flex: 1; text-align: center; justify-content: center }
     .school-sort-seg .t10-seg-opt + .t10-seg-opt { border-left: 1px solid var(--border) }
 
-    #page-schools { display: none; flex-direction: column; height: calc(100vh - 70px); overflow: hidden }
-    #page-schools.active { display: flex }
+    /* Schools page fills available content height exactly — no fixed pixels */
+    .main:has(#page-schools.active) { height: 100dvh; overflow: hidden }
+    .main:has(#page-schools.active) .content { min-height: 0; overflow: hidden }
+    #page-schools { display: none; flex-direction: column; overflow: hidden }
+    #page-schools.active { display: flex; height: 100% }
     #schools-two-col { flex: 1; min-height: 0; margin-bottom: 0 }
 
+    /* Hide desktop school detail panel on mobile — drawer handles it */
     @media(max-width:768px) {
       .school-detail-desktop { display: none }
       #schools-two-col { grid-template-columns: 1fr }
@@ -4093,8 +4105,8 @@
         <div class="page" id="page-schools">
           <div class="filter-bar" style="flex-wrap:wrap">
             <div id="school-test-sel" class="tdd-wrap"></div>
-            <input id="school-search-inp" class="search-input" placeholder="Search school…" autocomplete="off"
-              oninput="renderSchools()" style="flex:1;min-width:140px;padding-left:12px;width:auto">
+            <input id="school-search-inp" class="search-input school-search-inp" placeholder="Search school…" autocomplete="off"
+              oninput="renderSchools()" style="flex:1;min-width:140px">
           </div>
           <div class="school-sort-seg" id="school-sort-seg">
             <button class="t10-seg-opt" id="ss-count" onclick="setSchoolSort('count',this)">By Students</button>
