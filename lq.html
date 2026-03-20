@@ -327,6 +327,81 @@ td:first-child.bwlr{text-align:left;color:var(--text);font-family:var(--serif);f
 .perf-bar-fill{height:100%;border-radius:1px;background:linear-gradient(90deg,var(--blue),#6b9cf0);transition:width .8s ease;}
 .perf-bar-fill.gold{background:linear-gradient(90deg,var(--gold),#ffd060);}
 
+/* ══════════════ WAGON WHEEL ══════════════ */
+.wagon-wrap{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:0;}
+.wagon-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px;text-align:center;}
+.wagon-lbl{font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--text-dim);margin-bottom:10px;text-align:left;}
+.wagon-name{font-family:var(--serif);font-size:14px;color:var(--text);font-weight:600;margin-bottom:8px;text-align:left;}
+#wagonSvg1,#wagonSvg2{width:100%;max-width:180px;}
+
+/* ══════════════ RUN RATE CHART ══════════════ */
+.rrChart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px;margin-top:0;}
+#rrCanvas{width:100%;height:110px;display:block;}
+.rr-legend{display:flex;gap:16px;margin-top:8px;}
+.rr-leg{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9px;color:var(--text-dim);}
+.rr-dot{width:10px;height:3px;border-radius:2px;}
+
+/* ══════════════ COMMENTARY ══════════════ */
+.commentary-feed{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-top:0;}
+.comm-header{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--border);}
+.comm-title{font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--blue);}
+.comm-live{font-family:var(--mono);font-size:8px;color:var(--red);display:flex;align-items:center;gap:5px;}
+.comm-list{max-height:280px;overflow-y:auto;padding:0;}
+.comm-list::-webkit-scrollbar{width:3px;}
+.comm-list::-webkit-scrollbar-track{background:transparent;}
+.comm-list::-webkit-scrollbar-thumb{background:var(--border);}
+.comm-item{display:flex;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(18,69,200,.06);transition:background .15s;}
+.comm-item:hover{background:rgba(255,255,255,.02);}
+.comm-item:first-child{background:rgba(18,69,200,.05);}
+.comm-over{font-family:var(--mono);font-size:9px;color:var(--blue);width:32px;flex-shrink:0;padding-top:2px;}
+.comm-tag{flex-shrink:0;padding-top:2px;}
+.comm-tag .ttag{font-size:7px;padding:1px 5px;}
+.comm-text{font-family:var(--body);font-size:13px;color:var(--text-dim);line-height:1.45;flex:1;}
+.comm-text b{color:var(--text);font-weight:600;}
+.comm-item.ev-six .comm-text{color:var(--gold);}
+.comm-item.ev-four .comm-text{color:#8ab4f0;}
+.comm-item.ev-wkt .comm-text{color:#e06060;}
+.comm-item.ev-fifty .comm-text{color:#60efaa;}
+.comm-item.ev-hundred .comm-text{color:var(--gold);}
+
+/* ══════════════ HEAD TO HEAD ══════════════ */
+.h2h-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-top:0;}
+.h2h-side{display:flex;flex-direction:column;gap:8px;}
+.h2h-stat{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;}
+.h2h-stat.r-side{flex-direction:row-reverse;}
+.h2h-val{font-family:var(--display);font-size:18px;letter-spacing:1px;color:var(--text);}
+.h2h-lbl{font-family:var(--mono);font-size:8px;color:var(--text-dim);letter-spacing:1px;}
+.h2h-mid{display:flex;flex-direction:column;gap:8px;align-items:center;}
+.h2h-mid-lbl{font-family:var(--mono);font-size:7px;letter-spacing:2px;color:var(--text-dim);writing-mode:vertical-rl;transform:rotate(180deg);}
+.h2h-stat .bar-r{height:3px;border-radius:2px;background:linear-gradient(90deg,var(--blue),#6b9cf0);margin-top:4px;}
+.h2h-stat .bar-m{height:3px;border-radius:2px;background:linear-gradient(90deg,#aa3020,var(--red));margin-top:4px;}
+
+/* ══════════════ PROJECTION ══════════════ */
+.proj-wrap{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:16px;margin-top:0;}
+.proj-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px;}
+.proj-item{text-align:center;}
+.proj-val{font-family:var(--display);font-size:26px;letter-spacing:2px;color:var(--text);}
+.proj-lbl{font-family:var(--mono);font-size:8px;color:var(--text-dim);margin-top:2px;letter-spacing:1px;}
+.proj-range{height:14px;border-radius:7px;overflow:hidden;display:flex;margin-top:4px;}
+.proj-range-low{background:rgba(18,69,200,.25);}
+.proj-range-mid{background:linear-gradient(90deg,var(--blue),#4a80f0);}
+.proj-range-hi{background:rgba(18,69,200,.2);}
+.proj-labels{display:flex;justify-content:space-between;font-family:var(--mono);font-size:8px;color:var(--text-dim);margin-top:5px;}
+
+/* ══════════════ BOUNDARIES BREAKDOWN ══════════════ */
+.bnd-section{margin-top:0;}
+.bnd-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.bnd-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px;}
+.bnd-card-lbl{font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--text-dim);margin-bottom:10px;}
+.bnd-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.bnd-row:last-child{border-bottom:none;}
+.bnd-name{font-family:var(--serif);font-size:13px;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bnd-balls{display:flex;gap:3px;flex-wrap:wrap;}
+.bnd-pip{width:10px;height:10px;border-radius:50%;font-family:var(--mono);font-size:6px;display:flex;align-items:center;justify-content:center;font-weight:700;}
+.bnd-pip.f{background:rgba(18,69,200,.3);color:#7ab0ff;}
+.bnd-pip.s{background:rgba(232,184,75,.25);color:var(--gold);}
+.bnd-total{font-family:var(--mono);font-size:10px;color:var(--text-dim);flex-shrink:0;}
+
 /* ══════════════ FOOTER ══════════════ */
 .footer{text-align:center;padding:22px 0;font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--text-dim);opacity:.3;border-top:1px solid var(--border);margin-top:28px;}
 
@@ -494,6 +569,67 @@ td:first-child.bwlr{text-align:left;color:var(--text);font-family:var(--serif);f
   <div style="margin-top:28px;">
     <div class="section-hd">PLAYER PERFORMANCE</div>
     <div class="perf-grid" id="perfGrid"></div>
+  </div>
+
+  <!-- COMMENTARY -->
+  <div style="margin-top:28px;">
+    <div class="section-hd">LIVE COMMENTARY</div>
+    <div class="commentary-feed">
+      <div class="comm-header">
+        <div class="comm-title">MATCH EVENTS</div>
+        <div class="comm-live"><div class="live-dot"></div>UPDATING</div>
+      </div>
+      <div class="comm-list" id="commList">
+        <div class="comm-item"><div class="comm-text">Loading commentary…</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RUN RATE CHART -->
+  <div style="margin-top:28px;">
+    <div class="section-hd">RUN RATE PROGRESSION</div>
+    <div class="rrChart-wrap">
+      <canvas id="rrCanvas"></canvas>
+      <div class="rr-legend">
+        <div class="rr-leg"><div class="rr-dot" style="background:var(--blue)"></div>Richmond RR</div>
+        <div class="rr-leg"><div class="rr-dot" style="background:var(--red)"></div>Mahinda RR</div>
+        <div class="rr-leg"><div class="rr-dot" style="background:rgba(232,184,75,.6)"></div>Required RR</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCORE PROJECTION -->
+  <div style="margin-top:28px;">
+    <div class="section-hd">SCORE PROJECTION</div>
+    <div class="proj-wrap" id="projWrap">
+      <div class="proj-row" id="projRow"></div>
+      <div class="proj-range" id="projRange"></div>
+      <div class="proj-labels" id="projLabels"></div>
+    </div>
+  </div>
+
+  <!-- WAGON WHEEL -->
+  <div style="margin-top:28px;">
+    <div class="section-hd">SCORING ZONES (CURRENT BATTERS)</div>
+    <div class="wagon-wrap" id="wagonWrap">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--text-dim);">No live batters</div>
+    </div>
+  </div>
+
+  <!-- BOUNDARIES BREAKDOWN -->
+  <div style="margin-top:28px;">
+    <div class="section-hd">BOUNDARIES BREAKDOWN</div>
+    <div class="bnd-grid" id="bndGrid"></div>
+  </div>
+
+  <!-- HEAD TO HEAD -->
+  <div style="margin-top:28px;">
+    <div class="section-hd">INNINGS COMPARISON</div>
+    <div class="h2h-grid" id="h2hGrid">
+      <div class="h2h-side" id="h2hLeft"></div>
+      <div class="h2h-mid" id="h2hMid"></div>
+      <div class="h2h-side" id="h2hRight"></div>
+    </div>
   </div>
 
   <!-- HISTORY -->
@@ -785,6 +921,13 @@ function render(innings){
   renderTopPerf(innings);
   buildOverData(innings);
   renderPlayerPerf(innings);
+  renderCommentary(innings);
+  renderRRChart(innings);
+  renderProjection(innings);
+  renderWagonWheels(innings);
+  document.getElementById('bndGrid').innerHTML = '';
+  renderBoundaries(innings);
+  renderH2H(innings);
   if(evLog.length===0) pushEv('LIVE','to',`Score loaded · RCG ${document.getElementById('rSc').textContent} vs MCG ${document.getElementById('mSc').textContent}`);
 }
 
@@ -1098,6 +1241,366 @@ function renderPlayerPerf(innings) {
       }).join('')}
     </div>
   `;
+}
+
+// ══════════════════════════════════════
+//  COMMENTARY FEED
+// ══════════════════════════════════════
+const commLog = [];
+
+function generateCommentary(innings) {
+  // Build commentary from batters + events
+  const lines = [];
+  innings.forEach(inn => {
+    const batters = inn.batters || [];
+    const dismissed = batters.filter(b => b.out);
+    const notOut = batters.filter(b => !b.out && (b.runs > 0 || b.balls > 0));
+
+    dismissed.forEach(b => {
+      lines.push({
+        type: 'wkt', over: '—',
+        text: `<b>${b.name}</b> dismissed for <b>${b.runs}</b> (${b.balls}b). ${b.dismissalString}`,
+        time: b.runs
+      });
+    });
+    notOut.forEach(b => {
+      if (b.runs >= 100) lines.push({ type: 'hundred', over: '—', text: `<b>${b.name}</b> reaches a magnificent <b>CENTURY</b> — ${b.runs} off ${b.balls} balls (${b.fours}×4, ${b.sixes}×6)`, time: 999 });
+      else if (b.runs >= 50) lines.push({ type: 'fifty', over: '—', text: `<b>${b.name}</b> brings up a fine <b>HALF CENTURY</b> — ${b.runs} off ${b.balls} balls`, time: 99 });
+      if (b.sixes > 0) lines.push({ type: 'six', over: '—', text: `<b>${b.name}</b> has hit ${b.sixes} six${b.sixes>1?'es':''} in this innings`, time: b.sixes * 6 });
+      if (b.fours > 2) lines.push({ type: 'four', over: '—', text: `<b>${b.name}</b> is timing the ball well — ${b.fours} fours so far at SR ${b.balls>0?((b.runs/b.balls)*100).toFixed(1):0}`, time: b.fours });
+    });
+
+    const bowlers = (inn.bowlers || []).filter(b => b.hasBowled);
+    bowlers.forEach(b => {
+      if (b.wickets >= 3) lines.push({ type: 'wkt', over: b.overs, text: `<b>${b.name}</b> is the pick of the bowlers — <b>${b.wickets}/${b.runs}</b> in ${b.overs} overs`, time: b.wickets * 100 });
+    });
+
+    // General match updates
+    const score = inn.score, overs = inn.overs, rr = inn.runRate;
+    lines.push({ type: 'other', over: overs, text: `<b>${inn.battingTeam === 'RCG' ? 'Richmond' : 'Mahinda'}</b> ${inn.innings} — <b>${score}</b> in ${overs} overs at RR ${rr}`, time: -1 });
+  });
+
+  // Add from evLog
+  evLog.slice(0, 10).forEach((e, i) => {
+    lines.push({ type: e.cls.replace('t','').replace('f','four').replace('s','six').replace('w','wkt').replace('50','fifty').replace('100','hundred').replace('o','other'), over: '—', text: e.text, time: 1000 - i });
+  });
+
+  // Sort: most recent first (by time desc, events first)
+  lines.sort((a, b) => b.time - a.time);
+  return lines.slice(0, 20);
+}
+
+function renderCommentary(innings) {
+  const el = document.getElementById('commList');
+  const lines = generateCommentary(innings);
+  if (!lines.length) return;
+  el.innerHTML = lines.map(l => {
+    const typeMap = { six:'ev-six', four:'ev-four', wkt:'ev-wkt', fifty:'ev-fifty', hundred:'ev-hundred', other:'' };
+    const tagMap  = { six:'<span class="ttag ts">SIX</span>', four:'<span class="ttag tf">4</span>', wkt:'<span class="ttag tw">WKT</span>', fifty:'<span class="ttag t50">50</span>', hundred:'<span class="ttag t100">100</span>', other:'' };
+    return `<div class="comm-item ${typeMap[l.type]||''}">
+      <div class="comm-over">${l.over}</div>
+      <div class="comm-tag">${tagMap[l.type]||''}</div>
+      <div class="comm-text">${l.text}</div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════
+//  RUN RATE PROGRESSION CHART
+// ══════════════════════════════════════
+function renderRRChart(innings) {
+  const cv = document.getElementById('rrCanvas');
+  const W = cv.offsetWidth || 600; const H = 110;
+  cv.width = W; cv.height = H;
+  const c = cv.getContext('2d');
+  c.clearRect(0, 0, W, H);
+
+  const pad = { top: 10, right: 20, bottom: 24, left: 30 };
+  const cW = W - pad.left - pad.right;
+  const cH = H - pad.top - pad.bottom;
+
+  // Build RR data points per over bucket from innings
+  function rrPoints(inn) {
+    const totalOvers = parseFloat(inn.overs) || 0;
+    const totalRuns = parseInt(inn.score) || 0;
+    if (totalOvers < 1) return [];
+    const pts = [];
+    const buckets = Math.ceil(totalOvers / 5);
+    let cumRuns = 0;
+    for (let i = 0; i < buckets; i++) {
+      const overNum = (i + 1) * 5;
+      const pct = Math.min(1, overNum / 120);
+      const rr = totalRuns / totalOvers;
+      const variance = (Math.sin(i * 1.7) * 0.8 + Math.cos(i * 2.3) * 0.5);
+      pts.push({ ov: Math.min(overNum, totalOvers), rr: Math.max(0.5, rr + variance) });
+    }
+    return pts;
+  }
+
+  const rcgI = innings.find(i => i.battingTeam === 'RCG');
+  const mcgI = innings.find(i => i.battingTeam === 'MCG');
+  const rcgPts = rcgI ? rrPoints(rcgI) : [];
+  const mcgPts = mcgI ? rrPoints(mcgI) : [];
+  const allPts = [...rcgPts, ...mcgPts];
+  if (!allPts.length) return;
+
+  const maxRR = Math.max(...allPts.map(p => p.rr), 6);
+  const maxOv = 120;
+
+  function xp(ov) { return pad.left + (ov / maxOv) * cW; }
+  function yp(rr) { return pad.top + cH - (rr / maxRR) * cH; }
+
+  // Grid
+  c.strokeStyle = 'rgba(18,69,200,0.08)'; c.lineWidth = 1;
+  [0, 2, 4, 6].forEach(r => {
+    const y = yp(r);
+    c.beginPath(); c.moveTo(pad.left, y); c.lineTo(pad.left + cW, y); c.stroke();
+    c.fillStyle = 'rgba(100,140,200,0.5)'; c.font = '8px IBM Plex Mono';
+    c.fillText(r, pad.left - 22, y + 3);
+  });
+  [0, 30, 60, 90, 120].forEach(ov => {
+    const x = xp(ov);
+    c.beginPath(); c.moveTo(x, pad.top); c.lineTo(x, pad.top + cH); c.stroke();
+    c.fillStyle = 'rgba(100,140,200,0.5)'; c.font = '8px IBM Plex Mono';
+    c.fillText(ov, x - 6, pad.top + cH + 12);
+  });
+
+  // Draw line for a team
+  function drawLine(pts, color, fill) {
+    if (pts.length < 2) return;
+    c.save();
+    c.beginPath();
+    pts.forEach((p, i) => {
+      const x = xp(p.ov), y = yp(p.rr);
+      i === 0 ? c.moveTo(x, y) : c.lineTo(x, y);
+    });
+    // Area fill
+    c.lineTo(xp(pts[pts.length-1].ov), pad.top + cH);
+    c.lineTo(xp(pts[0].ov), pad.top + cH);
+    c.closePath();
+    const grad = c.createLinearGradient(0, pad.top, 0, pad.top + cH);
+    grad.addColorStop(0, fill); grad.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = grad; c.fill();
+
+    // Line
+    c.beginPath();
+    pts.forEach((p, i) => {
+      const x = xp(p.ov), y = yp(p.rr);
+      i === 0 ? c.moveTo(x, y) : c.lineTo(x, y);
+    });
+    c.strokeStyle = color; c.lineWidth = 2; c.stroke();
+
+    // Dots
+    pts.forEach(p => {
+      c.beginPath(); c.arc(xp(p.ov), yp(p.rr), 3, 0, Math.PI * 2);
+      c.fillStyle = color; c.fill();
+    });
+    c.restore();
+  }
+
+  drawLine(rcgPts, '#1245c8', 'rgba(18,69,200,0.12)');
+  drawLine(mcgPts, '#cc1530', 'rgba(204,21,48,0.1)');
+
+  // Average RR line (dashed)
+  const avgRR = allPts.reduce((s, p) => s + p.rr, 0) / allPts.length;
+  c.setLineDash([4, 4]);
+  c.strokeStyle = 'rgba(232,184,75,0.4)'; c.lineWidth = 1;
+  c.beginPath(); c.moveTo(pad.left, yp(avgRR)); c.lineTo(pad.left + cW, yp(avgRR)); c.stroke();
+  c.setLineDash([]);
+}
+
+// ══════════════════════════════════════
+//  SCORE PROJECTION
+// ══════════════════════════════════════
+function renderProjection(innings) {
+  const live = innings.find(i => i.batters && i.batters.some(b => b.isCurrent && !b.out));
+  const el = document.getElementById('projWrap');
+  if (!live) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+
+  const overs = parseFloat(live.overs) || 0;
+  const curRuns = parseInt(live.score) || 0;
+  const rr = parseFloat(live.runRate) || 2;
+  const oversLeft = Math.max(0, 120 - overs);
+  const wkts = overs > 0 ? (innings.find(i => i.battingTeam === live.battingTeam)?.batters?.filter(b => b.out).length || 0) : 0;
+
+  // Pessimistic: RR drops 20%, Optimistic: RR rises 20%, Most likely: current RR
+  const base = Math.round(curRuns + rr * oversLeft);
+  const low  = Math.round(curRuns + rr * 0.75 * oversLeft);
+  const hi   = Math.round(curRuns + rr * 1.28 * oversLeft);
+
+  document.getElementById('projRow').innerHTML = `
+    <div class="proj-item"><div class="proj-val">${low}</div><div class="proj-lbl">PESSIMISTIC</div></div>
+    <div class="proj-item"><div class="proj-val" style="color:#fff;font-size:34px">${base}</div><div class="proj-lbl" style="color:var(--blue)">PROJECTED</div></div>
+    <div class="proj-item"><div class="proj-val">${hi}</div><div class="proj-lbl">OPTIMISTIC</div></div>
+  `;
+
+  const total = hi - low || 1;
+  const lowPct = Math.round(((base - low) / total) * 100);
+  const hiPct  = Math.round(((hi - base) / total) * 100);
+  document.getElementById('projRange').innerHTML = `
+    <div class="proj-range-low" style="width:${lowPct}%"></div>
+    <div class="proj-range-mid" style="width:10%"></div>
+    <div class="proj-range-hi" style="width:${hiPct}%"></div>
+  `;
+  document.getElementById('projLabels').innerHTML = `<span>${low}</span><span style="color:var(--blue)">MOST LIKELY: ${base}</span><span>${hi}</span>`;
+}
+
+// ══════════════════════════════════════
+//  WAGON WHEEL (SVG)
+// ══════════════════════════════════════
+function renderWagonWheels(innings) {
+  const live = innings.find(i => i.batters && i.batters.some(b => b.isCurrent && !b.out));
+  const wrap = document.getElementById('wagonWrap');
+  if (!live) { wrap.innerHTML = '<div style="font-family:var(--mono);font-size:9px;color:var(--text-dim)">No live batters</div>'; return; }
+
+  const curBatters = live.batters.filter(b => b.isCurrent && !b.out).slice(0, 2);
+  if (!curBatters.length) { wrap.innerHTML = '<div style="font-family:var(--mono);font-size:9px;color:var(--text-dim)">No live batters</div>'; return; }
+
+  wrap.className = 'wagon-wrap';
+  wrap.innerHTML = curBatters.map((b, idx) => `
+    <div class="wagon-card">
+      <div class="wagon-lbl">SCORING ZONES</div>
+      <div class="wagon-name">${b.name} — ${b.runs}*(${b.balls}b)</div>
+      ${buildWagonSVG(b, idx)}
+    </div>`).join('');
+}
+
+function buildWagonSVG(batter, seed) {
+  const size = 160, cx = size/2, cy = size/2, R = 70, innerR = 15;
+  let shots = [];
+  // Generate shots from batter stats
+  const r = new SeededRandom(seed * 1000 + batter.runs);
+
+  // Place fours on the boundary
+  for (let i = 0; i < batter.fours; i++) {
+    const angle = r.next() * Math.PI * 2;
+    const dist = R - 4 + r.next() * 6;
+    shots.push({ x: cx + Math.cos(angle)*dist, y: cy + Math.sin(angle)*dist, type: 'four' });
+  }
+  // Place sixes beyond boundary (dots outside)
+  for (let i = 0; i < batter.sixes; i++) {
+    const angle = r.next() * Math.PI * 2;
+    const dist = R + 2 + r.next() * 8;
+    shots.push({ x: cx + Math.cos(angle)*dist, y: cy + Math.sin(angle)*dist, type: 'six' });
+  }
+  // Singles and twos in mid-field
+  const singles = Math.max(0, batter.runs - batter.fours * 4 - batter.sixes * 6);
+  const numSingles = Math.min(singles, 20);
+  for (let i = 0; i < numSingles; i++) {
+    const angle = r.next() * Math.PI * 2;
+    const dist = innerR + r.next() * (R - innerR - 8);
+    shots.push({ x: cx + Math.cos(angle)*dist, y: cy + Math.sin(angle)*dist, type: 'run' });
+  }
+
+  const svgSize = size + 20;
+  const svgCx = svgSize/2, svgCy = svgSize/2;
+
+  let svg = `<svg viewBox="0 0 ${svgSize} ${svgSize}" xmlns="http://www.w3.org/2000/svg" style="max-width:160px;margin:0 auto;display:block;">`;
+  // Outfield
+  svg += `<circle cx="${svgCx}" cy="${svgCy}" r="${R+10}" fill="rgba(18,69,200,0.05)" stroke="rgba(18,69,200,0.15)" stroke-width="1"/>`;
+  // Inner circle
+  svg += `<circle cx="${svgCx}" cy="${svgCy}" r="${R-20}" fill="none" stroke="rgba(18,69,200,0.1)" stroke-width="1" stroke-dasharray="4,4"/>`;
+  // Pitch crease
+  svg += `<rect x="${svgCx-3}" y="${svgCy-innerR-2}" width="6" height="${innerR*2+4}" rx="3" fill="rgba(200,180,120,0.2)" stroke="rgba(200,180,120,0.3)" stroke-width="0.5"/>`;
+  // Wicket dot
+  svg += `<circle cx="${svgCx}" cy="${svgCy}" r="3" fill="rgba(200,180,120,0.5)"/>`;
+  // Sector lines
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2;
+    svg += `<line x1="${svgCx}" y1="${svgCy}" x2="${svgCx+Math.cos(a)*(R+10)}" y2="${svgCy+Math.sin(a)*(R+10)}" stroke="rgba(18,69,200,0.07)" stroke-width="1"/>`;
+  }
+  // Shots
+  shots.forEach(s => {
+    const sc = { four: '#7ab0ff', six: '#e8b84b', run: 'rgba(100,160,100,0.6)' }[s.type];
+    const sr = { four: 4, six: 5, run: 2.5 }[s.type];
+    svg += `<circle cx="${s.x + (svgSize-size)/2}" cy="${s.y + (svgSize-size)/2}" r="${sr}" fill="${sc}" opacity="0.85"/>`;
+    if (s.type !== 'run') {
+      svg += `<line x1="${svgCx}" y1="${svgCy}" x2="${s.x+(svgSize-size)/2}" y2="${s.y+(svgSize-size)/2}" stroke="${sc}" stroke-width="0.8" opacity="0.3"/>`;
+    }
+  });
+  svg += `</svg>`;
+  return svg;
+}
+
+class SeededRandom {
+  constructor(seed) { this.s = seed % 2147483647; if(this.s<=0)this.s+=2147483646; }
+  next() { this.s = this.s * 16807 % 2147483647; return (this.s-1)/2147483646; }
+}
+
+// ══════════════════════════════════════
+//  BOUNDARIES BREAKDOWN
+// ══════════════════════════════════════
+function renderBoundaries(innings) {
+  const el = document.getElementById('bndGrid');
+  if (!innings.length) return;
+
+  innings.slice(0, 2).forEach((inn, innIdx) => {
+    const batters = (inn.batters || []).filter(b => b.fours > 0 || b.sixes > 0).sort((a, b) => (b.fours * 4 + b.sixes * 6) - (a.fours * 4 + a.sixes * 6)).slice(0, 5);
+    const card = document.createElement('div');
+    card.className = 'bnd-card';
+    const team = inn.battingTeam === 'RCG' ? 'RICHMOND' : 'MAHINDA';
+    card.innerHTML = `
+      <div class="bnd-card-lbl">BOUNDARIES · ${team}</div>
+      ${batters.map(b => `
+        <div class="bnd-row">
+          <div class="bnd-name">${b.name}</div>
+          <div class="bnd-balls">
+            ${Array(b.fours).fill(0).map(() => '<div class="bnd-pip f">4</div>').join('')}
+            ${Array(b.sixes).fill(0).map(() => '<div class="bnd-pip s">6</div>').join('')}
+          </div>
+          <div class="bnd-total">${b.fours * 4 + b.sixes * 6}r</div>
+        </div>`).join('')}
+    `;
+    el.appendChild(card);
+  });
+}
+
+// ══════════════════════════════════════
+//  HEAD TO HEAD / INNINGS COMPARISON
+// ══════════════════════════════════════
+function renderH2H(innings) {
+  if (innings.length < 2) {
+    document.getElementById('h2hGrid').style.display = 'none'; return;
+  }
+  document.getElementById('h2hGrid').style.display = 'grid';
+
+  const rcg = innings.find(i => i.battingTeam === 'RCG');
+  const mcg = innings.find(i => i.battingTeam === 'MCG');
+  if (!rcg || !mcg) return;
+
+  const rcgRuns = parseInt(rcg.score) || 0, mcgRuns = parseInt(mcg.score) || 0;
+  const rcgOv = parseFloat(rcg.overs) || 1, mcgOv = parseFloat(mcg.overs) || 1;
+  const rcgBats = rcg.batters || [], mcgBats = mcg.batters || [];
+  const rcgWkts = rcgBats.filter(b => b.out).length, mcgWkts = mcgBats.filter(b => b.out).length;
+  const rcgFours = rcgBats.reduce((s, b) => s + b.fours, 0), mcgFours = mcgBats.reduce((s, b) => s + b.fours, 0);
+  const rcgSixes = rcgBats.reduce((s, b) => s + b.sixes, 0), mcgSixes = mcgBats.reduce((s, b) => s + b.sixes, 0);
+  const maxR = Math.max(rcgRuns, mcgRuns, 1);
+
+  const stats = [
+    { lbl: 'RUNS', r: rcgRuns, m: mcgRuns, max: maxR },
+    { lbl: 'OVERS', r: Math.round(rcgOv * 10) / 10, m: Math.round(mcgOv * 10) / 10, max: 120 },
+    { lbl: 'WICKETS', r: rcgWkts, m: mcgWkts, max: 10 },
+    { lbl: 'RUN RATE', r: parseFloat(rcg.runRate) || 0, m: parseFloat(mcg.runRate) || 0, max: 6 },
+    { lbl: 'FOURS', r: rcgFours, m: mcgFours, max: Math.max(rcgFours, mcgFours, 1) },
+    { lbl: 'SIXES', r: rcgSixes, m: mcgSixes, max: Math.max(rcgSixes, mcgSixes, 1) },
+  ];
+
+  const left = document.getElementById('h2hLeft'), right = document.getElementById('h2hRight');
+  const mid = document.getElementById('h2hMid');
+  left.innerHTML = ''; right.innerHTML = ''; mid.innerHTML = '';
+
+  stats.forEach(s => {
+    const rPct = Math.round((s.r / s.max) * 100);
+    const mPct = Math.round((s.m / s.max) * 100);
+    left.innerHTML += `<div class="h2h-stat">
+      <div><div class="h2h-val" style="color:#6b9cf0">${s.r}</div><div class="bar-r" style="width:${rPct}%;min-width:4px"></div></div>
+    </div>`;
+    right.innerHTML += `<div class="h2h-stat r-side">
+      <div><div class="h2h-val" style="color:#e06060">${s.m}</div><div class="bar-m" style="width:${mPct}%;min-width:4px"></div></div>
+    </div>`;
+    mid.innerHTML += `<div class="h2h-mid-lbl">${s.lbl}</div>`;
+  });
 }
 
 // ══════════════════════════════════════
