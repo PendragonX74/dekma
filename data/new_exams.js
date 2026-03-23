@@ -1,1 +1,1 @@
-window.dekmaNewExams={"galle":{"2026":["R-2026-010"]}};
+window.dekmaNewExams={"matara":{"2026":["R-2026-011"]}};
