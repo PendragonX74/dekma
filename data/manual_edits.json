@@ -245,6 +245,14 @@
       "newName": "Senidu Induwara",
       "newSchool": "Richmond College",
       "timestamp": 1773248091347
+    },
+    {
+      "oldName": "Minidu Mihiranga",
+      "oldSchool": "Richmond College",
+      "newName": "Minidu Mihiranga",
+      "newSchool": "Richmond College",
+      "newGender": "G",
+      "timestamp": 1774515870087
     }
   ],
   "deletions": [
