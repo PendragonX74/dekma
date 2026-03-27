@@ -8,7 +8,7 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <meta name="description" content="DEKMA Applied Maths results portal — explore leaderboards, scores, and school rankings by city and year.">
 
-  <!-- DNS prefetch & preconnect for external resources -->
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com">
@@ -16,89 +16,65 @@
     href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap"
     rel="stylesheet">
 
-  <!-- Phosphor Icons: elegant SVG icon font, cross-platform consistent -->
+  
   <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
 
-  <!-- Chart.js: defer so it doesn't block HTML parsing -->
+  
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
-  <!-- ========== ASYNC VERSION-BASED DATA LOADER ========== -->
-  <!-- Replaces synchronous XHR + document.write() with a non-blocking
-       async chain: version.txt → results_index.js → data chunks.
-       loadData() is called once all scripts are ready and DOM is parsed. -->
+  
+  
   <script>
-    (function () {
-      'use strict';
-
-      function loadScript(src) {
-        return new Promise(function (resolve, reject) {
-          var s = document.createElement('script');
-          s.src = src;
-          s.onload = resolve;
-          s.onerror = function () { reject(new Error('Failed to load: ' + src)); };
+    (function(){
+      function _sl(u){
+        return new Promise(function(res,rej){
+          var s=document.createElement('script');
+          s.src=u; s.onload=res;
+          s.onerror=function(){rej(u);};
           document.head.appendChild(s);
         });
       }
-
-      function slug(s) {
-        return s.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+      function _sg(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,''); }
+      function _xd(raw){
+        try{ new Function(raw)(); return true; }catch(e){ return false; }
       }
-
-      function mergeChunks() {
-        window.dekmaData = window.dekmaData || {};
-        (window.dekmaChunks || []).forEach(function (c) {
-          var key = 'dekmaChunk_' + slug(c.city) + '_' + c.year;
-          if (window[key]) {
-            if (!window.dekmaData[c.city]) window.dekmaData[c.city] = {};
-            window.dekmaData[c.city][c.year] = window[key];
+      function _mc(){
+        window.dekmaData=window.dekmaData||{};
+        (window.dekmaChunks||[]).forEach(function(c){
+          var k='dekmaChunk_'+_sg(c.city)+'_'+c.year;
+          if(window[k]){
+            if(!window.dekmaData[c.city]) window.dekmaData[c.city]={};
+            window.dekmaData[c.city][c.year]=window[k];
           }
         });
       }
-
-      async function bootstrap() {
-        // Step 1: fetch version asynchronously — zero render-blocking
-        var version = '0';
-        try {
-          var res = await fetch('data/version.txt?_=' + Date.now());
-          if (res.ok) version = (await res.text()).trim();
-        } catch (e) {
-          console.warn('Could not load version.txt, using fallback.', e);
-        }
-
-        // Step 2: load the index script (defines window.dekmaChunks)
-        try {
-          await loadScript('data/results_index.js?v=' + version);
-        } catch (e) {
-          console.warn('Could not load results_index.js', e);
-        }
-
-        // Step 3: load all data chunks in parallel
-        var chunks = window.dekmaChunks || [];
-        await Promise.all(chunks.map(function (c) {
-          return loadScript('data/' + c.file + '?v=' + version).catch(function (e) {
-            console.warn('Failed to load chunk:', c.file, e);
-          });
+      async function _boot(){
+        var v='0';
+        try{
+          var r=await fetch('data/version.txt?_='+Date.now());
+          if(r.ok) v=(await r.text()).trim();
+        }catch(e){}
+        try{ await _sl('data/results_index.js?v='+v); }catch(e){}
+        var chunks=window.dekmaChunks||[];
+        await Promise.all(chunks.map(function(c){
+          return fetch('data/'+c.file+'?v='+v)
+            .then(function(res){ return res.ok?res.text():Promise.reject(); })
+            .then(function(txt){ _xd(txt); })
+            .catch(function(){});
         }));
-
-        // Step 4: merge chunk globals into window.dekmaData
-        mergeChunks();
-        window._dataVersion = version;
-
-        // Step 5: mark data as loaded, then invoke loadData once DOM is ready
-        window._dekmaBootstrapDone = true;
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', function () { loadData(); });
-        } else {
-          loadData();
-        }
+        _mc();
+        window._dataVersion=v;
+        window._dekmaBootstrapDone=true;
+        if(document.readyState==='loading'){
+          document.addEventListener('DOMContentLoaded',function(){ loadData(); });
+        }else{ loadData(); }
       }
-
-      bootstrap();
+      _boot();
     })();
   </script>
-  <!-- ===================================================== -->
+  
   <style>
     :root {
       --bg: #0a0a0f;
@@ -148,8 +124,7 @@
       pointer-events: none;
       z-index: 9999;
       opacity: .6;
-      /* Promote to its own GPU layer so scrolling/animations
-         on the main content don't trigger a repaint here */
+      
       will-change: opacity;
       transform: translateZ(0)
     }
@@ -188,7 +163,7 @@
       transition: transform .3s
     }
 
-    /* ── LOGO / SELECTOR AREA ── */
+    
     .logo {
       padding: 20px 16px 16px;
       border-bottom: 1px solid var(--border);
@@ -904,7 +879,7 @@
       padding: 20px
     }
 
-    /* Test Dropdown Selector */
+    
     .tdd-wrap {
       position: relative;
       display: inline-block
@@ -2023,8 +1998,6 @@
       color: var(--teal)
     }
 
-
-
     .insight-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -2479,7 +2452,7 @@
     .export-icon-btn:hover { border-color: var(--border2); color: var(--text) }
 
     /* Loading */
-    /* ══ LOADING ════════════════════════════════════════════════════════════ */
+    
     #loading {
       position: fixed; inset: 0; background: #09090e;
       display: flex; align-items: center; justify-content: center; z-index: 2000;
@@ -2537,7 +2510,7 @@
       0%,100% { opacity:.4; } 50% { opacity:.8; }
     }
 
-    /* ══ SPLASH ══════════════════════════════════════════════════════════════ */
+    
     /* hidden by default — JS sets display:block then triggers .s-run */
     #splash {
       position: fixed; inset: 0; background: #09090e;
@@ -2633,7 +2606,7 @@
       100% { opacity: 0; filter: brightness(.7)   blur(6px); }
     }
 
-    /* ══ PICKER ══════════════════════════════════════════════════════════════ */
+    
     #picker {
       position: fixed; inset: 0; background: #09090e;
       z-index: 800; overflow: hidden;
@@ -2715,7 +2688,7 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ══ CONTEXT BADGE in topbar ══════════════════════════════════════════ */
+    
     .context-badge {
       display: inline-flex;
       align-items: center;
@@ -3250,7 +3223,7 @@
       animation-delay: .38s
     }
 
-    /* On mobile the context-badge acts as the primary selector in topbar */
+    
     .topbar-title-group {
       display: flex;
       align-items: center;
@@ -3297,7 +3270,7 @@
         gap: 8px
       }
 
-      /* Mobile search — icon button that expands inline */
+      
       .search-wrap {
         display: none
       }
@@ -3318,7 +3291,7 @@
         transition: opacity .15s
       }
 
-      /* Expanding search bar that slides over the topbar */
+      
       .mobile-search-expand {
         display: none;
         position: absolute;
@@ -3375,7 +3348,7 @@
         flex-shrink: 0
       }
 
-      /* Results dropdown anchored below topbar */
+      
       .mobile-search-results {
         display: none;
         position: fixed;
@@ -3493,7 +3466,7 @@
         padding: 6px 10px
       }
 
-      /* Mobile: left half = theory+revision stacked, right half = model */
+      
       .tdd-cols-wrap.has-model .tdd-left-group {
         display: flex !important;
         flex-direction: column;
@@ -4199,7 +4172,7 @@
     </main>
   </div>
 
-  <!-- Compare Modal -->
+  
   <div class="modal-overlay" id="compare-overlay" onclick="closeCompare(event)">
     <div class="modal" style="width:min(960px,96vw)">
       <div class="modal-header">
@@ -4210,7 +4183,7 @@
     </div>
   </div>
 
-  <!-- Modal -->
+  
   <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
     <div class="modal">
       <div class="modal-header">
@@ -4221,7 +4194,7 @@
     </div>
   </div>
 
-  <!-- Mobile School Detail Drawer -->
+  
   <div class="school-drawer-overlay" id="school-drawer-overlay" onclick="closeSchoolDrawer()"></div>
   <div class="school-drawer" id="school-drawer">
     <div class="school-drawer-handle"></div>
@@ -4231,10 +4204,10 @@
     <div class="school-drawer-body" id="school-drawer-body"></div>
   </div>
 
-  <!-- Info Popover (shared, positioned by JS) -->
+  
   <div class="info-popover" id="info-popover"></div>
 
-  <!-- Keyboard Shortcuts Panel -->
+  
   <div class="kbd-panel" id="kbd-panel">
     <div class="kbd-panel-title">Keyboard Shortcuts</div>
     <div class="kbd-row"><span class="kbd-desc">Focus search</span><div class="kbd-keys"><span class="kbd-key">/</span></div></div>
@@ -4247,7 +4220,6 @@
     <div class="kbd-row"><span class="kbd-desc">Go back / Close</span><div class="kbd-keys"><span class="kbd-key">Esc</span></div></div>
     <div class="kbd-row"><span class="kbd-desc">This panel</span><div class="kbd-keys"><span class="kbd-key">?</span></div></div>
   </div>
-
 
   <div class="logo-drop" id="year-drop"></div>
   <div class="logo-drop" id="city-drop"></div>
@@ -4397,34 +4369,22 @@
   </style>
 
   <script>
-    // ═══════════════════════════════════════════════════
-    //  CONSTANTS
-    // ═══════════════════════════════════════════════════
     const GEN_MALE = 'B';
     const GEN_FEMALE = 'G';
 
-    // ═══════════════════════════════════════════════════
-    //  CITY / YEAR SELECTION STATE
-    // ═══════════════════════════════════════════════════
     let selectedCity = '';
     let selectedYear = '';
 
-    // Splash temporary selections
     let splashCity = '';
     let splashYear = '';
 
-    // ═══════════════════════════════════════════════════
-    //  CORE DATA STATE
-    // ═══════════════════════════════════════════════════
     let EXAMS = [];
     let ALL = [];
     let SCHOOLS = [];
     let CHARTS = {};
     let _globalMean = 70;
 
-    // Leaderboard
     let lbPage = 1, lbGender = '', lbSchool = '', lbTestSel = { mode: 'all' }, lbSortField = 'rating', lbSortAsc = false;
-    // Dashboard
     let podiumTestSel = { mode: 'all' }, top10TestSel = { mode: 'all' }, dashTestSel = { mode: 'all' }, top10SortField = 'rank', top10SortAsc = true, _schoolsExpanded = false;
     // Students
     let stuGender = '', stuSchool = '';
@@ -4437,9 +4397,7 @@
     // Tracks where the user came from before opening a student profile
     let _navOrigin = null; // { page, scrollY, label }
 
-    // ═══════════════════════════════════════════════════
     //  DEKMA DATA HELPERS
-    // ═══════════════════════════════════════════════════
     function getAvailableCities() {
       if (!window.dekmaData) return [];
       return Object.keys(window.dekmaData).sort();
@@ -4454,9 +4412,7 @@
       return !!(window.dekmaData && window.dekmaData[city] && window.dekmaData[city][year] && window.dekmaData[city][year].exams && window.dekmaData[city][year].exams.length);
     }
 
-    // ═══════════════════════════════════════════════════
     //  LOGO DROPDOWNS
-    // ═══════════════════════════════════════════════════
     function toggleLogoDrop(which) {
       const otherId = which === 'year' ? 'city' : 'year';
       const panel = document.getElementById(which + '-drop');
@@ -4611,9 +4567,7 @@
       loadExamData(src);
     }
 
-    // ═══════════════════════════════════════════════════
     //  SPLASH SCREEN
-    // ═══════════════════════════════════════════════════
     function showSplash(destination) {
       document.getElementById('loading').style.display = 'none';
       document.getElementById('app').style.display = 'none';
@@ -4689,9 +4643,7 @@
 
     function skipSplashAnim() { window._splashSkip && window._splashSkip(); }
 
-    // ═══════════════════════════════════════════════════════════════════════
     //  SHARED LIQUID BLOB CANVAS
-    // ═══════════════════════════════════════════════════════════════════════
     function mkAmbientCanvas(id) {
       const cv = document.getElementById(id);
       if (!cv) return { start(){}, stop(){} };
@@ -4757,9 +4709,7 @@
       };
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
     //  SPLASH SEQUENCE — pure JS timeouts, no inline style fights
-    // ═══════════════════════════════════════════════════════════════════════
     (function(){
       let amb = null, exitTimer = null, dest = 'picker';
       let _exitCalled = false, _splashWaiting = false;
@@ -4771,23 +4721,17 @@
         setTimeout(() => { Q('spl-line-l').style.width='38px'; Q('spl-line-r').style.width='38px'; }, 100);
         // eyebrow text
         setTimeout(() => { Q('spl-etext').style.opacity='1'; }, 280);
-        // letters spring in staggered
         ['sl-D','sl-E','sl-K','sl-M','sl-A'].forEach((id,i) =>
           setTimeout(() => Q(id).classList.add('in'), 420 + i*110)
         );
-        // rule draws
         setTimeout(() => { Q('spl-rule').style.width='58%'; }, 1050);
-        // subtitle
         setTimeout(() => { Q('spl-sub').classList.add('in'); }, 1280);
-        // AUTO-ADVANCE after 2.4s — snappy but still feels intentional
         exitTimer = setTimeout(() => doExit(), 2400);
       }
 
       function doExit() {
         if (_exitCalled) return;
 
-        // If data hasn't arrived yet, show the in-splash wait indicator
-        // and park here — _splashReady() will call us again once data lands
         if (!window._dekmaBootstrapDone) {
           _splashWaiting = true;
           clearTimeout(exitTimer);
@@ -4805,7 +4749,6 @@
         clearTimeout(exitTimer);
         if (amb) { amb.stop(); amb = null; }
         const sp = Q('splash');
-        // Hide skip button immediately so it doesn't linger
         const skipBtn = Q('splash-skip');
         if (skipBtn) { skipBtn.style.opacity = '0'; skipBtn.style.pointerEvents = 'none'; }
         sp.classList.add(dest === 'app' ? 's-exit-fade' : 's-exit-up');
@@ -4818,7 +4761,6 @@
             app.style.display = 'flex';
             app.classList.add('app-enter');
             setTimeout(() => app.classList.remove('app-enter'), 700);
-            // If preloaded, app is already rendered — just show it
             if (!window._appPreloaded) reloadForSelection();
           } else {
             showPicker();
@@ -4831,7 +4773,6 @@
       // Called by loadData() once data has arrived.
       // If the splash animation already finished and is parked, resume exit now.
       // If animation is still running, _dekmaBootstrapDone=true so doExit() will
-      // proceed naturally when the timer fires.
       window._splashReady = function() {
         if (_splashWaiting) {
           _splashWaiting = false;
@@ -4840,7 +4781,6 @@
             waitEl.classList.remove('in');
             setTimeout(() => { waitEl.classList.remove('visible'); }, 320);
           }
-          // Small pause so the bar fades before we exit
           setTimeout(doExit, 340);
         }
       };
@@ -4848,7 +4788,6 @@
       window._splashSkip = function() {
         clearTimeout(exitTimer);
         if (_exitCalled) return;
-        // Snap all elements visible instantly
         Q('spl-line-l').style.cssText += ';transition:none;width:38px';
         Q('spl-line-r').style.cssText += ';transition:none;width:38px';
         Q('spl-etext').style.cssText  += ';transition:none;opacity:1';
@@ -4859,7 +4798,6 @@
         });
         Q('spl-rule').style.cssText += ';transition:none;width:58%';
         Q('spl-sub').style.cssText  += ';transition:none;opacity:1;transform:translateY(0)';
-        // Exit immediately — no extra delay
         doExit();
       };
 
@@ -4870,7 +4808,6 @@
 
       window.startSplashAnimation = function(destination) {
         dest = destination || 'picker';
-        // wait 3 rAF so display:block is fully painted before reading dimensions
         let n = 0;
         function tick() {
           if (++n < 3) { requestAnimationFrame(tick); return; }
@@ -4882,30 +4819,22 @@
       };
     })();
 
-    // ══ EARLY SPLASH START ══════════════════════════════════════════════
-    // Show the splash immediately at DOM-ready — before data arrives —
-    // so the animation covers actual network/parse time rather than
-    // playing as a post-load vanity sequence.
     document.addEventListener('DOMContentLoaded', function () {
       if (window._splashEarlyStarted) return;
       window._splashEarlyStarted = true;
       document.getElementById('loading').style.display = 'none';
       var sp = document.getElementById('splash');
       sp.style.display = 'block';
-      // 2 rAFs so display:block is painted before canvas sizing + CSS transitions
       requestAnimationFrame(function () { requestAnimationFrame(function () {
         if (window.startSplashAnimation) window.startSplashAnimation('picker');
       }); });
     }, { once: true });
 
-    // ═══════════════════════════════════════════════════════════════════════
     //  PICKER SCREEN
-    // ═══════════════════════════════════════════════════════════════════════
     function showPicker() {
       const pk = document.getElementById('picker');
       pk.style.display = 'flex';
 
-      // populate options
       const cities = getAvailableCities();
       document.getElementById('splash-cities').innerHTML = cities.map(c =>
         `<div class="splash-opt${c===splashCity?' selected':''}" onclick="splashPickCity('${esc(c)}')">${c}</div>`
@@ -4916,27 +4845,20 @@
       renderSplashYears([...allYears].sort((a,b)=>b-a));
       updateSplashBtn();
 
-      // start ambient canvas
       const amb = mkAmbientCanvas('picker-canvas');
       amb.start();
 
-      // stagger elements in
       requestAnimationFrame(() => requestAnimationFrame(() => {
         setTimeout(() => document.getElementById('picker-logo').classList.add('in'), 50);
         setTimeout(() => document.getElementById('picker-grid').classList.add('in'), 180);
       }));
     }
 
-    // ═══════════════════════════════════════════════════
     //  DATA LOADING
-    // ═══════════════════════════════════════════════════
     function loadData() {
       if (window._splashEarlyStarted) {
-        // Splash already playing — just update its destination and signal readiness.
-        // The animation will exit (or wake from wait-state) on its own schedule.
 
         if (!window.dekmaData || !Object.keys(window.dekmaData).length) {
-          // No data at all — bypass splash entirely, show empty app
           document.getElementById('splash').style.display = 'none';
           selectedCity = ''; selectedYear = '';
           document.getElementById('app').style.display = 'flex';
@@ -4955,7 +4877,6 @@
           selectedCity = city; selectedYear = year;
           splashCity = city;   splashYear = year;
           if (window._splashSetDest) window._splashSetDest('app');
-          // Preload app in background while the splash finishes playing
           setTimeout(() => { reloadForSelection(); window._appPreloaded = true; }, 80);
         } else {
           splashCity = ''; splashYear = '';
@@ -4966,7 +4887,6 @@
         return;
       }
 
-      // ── Fallback: data arrived before DOM ready (very fast / offline cache) ──
       document.getElementById('loading').style.display = 'none';
 
       if (!window.dekmaData || !Object.keys(window.dekmaData).length) {
@@ -5004,7 +4924,6 @@
         return a.type === 'theory' ? -1 : 1;
       });
 
-      // Normalize school: treat literal 'no' (any case) as unaffiliated — not a real school name
       const normSchool = v => (!v || v.trim().toLowerCase() === 'no') ? '' : v.trim();
 
       ALL = [];
@@ -5031,7 +4950,6 @@
     }
 
     function initUIShell() {
-      // Register sticky Y-axis plugin for scrollable charts
       if (typeof Chart !== 'undefined' && !Chart.registry.plugins.get('stickyY')) {
         Chart.register({
           id: 'stickyY',
@@ -5039,13 +4957,11 @@
             const outer = chart.canvas.closest('.chart-scroll-outer');
             if (!outer) return;
             const inner = outer.querySelector('.chart-scroll-inner');
-            // Only sticky when scrolled and chart is wider than container
             const isScrollable = inner && inner.scrollWidth > inner.clientWidth + 4;
             const isScrolled = inner && inner.scrollLeft > 0;
             let overlay = outer.querySelector('.sticky-y-canvas');
             if (!isScrollable || !isScrolled) {
               if (overlay) overlay.style.display = 'none';
-              // Attach scroll listener once to trigger redraws when user scrolls
               if (isScrollable && !inner._stickyListenerAttached) {
                 inner._stickyListenerAttached = true;
                 inner.addEventListener('scroll', () => chart.draw(), { passive: true });
@@ -5061,7 +4977,6 @@
               overlay.className = 'sticky-y-canvas';
               outer.appendChild(overlay);
             }
-            // Attach scroll listener once
             if (!inner._stickyListenerAttached) {
               inner._stickyListenerAttached = true;
               inner.addEventListener('scroll', () => chart.draw(), { passive: true });
@@ -5080,19 +4995,16 @@
             document.body.removeChild(tmpEl);
             ctx2.fillStyle = bg;
             ctx2.fillRect(0, 0, overlay.width, overlay.height);
-            // Draw only the Y-axis area from the chart canvas
             ctx2.drawImage(chart.canvas, 0, 0, Math.ceil(axisW * dpr), chart.canvas.height,
                            0, 0, Math.ceil(axisW * dpr), Math.ceil(cssH * dpr));
           }
         });
       }
-      // Default to most recent revision, or most recent theory if no revisions exist
       const revExams = EXAMS.filter(e => e.type === 'revision');
       const thyExams = EXAMS.filter(e => e.type === 'theory');
       const defaultExam = revExams.length ? revExams[revExams.length - 1]
         : thyExams.length ? thyExams[thyExams.length - 1] : null;
       if (defaultExam) lbTestSel = { mode: 'custom', ids: new Set([defaultExam.id]) };
-      // Non-leaderboard dropdowns default to All Tests with multi enabled
       TDD_MULTI['school-test-sel'] = true;
       syncDashFilterBtns();
       populateSelects();
@@ -5116,7 +5028,6 @@
         `<div>${EXAMS.length} test${EXAMS.length !== 1 ? 's' : ''} loaded</div>` +
         `<div>${ALL.length.toLocaleString()} entries</div>`;
 
-      // Reinitialise hash routing
       window.removeEventListener('hashchange', handleHashChange);
       window.addEventListener('hashchange', handleHashChange);
       handleHashChange();
@@ -5124,9 +5035,7 @@
       initMobileSearch();
     }
 
-    // ═══════════════════════════════════════════════════
     //  MOBILE SIDEBAR
-    // ═══════════════════════════════════════════════════
     function toggleSidebar() {
       const sb = document.getElementById('sidebar');
       const hb = document.getElementById('hamburger');
@@ -5141,9 +5050,7 @@
       document.getElementById('sidebar-overlay').classList.remove('open');
     }
 
-    // ═══════════════════════════════════════════════════
     //  MOBILE SEARCH OVERLAY
-    // ═══════════════════════════════════════════════════
     function openMobileSearch() {
       document.getElementById('mobile-search-expand').classList.add('open');
       setTimeout(() => document.getElementById('mobile-search-input')?.focus(), 60);
@@ -5199,9 +5106,7 @@
       });
     }
 
-    // ═══════════════════════════════════════════════════
     //  NAVIGATION
-    // ═══════════════════════════════════════════════════
     let _transitionsReady = false;
     let _suppressScrollReset = false;
 
@@ -5258,8 +5163,6 @@
       }
       _suppressScrollReset = false;
       if (page === 'students') {
-        // Only reset to search view if we're NOT mid-way through opening a profile
-        // (_navOrigin being set means openStudentProfile is about to run)
         if (!_navOrigin) {
           _profileStack = [];
           const fb = document.getElementById('stu-filter-bar');
@@ -5280,17 +5183,13 @@
       showPage(page);
     }
 
-    // ═══════════════════════════════════════════════════
     //  INIT UI (populates filters etc.)
-    // ═══════════════════════════════════════════════════
     function populateSelects() {
       buildSchoolDropdown();
       buildStuSchoolDropdown();
     }
 
-    // ═══════════════════════════════════════════════════
     //  EXAM-TYPE HELPERS
-    // ═══════════════════════════════════════════════════
     const TYPE_SORT = { theory:0, revision:1, model_theory:2, model_revision:3 };
     function isModelType(t) { return t==='model_theory'||t==='model_revision'; }
     function typeColor(t) {
@@ -5299,7 +5198,6 @@
       if (isModelType(t)) return '#818cf8';
       return 'var(--text2)';
     }
-    // Canvas-safe colors — Chart.js can't resolve CSS variables
     function typeColorCanvas(t) {
       if (t==='theory')   return '#2dd4bf';
       if (t==='revision') return '#f97316';
@@ -5317,9 +5215,7 @@
       return {theory:'THE',revision:'REV',model_theory:'THM',model_revision:'RVM'}[t]||t.slice(0,3).toUpperCase();
     }
 
-    // ═══════════════════════════════════════════════════
     //  GLOBAL RANK MAP
-    // ═══════════════════════════════════════════════════
     let _thyRankMap = {};
     let _revRankMap = {};
     let _modRankMap = {};
@@ -5358,12 +5254,8 @@
     function revRank(name, school) { return _revRankMap[name + '\x00' + school] || '—'; }
     function modRank(name, school)  { return _modRankMap[name + '\x00' + school] || '—'; }
 
-    // ═══════════════════════════════════════════════════
     //  TEST SELECTION ENGINE — multi-select, range, type filter
-    // ═══════════════════════════════════════════════════
 
-    // sel = { mode: 'all'|'theory'|'revision'|'model'|'custom', ids?: Set<string> }
-    // 'all' includes model papers — they count in all leaderboards/rankings
     function resolveExamIds(sel) {
       if (!sel || sel.mode === 'all')  return EXAMS.map(e => e.id);
       if (sel.mode === 'theory')       return EXAMS.filter(e => e.type === 'theory').map(e => e.id);
@@ -5681,9 +5573,7 @@
       document.querySelectorAll('.tdd-btn.open').forEach(b => b.classList.remove('open'));
     }
 
-    // ═══════════════════════════════════════════════════
     //  FAIR RANKING ENGINE  — Empirical Bayes + Credible Bound
-    // ═══════════════════════════════════════════════════
     //
     //  Model:  true_skill θ ~ N(0, τ²)  [population prior]
     //          exam_z | θ  ~ N(θ, σ²)   [per-exam measurement noise]
@@ -5699,7 +5589,6 @@
     //    • 13/16 exams → σ_post tiny+ → lb ~0.3 pts lower (fair for 3 absences)
     //    • 1/16 exam   → σ_post large → lb pulled well below μ_post (can't game it)
     //    • The effective Bayes constant k = σ²/τ² replaces the hard-coded 4
-    // ─────────────────────────────────────────────────────────────────────────
     const RANK_CI = 1.28;           // one-sided 90% CI — balances fairness vs rigour
     let _examStats = {};
     let _ebParams = { tau_sq: 0.25, sigma_sq: 1.0 }; // sane fallback
@@ -5763,7 +5652,6 @@
     function zToRating(z) { return Math.round(Math.min(100, Math.max(0, 50 + z * 15)) * 100) / 100; }
     function _ns(s) { return String(s).replace(/\\/g, '\\\\').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/\n/g, '\\n'); }
 
-    // ─── Posterior skill estimate ────────────────────────────────────────────
     // Returns { mu_post, sig_post, skillZ (lcb), rating, meanRating }
     // Uses the empirically-calibrated _ebParams so it is consistent with
     // aggregateByStudent and buildGlobalRankMap.
@@ -5778,12 +5666,10 @@
       const skillZ = mu_post - RANK_CI * sig_post;
       return {
         mu_post, sig_post, skillZ,
-        rating: zToRating(skillZ),       // conservative lower-bound rating (used for ranking)
-        meanRating: zToRating(mu_post),      // best-estimate rating (for display)
+        rating: zToRating(skillZ),        meanRating: zToRating(mu_post),      // best-estimate rating (for display)
       };
     }
 
-    // Deduplicate an array of student objects by name+school, keeping highest mark
     function deduplicateStudents(arr) {
       const m = {};
       arr.forEach(s => {
@@ -5820,7 +5706,6 @@
         const z_mean = zList.reduce((a, b) => a + b, 0) / zList.length;
         const N = rows.length;
 
-        // ── Empirical Bayes posterior (shared computePosterior) ─────────────
         const post = computePosterior(zList);
 
         return {
@@ -5839,9 +5724,7 @@
       return aggregateByStudent(data).sort((a, b) => b.skillZ - a.skillZ).slice(0, n);
     }
 
-    // ═══════════════════════════════════════════════════
     //  RANK TIER HELPER
-    // ═══════════════════════════════════════════════════
     function getRankTier(rank, total) {
       if (rank === 1) return { tier: 1, icon: '<i class="ph ph-medal" style="color:#ffd700"></i>', label: 'Rank #1', tierClass: 'rank-tier-1' };
       if (rank <= 3) return { tier: 1, icon: '<i class="ph ph-trophy" style="color:var(--amber)"></i>', label: 'Top 3', tierClass: 'rank-tier-1' };
@@ -5854,9 +5737,7 @@
       return { tier: 6, icon: '<i class="ph ph-chart-bar" style="color:var(--text2)"></i>', label: 'Ranked', tierClass: 'rank-tier-6' };
     }
 
-    // ═══════════════════════════════════════════════════
     //  TOP SCHOOLS — EXPAND/COLLAPSE
-    // ═══════════════════════════════════════════════════
     function toggleSchoolsExpand() {
       _schoolsExpanded = !_schoolsExpanded;
       const btn = document.getElementById('schools-expand-btn');
@@ -5868,9 +5749,7 @@
       });
     }
 
-    // ═══════════════════════════════════════════════════
     //  DASHBOARD
-    // ═══════════════════════════════════════════════════
     function renderOverviewStats() {
       if (!EXAMS.length) { document.getElementById('overview-stats').innerHTML = ''; return; }
       const total = ALL.length;
@@ -6047,7 +5926,6 @@
       setChartScrollWidth('tests-chart-wrap', EXAMS.length);
     }
 
-    // ─── TOP 10 ──────────────────────────────────────
     function setTop10Sort(field) {
       top10SortField = field;
       syncTop10Btns(); renderTop10();
@@ -6115,9 +5993,7 @@
       return h + '</tbody></table>';
     }
 
-    // ═══════════════════════════════════════════════════
     //  TESTS PAGE
-    // ═══════════════════════════════════════════════════
     function syncTestsFilterBtns(){
       const b=document.getElementById('ft-model');
       if(b)b.style.display=EXAMS.some(e=>isModelType(e.type))?'':'none';
@@ -6357,9 +6233,7 @@
       closeStuSchoolDrop();
     }
 
-    // ═══════════════════════════════════════════════════
     //  CUSTOM SCHOOL DROPDOWN (Leaderboard)
-    // ═══════════════════════════════════════════════════
     function buildSchoolDropdown() {
       const wrap = document.getElementById('lb-school-wrap');
       if (!wrap) return;
@@ -6450,9 +6324,7 @@
       closeSchoolDrop();
     }
 
-    // ═══════════════════════════════════════════════════
     //  LEADERBOARD
-    // ═══════════════════════════════════════════════════
     const PER_PAGE = 40;
 
     function setLbGender(g, btn) {
@@ -6522,8 +6394,6 @@
         return lbSortAsc ? -v : v;
       });
 
-      // For aggregated views, compute rank from the CURRENT selection's data
-      // so ranks match the visible sorted order, not the all-time global map.
       let displayRankMap = singleExamGlobalRanks;
       if (isAll) {
         const sortedForRank = [...aggregateByStudent(getRowsForSel(sel))].sort((a, b) => b.rating - a.rating);
@@ -6545,7 +6415,6 @@
 
       const pag = document.getElementById('lb-pager');
       if (pages <= 1) { pag.innerHTML = ''; return; }
-      // Page range: current ± 2 on mobile (tight), ± 3 on desktop
       const spread = window.innerWidth < 480 ? 1 : 2;
       const pageNums = [];
       for (let p = Math.max(1, lbPage - spread); p <= Math.min(pages, lbPage + spread); p++) pageNums.push(p);
@@ -6560,13 +6429,10 @@
       pag.innerHTML = h + '</div>';
     }
 
-    // ═══════════════════════════════════════════════════
     //  TABLE BUILDER
-    // ═══════════════════════════════════════════════════
     function buildTable(data, opts = {}) {
       if (!data.length) return '<div class="empty"><div class="empty-icon">📭</div>No results</div>';
       const { rowHighlight = 0, showExam = false, isAgg = false, isAvg = false, globalRanks = {}, useGlobalRank = false } = opts;
-      // Fixed-width arrow: always same space, just opacity changes
       const arr = active => `<span class="th-arrow"><i class="ph ${active ? (lbSortAsc ? 'ph-caret-up' : 'ph-caret-down') : 'ph-caret-up-down'}"></i></span>`;
       const sh = (f, lbl) => {
         const active = lbSortField === f;
@@ -6608,9 +6474,7 @@
       return h + '</tbody></table>';
     }
 
-    // ═══════════════════════════════════════════════════
     //  STUDENTS
-    // ═══════════════════════════════════════════════════
     function populateStudentFilters() {
       buildStuSchoolDropdown();
     }
@@ -6628,7 +6492,6 @@
       ALL.forEach(r => {
         const key = r.name + '\x00' + r.school;
         if (!map[key]) map[key] = { name: r.name, school: r.school, gender: r.gender, examMap: {} };
-        // Deduplicate: keep highest mark if the same exam appears more than once
         const ek = r.exam_id;
         if (!map[key].examMap[ek] || r.marks > map[key].examMap[ek].marks) {
           map[key].examMap[ek] = { exam_id: r.exam_id, exam_label: r.exam_label, exam_type: r.exam_type, marks: r.marks, rank: r.rank };
@@ -6748,9 +6611,7 @@
       }
     }
 
-    // ═══════════════════════════════════════════════════
     //  STUDENT PROFILE
-    // ═══════════════════════════════════════════════════
     let _currentProfileIdx = -1;
 
     function openStudentProfile(idxOrName, _legacySchool) {
@@ -6791,9 +6652,7 @@
 
       const zList = apps.map(a => examZ(a.exam_id, a.marks));
       const post = computePosterior(zList);
-      const rating = post.rating;       // conservative lower-bound (same as global rank)
-      const meanRating = post.meanRating; // best-estimate skill level
-
+      const rating = post.rating;      const meanRating = post.meanRating;
       const gRank = globalRank(stuData.name, stuData.school);
       const tRank=thyApps.length?thyRank(stuData.name,stuData.school):null;
       const rRank=revApps.length?revRank(stuData.name,stuData.school):null;
@@ -6832,12 +6691,10 @@
       const bestExam = EXAMS.find(e => e.id === bestExamEntry?.exam_id);
       let classPercentile = null;
       if (bestExam) {
-        // Deduplicate exam students (same issue as global ranking — raw list may have dupes)
         const examStudents = deduplicateStudents([...bestExam.students]);
         const total = examStudents.length;
         const lower = examStudents.filter(s => s.marks < best).length;
         const atSame = examStudents.filter(s => s.marks === best).length;
-        // Percentile rank: midpoint formula handles ties fairly
         classPercentile = Math.round((lower + atSame * 0.5) / total * 100);
       }
 
@@ -6846,15 +6703,12 @@
 
       const revTheoryGap = revAvg && thyAvg ? revAvg - thyAvg : null;
 
-
-
       const name = stuData.name, school = stuData.school;
       const ini = name.split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
       const gc = stuData.gender === GEN_MALE ? 'var(--male)' : stuData.gender === GEN_FEMALE ? 'var(--female)' : 'var(--text3)';
 
       let rankBadgeHTML = '';
       if (rankTierInfo && typeof gRank === 'number') {
-        // Secondary type-specific rank chips
         const tRankHTML = (tRank && typeof tRank === 'number' && totalThy > 1) ? `
           <div class="type-rank-chip" style="border-color:rgba(45,212,191,.3);background:rgba(45,212,191,.06)">
             <span style="color:var(--teal);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;opacity:.7">Theory</span>
@@ -6897,7 +6751,6 @@
       document.getElementById('stu-grid').style.display = 'none';
       const pv = document.getElementById('stu-profile');
       pv.style.display = 'block';
-      // Always scroll to top when showing a profile
       window.scrollTo({ top: 0, behavior: 'instant' });
       const contentEl = document.getElementById('main-content');
       if (contentEl) contentEl.scrollTop = 0;
@@ -7065,9 +6918,7 @@
       setTimeout(()=>_renderStuChart(apps,best), 60);
     }
 
-    // ═══════════════════════════════════════════════════
     //  SCHOOLS
-    // ═══════════════════════════════════════════════════
     // School ranking uses the same EB calibration as student ranking.
     // k = sigma_sq/tau_sq gives the effective Bayes constant (replaces hard-coded 5).
     // This is computed lazily from _ebParams which is set during buildExamStats().
@@ -7177,9 +7028,7 @@
       }
     }
 
-    // ═══════════════════════════════════════════════════
     //  ANALYTICS
-    // ═══════════════════════════════════════════════════
     function filteredExams(){
       if(avgType==='all') return EXAMS;
       if(avgType==='model') return EXAMS.filter(e=>isModelType(e.type));
@@ -7274,7 +7123,6 @@
       }).join('');
     }
 
-
     function setChartScrollWidth(wrapId, dataLen) {
       const wrap = document.getElementById(wrapId);
       if (!wrap) return;
@@ -7367,9 +7215,7 @@
       setChartScrollWidth('spread-chart-wrap', fe.length);
     }
 
-    // ═══════════════════════════════════════════════════
     //  GLOBAL SEARCH
-    // ═══════════════════════════════════════════════════
     let searchTimer;
     document.getElementById('global-search').addEventListener('input', function () {
       clearTimeout(searchTimer);
@@ -7402,15 +7248,11 @@
       if (ev.key === 'Escape') { document.getElementById('global-search').blur(); document.getElementById('search-results').classList.remove('visible'); closeSidebar(); }
     });
 
-    // ═══════════════════════════════════════════════════
     //  MODAL
-    // ═══════════════════════════════════════════════════
     function openModal() { document.getElementById('modal-overlay').classList.add('open'); }
     function closeModal(ev) { if (!ev || ev.target === document.getElementById('modal-overlay')) { document.getElementById('modal-overlay').classList.remove('open'); } }
 
-    // ═══════════════════════════════════════════════════
     //  CHART CONFIG HELPER
-    // ═══════════════════════════════════════════════════
     function cOpts({ dual = false, ylabel = '' } = {}) {
       const base = {
         responsive: true, maintainAspectRatio: false,
@@ -7425,16 +7267,12 @@
       return base;
     }
 
-    // ═══════════════════════════════════════════════════
     //  UTILS
-    // ═══════════════════════════════════════════════════
     function esc(s) {
       return (s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
-    // ═══════════════════════════════════════════════════
     //  STUDENT COMPARISON
-    // ═══════════════════════════════════════════════════
     let _compareSet = new Set(); // indices into STU_REGISTRY
 
     function _syncCmpBtn(idx, active) {
@@ -7694,9 +7532,7 @@
       }
     }
 
-    // ═══════════════════════════════════════════════════
     //  EXPORT — CSV + PDF
-    // ═══════════════════════════════════════════════════
     function _getLbData() {
       const sel = lbTestSel;
       const isAll = isAgg(sel);
@@ -7823,19 +7659,15 @@
       tryGenerate();
     }
 
-    // ═══════════════════════════════════════════════════
     //  BOOT — called by the async data bootstrap in <head>
     //  once version.txt, results_index.js, and all chunks
     //  have finished loading (non-blocking).
-    // ═══════════════════════════════════════════════════
     // window.addEventListener('DOMContentLoaded', loadData);
     // ↑ Removed: the async bootstrap (head) now calls loadData()
     //   after all data scripts are ready, so this listener is
     //   no longer needed and would fire too early.
 
-    // ═══════════════════════════════════════════════════
     //  INFO POPOVER SYSTEM
-    // ═══════════════════════════════════════════════════
     const INFO_CONTENT = {
       'test-history': {
         title: 'Impact Score (σ)',
@@ -7925,9 +7757,7 @@
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeInfoPopover(); }, true);
     window.addEventListener('scroll', closeInfoPopover, { passive: true, capture: true });
 
-    // ═══════════════════════════════════════════════════
     //  MOBILE SCHOOL DETAIL DRAWER
-    // ═══════════════════════════════════════════════════
     function openSchoolDrawer(title, html) {
       document.getElementById('school-drawer-title').textContent = title;
       document.getElementById('school-drawer-body').innerHTML = html;
@@ -7975,9 +7805,7 @@
       }
     }
 
-    // ═══════════════════════════════════════════════════
     //  STUDENT PROFILE — TIMELINE & HISTORY FILTERS
-    // ═══════════════════════════════════════════════════
     let _stuTlFilter='all', _stuThFilter='all';
 
     function _syncStuBtns(prefix, active) {
@@ -8055,9 +7883,7 @@
       });
     }
 
-    // ═══════════════════════════════════════════════════
     //  FULLSCREEN CHART
-    // ═══════════════════════════════════════════════════
     let _fsChart = null;
 
     function openChartFs(wrapId, title) {
@@ -8093,10 +7919,7 @@
       if (_fsChart) { try { _fsChart.destroy(); } catch(e){} _fsChart = null; }
     }
 
-
-    // ═══════════════════════════════════════════════════
     //  DRAG-TO-SCROLL for chart-scroll-inner on desktop
-    // ═══════════════════════════════════════════════════
     document.addEventListener('mousedown', e => {
       const inner = e.target.closest('.chart-scroll-inner');
       if (!inner) return;
@@ -8116,9 +7939,7 @@
       document.querySelectorAll('.chart-scroll-inner').forEach(el => el._dragging = false);
     });
 
-    // ═══════════════════════════════════════════════════
     //  KEYBOARD SHORTCUTS
-    // ═══════════════════════════════════════════════════
     const PAGE_KEYS = { '1':'dashboard','2':'tests','3':'leaderboard','4':'students','5':'schools','6':'analytics' };
 
     function toggleKbdPanel(e) {
@@ -8187,21 +8008,13 @@
       }
     });
 
-
-    //  Desktop : Ctrl × 3, then type the key phrase
-    //  Mobile  : Long-press the city·year context badge for 2 s
-    // ═══════════════════════════════════════════════════
     (function () {
-      // Key is stored as a reversed, base64-encoded string to avoid
-      // it being trivially visible as plaintext in page source.
-      // NOTE: for production, admin auth should be server-side.
-      function _dk() {
+      function _gk() {
         try { return atob('ZmFpb3Nh').split('').reverse().join(''); } catch(e) { return ''; }
       }
 
-      // ── Desktop keyboard sequence ──────────────────────
-      const KONAMI_KEY = _dk();
-      const CTRL_NEEDED = 3;
+      const _ak = _gk();
+      const _cn = 3;
       let ctrlCount = 0, ctrlTimer = null;
       let seqBuf = '', seqActive = false;
 
@@ -8210,7 +8023,7 @@
           ctrlCount++;
           clearTimeout(ctrlTimer);
           ctrlTimer = setTimeout(() => { ctrlCount = 0; }, 1200);
-          if (ctrlCount >= CTRL_NEEDED) {
+          if (ctrlCount >= _cn) {
             ctrlCount = 0;
             seqBuf = '';
             seqActive = true;
@@ -8221,8 +8034,8 @@
           if (e.key === 'Escape') { seqActive = false; seqBuf = ''; return; }
           if (e.key.length === 1) {
             seqBuf += e.key.toLowerCase();
-            if (seqBuf.length > KONAMI_KEY.length) seqBuf = seqBuf.slice(-KONAMI_KEY.length);
-            if (seqBuf === KONAMI_KEY) {
+            if (seqBuf.length > _ak.length) seqBuf = seqBuf.slice(-_ak.length);
+            if (seqBuf === _ak) {
               seqActive = false; seqBuf = '';
               sessionStorage.setItem('__adm', Date.now().toString());
               window.location.href = 'admin.html';
@@ -8231,10 +8044,9 @@
         }
       });
 
-      // ── Mobile two-step gesture ────────────────────────
       const BADGE_HOLD_MS = 800;
-      const SEQ_KEY       = _dk();
-      const SEQ_EXPIRE_MS = 30000;
+      const _sk = _gk();
+      const _se = 30000;
 
       let _badgeHoldTimer = null;
       let _mobileSeqArmed = false;
@@ -8246,10 +8058,10 @@
 
       function _armMobileSeq() {
         _mobileSeqArmed = true;
-        _mobileSeqExpiry = Date.now() + SEQ_EXPIRE_MS;
+        _mobileSeqExpiry = Date.now() + _se;
         _mobileSeqBuf = '';
         _longPressTriggered = true;
-        setTimeout(function () { _mobileSeqArmed = false; _mobileSeqBuf = ''; }, SEQ_EXPIRE_MS);
+        setTimeout(function () { _mobileSeqArmed = false; _mobileSeqBuf = ''; }, _se);
       }
 
       function _cancelBadgeTimer() {
@@ -8295,7 +8107,7 @@
           if (!inp || e.target !== inp) return;
           if (!_mobileSeqArmed || Date.now() > _mobileSeqExpiry) return;
           _mobileSeqBuf = inp.value.toLowerCase().replace(/[^a-z]/g, '');
-          if (_mobileSeqBuf.endsWith(SEQ_KEY)) {
+          if (_mobileSeqBuf.endsWith(_sk)) {
             _mobileSeqArmed = false;
             _mobileSeqBuf = '';
             closeMobileSearch();
@@ -8311,7 +8123,7 @@
       });
     })();
   </script>
-  <!-- Fullscreen chart overlay -->
+  
   <div class="chart-fs-overlay" id="chart-fs-overlay" onclick="closeChartFs(event)">
     <div class="chart-fs-inner">
       <div class="chart-fs-header">
