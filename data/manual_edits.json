@@ -219,6 +219,16 @@
       },
       "newMarks": 94,
       "timestamp": 1773971570137
+    },
+    {
+      "examId": "R-2026-011",
+      "city": "Galle",
+      "student": {
+        "name": "Ruchin Himasha",
+        "school": "Richmond College"
+      },
+      "newMarks": 93,
+      "timestamp": 1774504822973
     }
   ],
   "studentRenames": [
@@ -235,6 +245,14 @@
       "newName": "Senidu Induwara",
       "newSchool": "Richmond College",
       "timestamp": 1773248091347
+    },
+    {
+      "oldName": "Minidu Mihiranga",
+      "oldSchool": "Richmond College",
+      "newName": "Minidu Mihiranga",
+      "newSchool": "Richmond College",
+      "newGender": "G",
+      "timestamp": 1774515870087
     }
   ],
   "deletions": [
@@ -259,6 +277,17 @@
         "school": "Richmond College"
       },
       "timestamp": 1773159602906
+    },
+    {
+      "type": "scoreEntry",
+      "examId": "T-2027-005",
+      "city": "Galle",
+      "year": "2027",
+      "student": {
+        "name": "Lokitha Kodikara",
+        "school": "Richmond College"
+      },
+      "timestamp": 1774507662651
     }
   ],
   "addedEntries": [
