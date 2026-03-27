@@ -253,6 +253,14 @@
       "newSchool": "Richmond College",
       "newGender": "G",
       "timestamp": 1774515870087
+    },
+    {
+      "oldName": "Minidu Mihiranga",
+      "oldSchool": "Richmond College",
+      "newName": "Minidu Mihiranga",
+      "newSchool": "Richmond College",
+      "newGender": "B",
+      "timestamp": 1774585962421
     }
   ],
   "deletions": [
