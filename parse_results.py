@@ -19,6 +19,7 @@ Manual edits are preserved and reapplied on every run.
 
 import re
 import json
+import base64
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
@@ -337,7 +338,15 @@ def write_chunk(city: str, year: int, exams: list[dict]) -> bool:
     var_name   = f"window.dekmaChunk_{slug(city)}_{year}"
     exams.sort(key=lambda e: (TYPE_ORDER.get(e["type"], 9), e["number"]))
     json_str  = json.dumps({"exams": exams}, ensure_ascii=False, separators=(',', ':'))
-    new_text  = f"{var_name}={json_str};\n"
+    # Base64-encode the JSON so it is not trivially readable as plain text in DevTools
+    b64       = base64.b64encode(json_str.encode("utf-8")).decode("ascii")
+    decoder   = (
+        f"(()=>{{const b=atob('{b64}');"
+        f"const a=new Uint8Array(b.length);"
+        f"for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);"
+        f"return JSON.parse(new TextDecoder().decode(a));}})()"
+    )
+    new_text  = f"{var_name}={decoder};\n"
 
     if chunk_file.exists() and chunk_file.read_text(encoding="utf-8") == new_text:
         print(f"  Unchanged {chunk_file.name} — skipped")
