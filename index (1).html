@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DEKMA Results</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <meta name="description" content="DEKMA Applied Maths results portal — explore leaderboards, scores, and school rankings by city and year.">
+
+  <!-- DNS prefetch & preconnect for external resources -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;1,400&display=swap"
+    rel="stylesheet">
+
+  <!-- Phosphor Icons: elegant SVG icon font, cross-platform consistent -->
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+
+  <!-- Chart.js: defer so it doesn't block HTML parsing -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+  <!-- ========== ASYNC VERSION-BASED DATA LOADER ========== -->
+  <!-- Replaces synchronous XHR + document.write() with a non-blocking
+       async chain: version.txt → results_index.js → data chunks.
+       loadData() is called once all scripts are ready and DOM is parsed. -->
+  <script src="loader.js"></script>
+  <!-- ===================================================== -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <div id="loading"><div class="loading-dot"></div></div>
+
+  <div id="splash">
+    <canvas id="splash-canvas"></canvas>
+    <div class="splash-stage">
+      <div class="splash-eyebrow">
+        <span class="spl-line" id="spl-line-l"></span>
+        <span class="spl-etext" id="spl-etext">Janaka Abeywardana</span>
+        <span class="spl-line" id="spl-line-r"></span>
+      </div>
+      <div class="splash-word">
+        <span class="sl" id="sl-D">D</span><span class="sl" id="sl-E">E</span><span class="sl" id="sl-K">K</span><span class="sl" id="sl-M">M</span><span class="sl" id="sl-A">A</span>
+      </div>
+      <div class="splash-rule" id="spl-rule"></div>
+      <div class="splash-sub" id="spl-sub">Applied Mathematics Results</div>
+
+    </div>
+    <button class="splash-skip" id="splash-skip" style="display:none"></button>
+    <div id="spl-wait">
+      <div class="spl-wait-bar"></div>
+      <span class="spl-wait-label">Loading</span>
+    </div>
+  </div>
+
+  <div id="picker">
+    <canvas id="picker-canvas"></canvas>
+    <div class="picker-inner">
+      <div class="picker-logo" id="picker-logo">DEKMA</div>
+      <div class="picker-grid" id="picker-grid">
+        <div class="picker-col">
+          <div class="picker-label">City</div>
+          <div class="splash-options" id="splash-cities"></div>
+        </div>
+        <div class="picker-col-div"></div>
+        <div class="picker-col">
+          <div class="picker-label">Year</div>
+          <div class="splash-options" id="splash-years"></div>
+        </div>
+      </div>
+      <button class="picker-btn" id="splash-go-btn" onclick="splashGo()">
+        Continue <span class="go-arrow">→</span>
+      </button>
+      <div class="picker-no-data" id="splash-no-data"><i class="ph ph-warning" style="margin-right:4px"></i>No data for this combination</div>
+    </div>
+  </div>
+
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <!-- ── BOTTOM TAB NAV (mobile) ── -->
+  <nav class="bottom-tabs" id="bottom-tabs" role="tablist">
+    <!-- amber bubble slides to active tab via JS -->
+    <div class="tab-bubble" id="tab-bubble"></div>
+
+    <div class="tab-item active" id="tab-dashboard" onclick="tabNav('dashboard')" role="tab" aria-label="Dashboard">
+      <span class="tab-icon"><i class="ph ph-house"></i></span>
+      <span class="tab-label">Home</span>
+    </div>
+    <div class="tab-item" id="tab-leaderboard" onclick="tabNav('leaderboard')" role="tab" aria-label="Leaderboard">
+      <span class="tab-icon"><i class="ph ph-ranking"></i></span>
+      <span class="tab-label">Ranks</span>
+    </div>
+    <div class="tab-item" id="tab-tests" onclick="tabNav('tests')" role="tab" aria-label="Tests">
+      <span class="tab-icon"><i class="ph ph-exam"></i></span>
+      <span class="tab-label">Tests</span>
+    </div>
+    <div class="tab-item" id="tab-students" onclick="tabNav('students')" role="tab" aria-label="Students">
+      <span class="tab-icon"><i class="ph ph-users"></i></span>
+      <span class="tab-label">Students</span>
+    </div>
+    <div class="tab-item" id="tab-schools" onclick="tabNav('schools')" role="tab" aria-label="Schools">
+      <span class="tab-icon"><i class="ph ph-buildings"></i></span>
+      <span class="tab-label">Schools</span>
+    </div>
+    <div class="tab-item" id="tab-analytics" onclick="tabNav('analytics')" role="tab" aria-label="Analytics">
+      <span class="tab-icon"><i class="ph ph-chart-bar"></i></span>
+      <span class="tab-label">Stats</span>
+    </div>
+  </nav>
+
+  <div class="shell" id="app" style="display:none">
+    <aside class="sidebar" id="sidebar">
+      <div class="logo">
+        <!-- Year selector -->
+        <div class="logo-selector-row">
+          <div class="logo-selector" id="year-sel-btn" onclick="toggleLogoDrop('year')">
+            <span class="logo-selector-text logo-year-text" id="logo-year">—</span>
+            <span class="logo-sel-arrow">▾</span>
+          </div>
+        </div>
+        <!-- City selector -->
+        <div class="logo-selector-row">
+          <div class="logo-selector" id="city-sel-btn" onclick="toggleLogoDrop('city')">
+            <span class="logo-selector-text logo-city-text" id="logo-city">—</span>
+            <span class="logo-sel-arrow">▾</span>
+          </div>
+        </div>
+        <div class="logo-sub" id="logo-sub">Applied Maths</div>
+      </div>
+      <nav>
+        <div class="nav-section">Overview</div>
+        <div class="nav-item" onclick="location.hash='dashboard';closeSidebar()"><i class="ph ph-squares-four nav-icon"></i>
+          Dashboard</div>
+        <div class="nav-section">Data</div>
+        <div class="nav-item" onclick="location.hash='leaderboard';closeSidebar()"><i class="ph ph-trophy nav-icon"></i>
+          Leaderboard</div>
+        <div class="nav-item" onclick="location.hash='tests';closeSidebar()"><i class="ph ph-exam nav-icon"></i> All Tests
+        </div>
+        <div class="nav-section">Analysis</div>
+        <div class="nav-item" onclick="location.hash='students';closeSidebar()"><i class="ph ph-users nav-icon"></i> Students
+        </div>
+        <div class="nav-item" onclick="location.hash='schools';closeSidebar()"><i class="ph ph-buildings nav-icon"></i> Schools
+        </div>
+        <div class="nav-item" onclick="location.hash='analytics';closeSidebar()"><i class="ph ph-chart-line nav-icon"></i>
+          Analytics</div>
+      </nav>
+      <div class="sidebar-footer" id="sidebar-footer">—</div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar" style="position:relative">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+            <span></span><span></span><span></span>
+          </button>
+          <div class="page-title" id="page-title">DASHBOARD</div>
+          <div class="context-badge" id="context-badge" onclick="toggleTopbarSelector(event)"
+            role="button" aria-label="Change year and city"><span id="context-badge-text">Select City · Year</span><span
+              class="context-badge-arrow">▾</span></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="mobile-search-btn" id="mobile-search-btn" onclick="openMobileSearch()" aria-label="Search"><i class="ph ph-magnifying-glass" style="font-size:18px;line-height:1"></i></button>
+          <div class="search-wrap">
+            <input class="search-input" id="global-search" placeholder="Search… (/ to focus)" autocomplete="off">
+            <div class="search-results" id="search-results"></div>
+          </div>
+          <div class="kbd-hint" id="kbd-hint-btn" onclick="toggleKbdPanel(event)" title="Keyboard shortcuts"><kbd>?</kbd></div>
+        </div>
+        <!-- Mobile inline search expand -->
+        <div class="mobile-search-expand" id="mobile-search-expand">
+          <input class="mobile-search-field" id="mobile-search-input" placeholder="Search students…" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+          <button class="mobile-search-cancel" onclick="closeMobileSearch()">Cancel</button>
+        </div>
+      </header>
+      <div class="mobile-search-results" id="mobile-search-results"></div>
+
+      <div class="content" id="main-content">
+
+        <!-- DASHBOARD -->
+        <div class="page active" id="page-dashboard">
+          <div id="no-data-msg" style="display:none" class="no-data-banner">
+            <strong><i class="ph ph-warning" style="margin-right:4px"></i>No data loaded</strong>
+            Run <code>python3 parse_results.py</code> in your project folder to generate <code>data/results.js</code>,
+            then refresh this page.
+          </div>
+          <div class="filter-bar" id="dash-filter-bar" style="margin-bottom:20px">
+            <div class="filter-btn active" id="db-all" onclick="setDashFilter('all',this)">All</div>
+            <div class="filter-btn" id="db-thy" onclick="setDashFilter('theory',this)">Theory</div>
+            <div class="filter-btn" id="db-rev" onclick="setDashFilter('revision',this)">Revision</div>
+            <div class="filter-btn" id="db-mod" onclick="setDashFilter('model',this)" style="display:none">Model</div>
+          </div>
+          <div class="stats-grid" id="overview-stats"></div>
+          <div class="two-col">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><i class="ph ph-trophy" style="color:var(--amber)"></i> Top Performers</div>
+              </div>
+              <div id="podium-wrap"></div>
+            </div>
+            <div class="card card-dist">
+              <div class="card-header">
+                <div class="card-title"><i class="ph ph-chart-bar" style="color:var(--teal)"></i> Score Distribution</div>
+                <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)" id="dist-label"></div>
+              </div>
+              <div class="card-body">
+                <div class="dist-histogram-wrap">
+                  <div id="dist-histogram" class="histogram"></div>
+                  <div
+                    style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);display:flex;justify-content:space-between;flex-shrink:0">
+                    <span id="dist-min">40</span><span>score range</span><span id="dist-max">100</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:24px">
+            <div class="card-header">
+              <div class="card-title"><i class="ph ph-star" style="color:var(--amber)"></i> Top 10</div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="t10-sort-seg">
+                  <button class="t10-seg-opt active" id="t10-rank-btn" onclick="setTop10Sort('rank')">Rating</button>
+                  <button class="t10-seg-opt" id="t10-avg-btn" onclick="setTop10Sort('avg')">Avg</button>
+                </div>
+                <button class="t10-more-btn" onclick="goToLeaderboardFromTop10()">More <i class="ph ph-arrow-up-right"></i></button>
+              </div>
+            </div>
+            <div class="table-wrap" id="top10-table"></div>
+          </div>
+          <div class="two-col">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><i class="ph ph-trend-up" style="color:var(--teal)"></i> Tests Overview</div>
+                <button class="chart-fullscreen-btn-hdr" onclick="openChartFs('tests-chart-wrap','Tests Overview')" title="Full view"><i class="ph ph-arrows-out"></i></button>
+              </div>
+              <div class="card-body">
+                <div class="chart-scroll-outer"><div class="chart-scroll-inner"><div class="chart-wrap" id="tests-chart-wrap"><canvas id="tests-chart"></canvas></div></div></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><i class="ph ph-buildings" style="color:var(--blue)"></i> Top Schools <span style="font-size:9px;opacity:.6">(by elite score)</span></div>
+                <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)" id="dash-schools-filter-label">All Tests</div>
+              </div>
+              <div id="top-schools-bar-wrap">
+                <div class="card-body" id="top-schools-bar" style="padding-bottom:0"></div>
+                <button class="expand-btn" id="schools-expand-btn" onclick="toggleSchoolsExpand()">
+                  <span id="schools-expand-label">Show more</span>
+                  <span class="expand-btn-icon">▾</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ALL TESTS -->
+        <div class="page" id="page-tests">
+          <div class="filter-bar">
+            <div class="filter-btn active" id="ft-all" onclick="filterTests('all',this)">All</div>
+            <div class="filter-btn" id="ft-theory" onclick="filterTests('theory',this)">Theory</div>
+            <div class="filter-btn" id="ft-revision" onclick="filterTests('revision',this)">Revision</div>
+            <div class="filter-btn" id="ft-model" onclick="filterTests('model',this)" style="display:none">Model</div>
+          </div>
+          <div class="tests-grid" id="tests-grid"></div>
+        </div>
+
+        <!-- LEADERBOARD -->
+        <div class="page" id="page-leaderboard">
+          <div class="filter-bar" style="flex-wrap:wrap;gap:8px">
+            <div id="lb-sel" class="tdd-wrap"></div>
+          </div>
+          <div class="filter-bar">
+            <div id="lb-school-wrap" class="tdd-wrap"></div>
+            <div class="t10-sort-seg" id="lb-gender-seg" style="flex-shrink:0">
+              <button class="t10-seg-opt active" id="lb-g-all" onclick="setLbGender('',this)">All</button>
+              <button class="t10-seg-opt" id="lb-g-b" onclick="setLbGender('B',this)"><i class="ph ph-gender-male" style="color:var(--male)"></i> Boys</button>
+              <button class="t10-seg-opt" id="lb-g-g" onclick="setLbGender('G',this)"><i class="ph ph-gender-female" style="color:var(--female)"></i> Girls</button>
+            </div>
+            <input class="search-input" id="lb-name" placeholder="Filter by name…"
+              oninput="lbPage=1;renderLeaderboard()" style="width:200px;max-width:100%">
+          </div>
+          <div class="card">
+            <div class="card-header" style="flex-wrap:nowrap">
+              <div class="card-title" id="lb-title" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Leaderboard</div>
+              <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+                <div class="chip" id="lb-count">—</div>
+              <div style="position:relative;display:inline-block" id="export-dd-wrap">
+                <button class="export-icon-btn" onclick="toggleExportDrop(event)" id="export-dd-btn" title="Export"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block"><path d="M7 1v7M4 5.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 10v1.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+                <div id="export-dd-panel" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);z-index:300;min-width:130px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.5)">
+                  <div onclick="exportLeaderboardCSV();closeExportDrop()" style="padding:9px 16px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s" onmouseenter="this.style.background='var(--bg3)'" onmouseleave="this.style.background=''"><i class="ph ph-download-simple" style="font-size:11px;margin-right:4px"></i>CSV</div>
+                  <div onclick="exportLeaderboardPDF();closeExportDrop()" style="padding:9px 16px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);cursor:pointer;transition:background .1s" onmouseenter="this.style.background='var(--bg3)'" onmouseleave="this.style.background=''"><i class="ph ph-download-simple" style="font-size:11px;margin-right:4px"></i>PDF</div>
+                </div>
+              </div>
+              </div>
+            </div>
+            <div class="table-wrap" id="lb-table"></div>
+            <div style="padding:0 20px 16px" id="lb-pager"></div>
+          </div>
+        </div>
+
+        <!-- STUDENTS -->
+        <div class="page" id="page-students">
+          <div class="filter-bar" id="stu-filter-bar">
+            <input class="search-input stu-search-input" id="stu-search" placeholder="Type a student name…"
+              oninput="searchStudents()" style="width:320px;max-width:100%">
+            <div id="stu-school-wrap" class="tdd-wrap"></div>
+            <div class="filter-btn active" id="stu-g-all" onclick="setStuGender('',this)">All</div>
+            <div class="filter-btn" id="stu-g-b" onclick="setStuGender('B',this)">Boys</div>
+            <div class="filter-btn" id="stu-g-g" onclick="setStuGender('G',this)">Girls</div>
+          </div>
+          <div id="stu-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px">
+          </div>
+          <div id="stu-profile" style="display:none"></div>
+        </div>
+
+        <!-- SCHOOLS -->
+        <div class="page" id="page-schools">
+          <div class="filter-bar" style="flex-wrap:wrap">
+            <div id="school-test-sel" class="tdd-wrap"></div>
+            <input id="school-search-inp" class="search-input school-search-inp" placeholder="Search school…" autocomplete="off"
+              oninput="renderSchools()" style="flex:1;min-width:140px">
+          </div>
+          <div class="school-sort-seg" id="school-sort-seg">
+            <button class="t10-seg-opt" id="ss-count" onclick="setSchoolSort('count',this)">By Students</button>
+            <button class="t10-seg-opt" id="ss-avg" onclick="setSchoolSort('avg',this)">By Avg Score</button>
+            <button class="t10-seg-opt active" id="ss-top" onclick="setSchoolSort('elite',this)">By Elite Score</button>
+          </div>
+          <div class="two-col" id="schools-two-col">
+            <div class="card" style="display:flex;flex-direction:column;min-height:0">
+              <div class="card-header" style="flex-shrink:0">
+                <div class="card-title">School Rankings</div>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)">Avg is Bayesian-adjusted</div>
+                  <button class="info-btn" onclick="showInfoPopover(this,'school-ranking')" title="About school rankings"><i class="ph ph-info" style="font-size:13px;line-height:1"></i></button>
+                </div>
+              </div>
+              <div class="card-body" style="overflow-y:auto;flex:1;min-height:0" id="school-list"></div>
+            </div>
+            <div class="card school-detail-desktop">
+              <div class="card-header">
+                <div class="card-title" id="school-detail-title">School Detail</div>
+              </div>
+              <div class="card-body" id="school-detail">
+                <div class="empty">
+                  <i class="ph ph-buildings empty-icon" style="font-size:32px;color:var(--text3)"></i><span>Click a school to explore</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ANALYTICS -->
+        <div class="page" id="page-analytics">
+          <div class="filter-bar" style="margin-bottom:20px">
+            <div class="filter-btn active" id="at-all" onclick="setAvgType('all',this)">All Tests</div>
+            <div class="filter-btn" id="at-thy" onclick="setAvgType('theory',this)">Theory</div>
+            <div class="filter-btn" id="at-rev" onclick="setAvgType('revision',this)">Revision</div>
+            <div class="filter-btn" id="at-mod" onclick="setAvgType('model',this)" style="display:none">Model</div>
+          </div>
+          <div class="three-col">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Gender Split</div>
+              </div>
+              <div class="card-body">
+                <div class="chart-wrap short"><canvas id="gender-chart"></canvas></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Score Bands</div>
+              </div>
+              <div class="card-body">
+                <div class="chart-wrap short"><canvas id="bands-chart"></canvas></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Test Summaries</div>
+              </div>
+              <div class="card-body" id="test-summary-list" style="max-height:180px;overflow-y:auto"></div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:24px">
+            <div class="card-header">
+              <div class="card-title">Average Score Per Test</div>
+              <button class="chart-fullscreen-btn-hdr" onclick="openChartFs('avg-chart-wrap','Average Score Per Test')" title="Full view"><i class="ph ph-arrows-out"></i></button>
+            </div>
+            <div class="card-body">
+              <div class="chart-scroll-outer"><div class="chart-scroll-inner"><div class="chart-wrap tall" id="avg-chart-wrap"><canvas id="avg-chart"></canvas></div></div></div>
+            </div>
+          </div>
+          <div class="two-col">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Top 10 Schools — Average Score</div>
+              </div>
+              <div class="card-body">
+                <div class="chart-wrap"><canvas id="school-avg-chart"></canvas></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Participants Per Test</div>
+                <button class="chart-fullscreen-btn-hdr" onclick="openChartFs('participant-chart-wrap','Participants Per Test')" title="Full view"><i class="ph ph-arrows-out"></i></button>
+              </div>
+              <div class="card-body">
+                <div class="chart-scroll-outer"><div class="chart-scroll-inner"><div class="chart-wrap" id="participant-chart-wrap"><canvas id="participant-chart"></canvas></div></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="two-col">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Boys vs Girls — Avg Score Per Test</div>
+                <button class="chart-fullscreen-btn-hdr" onclick="openChartFs('gender-trend-chart-wrap','Boys vs Girls')" title="Full view"><i class="ph ph-arrows-out"></i></button>
+              </div>
+              <div class="card-body">
+                <div class="chart-scroll-outer"><div class="chart-scroll-inner"><div class="chart-wrap" id="gender-trend-chart-wrap"><canvas id="gender-trend-chart"></canvas></div></div></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Score Spread (Min / Avg / Max)</div>
+                <button class="chart-fullscreen-btn-hdr" onclick="openChartFs('spread-chart-wrap','Score Spread')" title="Full view"><i class="ph ph-arrows-out"></i></button>
+              </div>
+              <div class="card-body">
+                <div class="chart-scroll-outer"><div class="chart-scroll-inner"><div class="chart-wrap" id="spread-chart-wrap"><canvas id="spread-chart"></canvas></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Compare Modal -->
+  <div class="modal-overlay" id="compare-overlay" onclick="closeCompare(event)">
+    <div class="modal" style="width:min(960px,96vw)">
+      <div class="modal-header">
+        <div class="modal-title" id="compare-title">COMPARE STUDENTS</div>
+        <button class="modal-close" onclick="closeCompare()"><i class="ph ph-x"></i></button>
+      </div>
+      <div class="modal-body" id="compare-body"></div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-title"></div>
+        <button class="modal-close" onclick="closeModal()"><i class="ph ph-x"></i></button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- Mobile School Detail Drawer -->
+  <div class="school-drawer-overlay" id="school-drawer-overlay" onclick="closeSchoolDrawer()"></div>
+  <div class="school-drawer" id="school-drawer">
+    <div class="school-drawer-handle"></div>
+    <div class="school-drawer-header">
+      <div class="school-drawer-title" id="school-drawer-title">School Detail</div>
+    </div>
+    <div class="school-drawer-body" id="school-drawer-body"></div>
+  </div>
+
+  <!-- Info Popover (shared, positioned by JS) -->
+  <div class="info-popover" id="info-popover"></div>
+
+  <!-- Keyboard Shortcuts Panel -->
+  <div class="kbd-panel" id="kbd-panel">
+    <div class="kbd-panel-title">Keyboard Shortcuts</div>
+    <div class="kbd-row"><span class="kbd-desc">Focus search</span><div class="kbd-keys"><span class="kbd-key">/</span></div></div>
+    <div class="kbd-row"><span class="kbd-desc">Dashboard</span><div class="kbd-keys"><span class="kbd-key">1</span></div></div>
+    <div class="kbd-row"><span class="kbd-desc">All Tests</span><div class="kbd-keys"><span class="kbd-key">2</span></div></div>
+    <div class="kbd-row"><span class="kbd-desc">Leaderboard</span><div class="kbd-keys"><span class="kbd-key">3</span></div></div>
+    <div class="kbd-row"><span class="kbd-desc">Student Lookup</span><div class="kbd-keys"><span class="kbd-key">4</span></div></div>
+    <div class="kbd-row"><span class="kbd-desc">Schools</span><div class="kbd-keys"><span class="kbd-key">5</span></div></div>
+    <div class="kbd-row"><span class="kbd-desc">Analytics</span><div class="kbd-keys"><span class="kbd-key">6</span></div></div>
+    <div class="kbd-row"><span class="kbd-desc">Go back / Close</span><div class="kbd-keys"><span class="kbd-key">Esc</span></div></div>
+    <div class="kbd-row"><span class="kbd-desc">This panel</span><div class="kbd-keys"><span class="kbd-key">?</span></div></div>
+  </div>
+
+
+  <div class="logo-drop" id="year-drop"></div>
+  <div class="logo-drop" id="city-drop"></div>
+  <div class="logo-drop" id="topbar-drop" style="min-width:200px"></div>
+
+
+  <script src="app.js"></script>
+  <!-- Fullscreen chart overlay -->
+  <div class="chart-fs-overlay" id="chart-fs-overlay" onclick="closeChartFs(event)">
+    <div class="chart-fs-inner">
+      <div class="chart-fs-header">
+        <span class="chart-fs-title" id="chart-fs-title"></span>
+        <button class="chart-fs-close" onclick="closeChartFsBtn()"><i class="ph ph-x"></i></button>
+      </div>
+      <div class="chart-fs-body" id="chart-fs-body"></div>
+    </div>
+  </div>
+
+</body>
+
+</html>

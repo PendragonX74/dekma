@@ -494,15 +494,16 @@ def main():
                 if parsed is None:
                     continue
                 exam_type, file_year, number, is_model = parsed
-                if file_year != year:
-                    continue
 
                 type_key, type_label = exam_type_info(exam_type, is_model)
                 students = parse_xml_file(xml_file)
                 if not students:
                     continue
 
-                exam_id = make_exam_id(exam_type, year, number, is_model)
+                # Use file_year (from filename) for the exam ID — it reflects when
+                # the exam was actually held, even if the file lives in a different
+                # academic-year folder (e.g. Sept exams filed under the next year).
+                exam_id = make_exam_id(exam_type, file_year, number, is_model)
                 exams_for_year.append({
                     "id":       exam_id,
                     "label":    f"{type_label} {number}",

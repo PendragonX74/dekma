@@ -600,9 +600,11 @@
 
     function loadExamData(src) {
       EXAMS = (src.exams || []).slice();
+      const _LOAD_TYPE_ORDER = { theory: 0, revision: 1, model_theory: 2, model_revision: 3 };
       EXAMS.sort((a, b) => {
-        if (a.type === b.type) return (a.number || 0) - (b.number || 0);
-        return a.type === 'theory' ? -1 : 1;
+        const ao = _LOAD_TYPE_ORDER[a.type] ?? 9, bo = _LOAD_TYPE_ORDER[b.type] ?? 9;
+        if (ao !== bo) return ao - bo;
+        return (a.number || 0) - (b.number || 0);
       });
 
       // Normalize school: treat literal 'no' (any case) as unaffiliated — not a real school name
