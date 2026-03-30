@@ -10,10 +10,20 @@ This means:
   - The DEKMA RESULTS/ folder never needs to be committed.
   - Works correctly in ephemeral CI environments (GitHub Actions).
 
-For each exam type (R, T) per active year per centre:
-  - Re-downloads the last REFRESH_WINDOW exams (default 2) unconditionally,
-    so any server-side corrections to recent data are picked up.
-  - Then scans forward from max+1 until the first gap, picking up new exams.
+For each exam type (R, T) per active year per centre, three passes run
+in order:
+
+  1. FILL MISSING  — downloads every known exam whose XML file is absent
+                     from disk (catches clean / ephemeral environments
+                     where DEKMA RESULTS/ was wiped between runs).
+                     Files already on disk are NOT re-fetched here.
+
+  2. REFRESH       — unconditionally re-downloads the last REFRESH_WINDOW
+                     exams so server-side corrections to recent data are
+                     always picked up.  Skipped when max_num == 0.
+
+  3. FORWARD SCAN  — fetches new exams starting from max_num+1 until the
+                     first gap.
 
 Writes ROOT_FOLDER/.new_downloads marker if anything changed so you know
 when to re-run parse_results.py.
@@ -112,14 +122,16 @@ def known_numbers_from_manifest(manifest: dict, city: str,
       "R-2026-001"    (regular revision)
       "RM-2025-001"   (revision model)
 
-    We match on the first character (T or R) regardless of model suffix.
+    We match on the first character (T or R) AND require the second
+    character to be '-' (not 'M') so that model exams are not counted
+    as regular exams of the same base type.
     """
     key  = f"{city_slug(city)}_{year}"
     ids  = manifest.get(key, [])
     nums = []
     for eid in ids:
-        # eid starts with exam_type letter (T or R)
-        if not eid.startswith(exam_type):
+        # Match only non-model exams: e.g. "T-2026-003" starts with "T-"
+        if not eid.startswith(exam_type + "-"):
             continue
         try:
             nums.append(int(eid.split("-")[-1]))
@@ -148,9 +160,44 @@ def main():
                 nums    = known_numbers_from_manifest(manifest, center, exam_type, year)
                 max_num = max(nums) if nums else 0
 
-                # ── Refresh window: re-download last N existing exams ─────
-                # Even if already saved locally, re-fetch in case the server
-                # corrected the data after the original download.
+                # ── Pass 1: Fill missing ──────────────────────────────────
+                # Download every known exam that is absent from disk.
+                # This is the critical pass for ephemeral / wiped environments:
+                # without it, only the refresh window (last 2) would ever be
+                # present on disk, causing parse_results.py to output only
+                # those 2 exams for the year.
+                #
+                # Files already on disk are skipped — no unnecessary requests.
+                # The refresh window below will unconditionally re-check the
+                # last N of these anyway.
+                fill_end = max(0, max_num - REFRESH_WINDOW)  # exams outside refresh window
+                if fill_end > 0:
+                    missing = [
+                        n for n in range(1, fill_end + 1)
+                        if not (year_folder / f"{exam_type}-{year}-{n:03d}.xml").exists()
+                    ]
+                    if missing:
+                        print(f"  Filling     {exam_type}: "
+                              f"{len(missing)} missing file(s) of "
+                              f"{exam_type}-{year}-001 … "
+                              f"{exam_type}-{year}-{fill_end:03d}")
+                        for n in missing:
+                            exam_code = f"{exam_type}-{year}-{n:03d}"
+                            content   = fetch_exam(center, exam_code)
+                            file_path = year_folder / f"{exam_code}.xml"
+                            if content is None:
+                                print(f"    [{exam_code}] no valid XML — skipping fill")
+                            else:
+                                save_file(file_path, content)
+                                print(f"    [{exam_code}] downloaded (was missing)")
+                                new_or_updated = True
+                            time.sleep(SLEEP_BETWEEN)
+                    else:
+                        print(f"  Fill check  {exam_type}: all {fill_end} older file(s) present on disk")
+
+                # ── Pass 2: Refresh window ────────────────────────────────
+                # Re-download last N exams unconditionally so any server-side
+                # corrections to recent data are always picked up.
                 refresh_start = max(1, max_num - REFRESH_WINDOW + 1)
                 refresh_end   = max_num  # inclusive
 
@@ -175,7 +222,7 @@ def main():
                             new_or_updated = True
                         time.sleep(SLEEP_BETWEEN)
 
-                # ── Forward scan: look for brand-new exams ────────────────
+                # ── Pass 3: Forward scan — look for brand-new exams ───────
                 start_n = max_num + 1
                 print(f"  Scanning    {exam_type} from "
                       f"{exam_type}-{year}-{start_n:03d}...")
