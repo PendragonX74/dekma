@@ -332,6 +332,32 @@ def apply_edits(data_by_city_year: dict, edits: dict) -> None:
 
 # ─── output writers ───────────────────────────────────────────────────────────
 
+def load_existing_chunk_exams(city: str, year: int) -> list[dict]:
+    """
+    Decode and return the exam list from an already-written chunk file.
+
+    Used as a fallback when XML files for some exams are absent from disk
+    (e.g. after DEKMA RESULTS/ is wiped and the downloader has only
+    re-fetched the most-recent 2 per type).  Old exam data never changes,
+    so the previously committed chunk is always a safe source of truth.
+
+    Returns [] if the file doesn't exist or can't be decoded.
+    """
+    chunk_file = OUTPUT_DIR / f"results_{slug(city)}_{year}.js"
+    if not chunk_file.exists():
+        return []
+    try:
+        text  = chunk_file.read_text(encoding="utf-8")
+        match = re.search(r"atob\('([A-Za-z0-9+/=]+)'\)", text)
+        if not match:
+            return []
+        decoded = base64.b64decode(match.group(1)).decode("utf-8")
+        return json.loads(decoded).get("exams", [])
+    except Exception as e:
+        print(f"  [WARN] Could not decode existing chunk {city}/{year}: {e}")
+        return []
+
+
 def write_chunk(city: str, year: int, exams: list[dict]) -> bool:
     """Write a data chunk. Returns True if the file was actually written (content changed)."""
     chunk_file = OUTPUT_DIR / f"results_{slug(city)}_{year}.js"
@@ -391,11 +417,18 @@ def load_exam_manifest() -> dict:
         return {}
 
 
-def save_exam_manifest(city_year_exams: dict) -> None:
-    manifest = {}
+def save_exam_manifest(city_year_exams: dict, old_manifest: dict) -> None:
+    # Start from the previous manifest so exam IDs are never lost when only
+    # a subset of XML files is present on disk (e.g. after a folder wipe).
+    manifest = {k: list(v) for k, v in old_manifest.items()}
     for (city, year), exams in city_year_exams.items():
-        key = f"{slug(city)}_{year}"
-        manifest[key] = [e["id"] for e in exams]
+        key      = f"{slug(city)}_{year}"
+        new_ids  = [e["id"] for e in exams]
+        # Union: keep everything already in the manifest, add any new IDs.
+        existing = set(manifest.get(key, []))
+        merged   = sorted(existing | set(new_ids),
+                          key=lambda eid: (eid.split("-")[0], int(eid.split("-")[-1])))
+        manifest[key] = merged
     try:
         EXAM_MANIFEST_FILE.write_text(
             json.dumps(manifest, ensure_ascii=False, separators=(',', ':')),
@@ -513,6 +546,18 @@ def main():
                 })
                 print(f"    {exam_id}: {len(students)} students")
 
+            # ── Merge with existing chunk (fallback for absent XML files) ──
+            # If some exams are missing from disk (e.g. DEKMA RESULTS/ was
+            # wiped and the downloader only re-fetched the most-recent 2),
+            # load them from the previously written chunk so they are never
+            # silently dropped from the output.
+            parsed_ids = {e["id"] for e in exams_for_year}
+            for ex in load_existing_chunk_exams(city, year):
+                if ex["id"] not in parsed_ids:
+                    exams_for_year.append(ex)
+                    print(f"    {ex['id']}: {len(ex.get('students', []))} students"
+                          f"  [retained from existing chunk — XML absent]")
+
             if exams_for_year:
                 city_year_exams[(city, year)] = exams_for_year
 
@@ -547,7 +592,7 @@ def main():
 
     # ── Diff against previous run → new_exams.js ──────────────────────────────
     write_new_exams(city_year_exams, old_manifest)
-    save_exam_manifest(city_year_exams)
+    save_exam_manifest(city_year_exams, old_manifest)
 
     # ── Summary ───────────────────────────────────────────────────────────────
     total_exams    = sum(len(yd) for yd in city_year_exams.values())
