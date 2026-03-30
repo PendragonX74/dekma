@@ -35,7 +35,7 @@ MANIFEST_FILE  = Path("data/exam_manifest.json")
 
 # How many of the most-recent exams per type to always re-download,
 # even if already present — catches server-side data corrections.
-REFRESH_WINDOW = 2
+REFRESH_WINDOW = 3
 
 ROOT_FOLDER.mkdir(parents=True, exist_ok=True)
 
