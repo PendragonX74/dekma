@@ -1,6 +1,4 @@
-  // ═══════════════════════════════════════════════
-  //  GATE  —  SHA-256 password check
-  // ═══════════════════════════════════════════════
+
   const PASS_HASH = '9e1779aad19fe80324cb6d070f47eede2490eb0416921255ed207d852499797c';
 
   let unlocked = false;
@@ -38,12 +36,8 @@
     setTimeout(() => gateInp.focus(), 60);
   }
 
-  // ═══════════════════════════════════════════════
-  //  GITHUB CONFIG
-  // ═══════════════════════════════════════════════
   const GH_SESSION_KEY = '__gh_cfg';
 
-  // ── GitHub write queue ──
   let _ghQueue = Promise.resolve();
   function ghEnqueue(fn) {
     const result = _ghQueue.then(() => fn());
@@ -195,9 +189,6 @@
     }
   }
 
-  // ═══════════════════════════════════════════════
-  //  GITHUB — write chunk
-  // ═══════════════════════════════════════════════
   function chunkSlug(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,''); }
 
   async function writeChunk(city, year) {
@@ -214,7 +205,7 @@
       const headers  = ghHeaders(token);
       const payload  = ADMIN_DATA[city]?.[year];
       if (!payload) { showToast(`No data for ${city} ${year}.`, 'error'); return false; }
-      // Encode payload so chunk files are not plain-readable in DevTools
+
       const jsonStr = JSON.stringify(payload);
       const enc = new TextEncoder();
       const bytes = enc.encode(jsonStr);
@@ -267,9 +258,6 @@
     return true;
   }
 
-  // ═══════════════════════════════════════════════
-  //  MANUAL EDITS LOG
-  // ═══════════════════════════════════════════════
   async function loadManualEdits() {
     const cfg = loadGhConfig();
     if (!cfg) return { scoreEdits: [], studentRenames: [] };
@@ -379,9 +367,6 @@
     });
   }
 
-  // ═══════════════════════════════════════════════
-  //  BOOT
-  // ═══════════════════════════════════════════════
   let ADMIN_DATA     = null;
   let currentPanel   = 'home';
   let editingStudent = null;
@@ -401,7 +386,6 @@
     if (cfg && cfg.owner && cfg.repo) updateFileStatus(true, cfg.owner + '/' + cfg.repo);
   }
 
-  // ── PANEL NAV ──
   function openPanel(name) {
     currentPanel = name;
     document.getElementById('panel-home').style.display = name === 'home' ? 'block' : 'none';
@@ -413,7 +397,6 @@
     window.scrollTo({ top: 0, behavior: 'instant' });
   }
 
-  // ── DATA HELPERS ──
   function forEachStudent(cb) {
     if (!ADMIN_DATA) return;
     for (const city of Object.keys(ADMIN_DATA))
@@ -445,7 +428,6 @@
     });
   }
 
-  // ── EDIT STUDENT ──
   function populateStuSchoolFilter() {
     const el = document.getElementById('stu-search-school');
     while (el.options.length > 1) el.remove(1);
@@ -572,7 +554,6 @@
     }
   }
 
-  // ── EDIT TEST SCORES ──
   function populateTestCities() {
     const el = document.getElementById('test-sel-city');
     while (el.options.length > 1) el.remove(1);
@@ -689,7 +670,6 @@
       ? `<span style="background:rgba(244,114,182,.12);color:#f472b6;padding:2px 7px;border-radius:3px;font-size:9px">G</span>`
       : `<span style="color:var(--text3)">—</span>`;
 
-    // Desktop table rows
     if (tbody) {
       tbody.innerHTML = students.map(s => `<tr>
         <td class="tbl-rank">#${s._displayRank ?? s.rank ?? '—'}</td>
@@ -711,7 +691,6 @@
       </tr>`).join('');
     }
 
-    // Mobile score cards
     if (cards) {
       cards.innerHTML = students.map(s => `
         <div class="score-card">
@@ -790,15 +769,11 @@
     btn.style.color  = '';
     if (tick) { tick.classList.add('visible'); setTimeout(() => tick.classList.remove('visible'), 2400); }
 
-    // Re-render the full table so row order and all rank cells reflect the new scores
     filterTestSheet(document.getElementById('test-search-inp')?.value || '');
 
     showToast(`${origName}: ${prevMarks} → ${newVal}, saved to GitHub.`, 'success');
   }
 
-  // ═══════════════════════════════════════════════
-  //  DANGER MODAL — delete score / wipe profile
-  // ═══════════════════════════════════════════════
   let _dangerAction = null;
   let _dangerPhrase = '';
 
@@ -831,7 +806,7 @@
 
   async function executeDangerAction() {
     if (!_dangerAction) return;
-    const action = _dangerAction;   // snapshot before closeDangerModal nulls _dangerAction
+    const action = _dangerAction;
     closeDangerModal();
     if (action.type === 'score')   await _execDeleteScore(action);
     else if (action.type === 'profile') await _execWipeProfile(action);
@@ -841,7 +816,6 @@
     if (e.target === document.getElementById('danger-modal')) closeDangerModal();
   });
 
-  // ── DELETE A SINGLE SCORE ENTRY ──
   function promptDeleteScore(name, school) {
     if (!_currentExam) return;
     const city   = document.getElementById('test-sel-city').value;
@@ -888,7 +862,6 @@
     showToast(name + ' removed from ' + _currentExam.label + '. Saved to GitHub.', 'success');
   }
 
-  // ── WIPE ENTIRE PROFILE ──
   function promptWipeProfile() {
     if (!editingStudent) return;
     const { name, school } = editingStudent;
@@ -968,7 +941,6 @@
     showToast(name + ' wiped — ' + removed + ' entr' + (removed > 1 ? 'ies' : 'y') + ' deleted from GitHub.', 'success');
   }
 
-  // ── TOAST ──
   let _toastTimer;
   function showToast(msg, type = '') {
     const t = document.getElementById('toast');
@@ -978,14 +950,10 @@
     _toastTimer = setTimeout(() => t.className = '', 3800);
   }
 
-  // ── UTILS ──
   function esc(s) {
     return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
   }
 
-  // ═══════════════════════════════════════════════
-  //  ADD ENTRY TO EXAM
-  // ═══════════════════════════════════════════════
   function openAddEntryModal() {
     if (!_currentExam) return;
     document.getElementById('aem-exam-label').textContent = _currentExam.label;
@@ -1011,7 +979,7 @@
   function aemNameInput() {
     const q = (document.getElementById('aem-name').value || '').toLowerCase().trim();
     const listEl = document.getElementById('aem-suggest-list');
-    // restore gender group if user is typing a new name
+
     document.getElementById('aem-gender-group').style.display = 'block';
     if (!q) { listEl.style.display = 'none'; listEl.innerHTML = ''; return; }
     const students = getUniqueStudents().filter(s => s.name.toLowerCase().includes(q)).slice(0, 8);
@@ -1034,7 +1002,7 @@
     document.getElementById('aem-suggest-list').style.display = 'none';
     _aemGender = s.gender || 'U';
     setGender(_aemGender, 'aem-');
-    // hide gender row for existing students — gender is already set
+
     document.getElementById('aem-gender-group').style.display = 'none';
     document.getElementById('aem-marks').focus();
   }
@@ -1048,13 +1016,11 @@
     if (!school)           return showToast('School is required.', 'error');
     if (isNaN(marks) || marks < 0 || marks > 100) return showToast('Marks must be 0–100.', 'error');
 
-    // Check duplicate in this exam
     const exists = _currentExam.students.find(s => s.name === name && s.school === school);
     if (exists) return showToast(`${name} already has an entry in this exam.`, 'error');
 
     const gender = _aemGender || 'U';
 
-    // If student exists somewhere, inherit their gender unless we override it
     const known = getUniqueStudents().find(s => s.name === name && s.school === school);
     const finalGender = known ? (known.gender || 'U') : gender;
 
@@ -1066,7 +1032,7 @@
     const year = document.getElementById('test-sel-year').value;
     const ok   = await writeChunk(city, year);
     if (!ok) {
-      // rollback
+
       _currentExam.students = _currentExam.students.filter(s => !(s.name === name && s.school === school && s.marks === marks));
       recomputeRanks(_currentExam);
       return;
@@ -1087,17 +1053,12 @@
     showToast(`${name} added to ${_currentExam.label}.`, 'success');
   }
 
-  // ═══════════════════════════════════════════════
-  //  MERGE PANEL
-  // ═══════════════════════════════════════════════
   function switchMergeTab(tab) {
     document.getElementById('mtab-ai').className     = 'merge-tab' + (tab === 'ai' ? ' active' : '');
     document.getElementById('mtab-manual').className = 'merge-tab' + (tab === 'manual' ? ' active' : '');
     document.getElementById('merge-ai-tab').style.display     = tab === 'ai'     ? 'block' : 'none';
     document.getElementById('merge-manual-tab').style.display = tab === 'manual' ? 'block' : 'none';
   }
-
-  // ── AI SUGGESTIONS (client-side fuzzy match) ──
 
   function jaroWinkler(s1, s2) {
     s1 = s1.toLowerCase(); s2 = s2.toLowerCase();
@@ -1131,8 +1092,6 @@
     return jaro + prefix * 0.1 * (1 - jaro);
   }
 
-  // Strip school suffixes commonly appended inside student name strings
-  // e.g. "W.D.Pawani Shehara(Sumangala Balika-Panadura)" → "W.D.Pawani Shehara"
   function stripSchoolSuffix(name) {
     return name.replace(/\s*[\(\[（].*?[\)\]）]$/, '').replace(/\s*-\s*\S+\s*$/, '').trim();
   }
@@ -1150,7 +1109,6 @@
       btn.disabled = false; btn.textContent = '✦ Scan for Duplicates'; return;
     }
 
-    // Small yield so the "Analysing…" text actually renders before the loop
     await new Promise(r => setTimeout(r, 30));
 
     const pairs = [];
@@ -1165,13 +1123,12 @@
         const coreA = stripSchoolSuffix(nameA);
         const coreB = stripSchoolSuffix(nameB);
 
-        // Direct similarity on raw names
         const simRaw  = jaroWinkler(nameA, nameB);
-        // Similarity on stripped cores
+
         const simCore = jaroWinkler(coreA, coreB);
-        // One is a substring prefix of the other (after stripping)
+
         const prefixMatch = coreA.startsWith(coreB) || coreB.startsWith(coreA);
-        // One name contains the other's core
+
         const containsMatch = nameA.toLowerCase().includes(coreB.toLowerCase()) ||
                               nameB.toLowerCase().includes(coreA.toLowerCase());
 
@@ -1227,7 +1184,6 @@
     openMergeConfirm(a, b);
   }
 
-  // ── MANUAL MERGE ──
   let _mmSelected = { a: null, b: null };
 
   function mmSearch(side) {
@@ -1280,14 +1236,12 @@
     openMergeConfirm(_mmSelected.a, _mmSelected.b);
   }
 
-  // ── MERGE CONFIRM MODAL ──
   let _mergeA = null, _mergeB = null, _mergeChosenName = null, _mergeChosenSchool = null;
 
   function openMergeConfirm(a, b) {
     _mergeA = a; _mergeB = b; _mergeChosenName = a.name; _mergeChosenSchool = a.school;
     document.getElementById('mcm-custom-name').value = '';
 
-    // Profile cards
     const countA = getExamCount(a.name, a.school);
     const countB = getExamCount(b.name, b.school);
     document.getElementById('mcm-cards').innerHTML = `
@@ -1304,7 +1258,6 @@
         <div class="mp-count">${countB} entr${countB!==1?'ies':'y'}</div>
       </div>`;
 
-    // Name options
     const opts = [a, b].filter((s, i, arr) => arr.findIndex(x => x.name === s.name && x.school === s.school) === i);
     document.getElementById('mcm-name-opts').innerHTML = opts.map(s => `
       <div class="name-opt-btn${_mergeChosenName === s.name ? ' selected' : ''}"
@@ -1341,7 +1294,6 @@
 
     if (!finalName) return showToast('Choose or type a name.', 'error');
 
-    // Get gender from A (the "keeper") unless B has one and A doesn't
     const genderA = _mergeA.gender || 'U';
     const genderB = _mergeB.gender || 'U';
     const finalGender = (genderA !== 'U') ? genderA : genderB;
@@ -1350,13 +1302,12 @@
     let mergedCount = 0;
     let duplicateCount = 0;
 
-    // Step 1: Rename/merge all B records → A identity (check for collision in same exam)
     forEachStudent((s, exam, city, year) => {
       if (s.name === _mergeB.name && s.school === _mergeB.school) {
-        // Check if A already exists in this exam
+
         const collision = exam.students.find(x => x.name === _mergeA.name && x.school === _mergeA.school);
         if (collision) {
-          // Keep the better (higher) mark; remove B
+
           collision.marks = Math.max(collision.marks, s.marks);
           s._mergeDelete = true;
           duplicateCount++;
@@ -1370,7 +1321,6 @@
       }
     });
 
-    // Remove B records that collided
     for (const city of Object.keys(ADMIN_DATA)) {
       for (const year of Object.keys(ADMIN_DATA[city])) {
         for (const exam of (ADMIN_DATA[city][year].exams || [])) {
@@ -1381,7 +1331,6 @@
       }
     }
 
-    // Step 2: Rename all A records to finalName/keepSchool (if they differ)
     if (finalName !== _mergeA.name || keepSchool !== _mergeA.school) {
       forEachStudent((s, exam, city, year) => {
         if (s.name === _mergeA.name && s.school === _mergeA.school) {
@@ -1393,7 +1342,6 @@
       });
     }
 
-    // Recompute ranks for all affected
     for (const { city, year } of affectedMap.values()) {
       for (const exam of (ADMIN_DATA[city]?.[year]?.exams || [])) recomputeRanks(exam);
     }
@@ -1419,10 +1367,9 @@
     closeMergeConfirm();
     showToast(`Merged! ${total} record${total!==1?'s':''} consolidated under "${finalName}".`, 'success');
 
-    // Refresh manual search if open
     populateStuSchoolFilter();
     if (currentPanel === 'student') searchStudentAdmin();
-    // Reset manual merge
+
     _mmSelected = { a: null, b: null };
     ['a','b'].forEach(side => {
       const inp = document.getElementById(`mm-${side}-name`);

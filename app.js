@@ -1,46 +1,33 @@
-    // ═══════════════════════════════════════════════════
-    //  CONSTANTS
-    // ═══════════════════════════════════════════════════
+
     const GEN_MALE = 'B';
     const GEN_FEMALE = 'G';
 
-    // ═══════════════════════════════════════════════════
-    //  CITY / YEAR SELECTION STATE
-    // ═══════════════════════════════════════════════════
     let selectedCity = '';
     let selectedYear = '';
 
-    // Splash temporary selections
     let splashCity = '';
     let splashYear = '';
 
-    // ═══════════════════════════════════════════════════
-    //  CORE DATA STATE
-    // ═══════════════════════════════════════════════════
     let EXAMS = [];
     let ALL = [];
     let SCHOOLS = [];
     let CHARTS = {};
     let _globalMean = 70;
 
-    // Leaderboard
     let lbPage = 1, lbGender = '', lbSchool = '', lbTestSel = { mode: 'all' }, lbSortField = 'rating', lbSortAsc = false;
-    // Dashboard
-    let podiumTestSel = { mode: 'all' }, top10TestSel = { mode: 'all' }, dashTestSel = { mode: 'all' }, top10SortField = 'rank', top10SortAsc = true, _schoolsExpanded = false;
-    // Students
-    let stuGender = '', stuSchool = '';
-    // Schools
-    let schoolSort = 'avg', schoolTestSel = { mode: 'all' }, schoolData = {};
-    // Analytics
-    let avgType = 'all';
-    // Global rank cache
-    let _globalRankMap = {};
-    // Tracks where the user came from before opening a student profile
-    let _navOrigin = null; // { page, scrollY, label }
 
-    // ═══════════════════════════════════════════════════
-    //  DEKMA DATA HELPERS
-    // ═══════════════════════════════════════════════════
+    let podiumTestSel = { mode: 'all' }, top10TestSel = { mode: 'all' }, dashTestSel = { mode: 'all' }, top10SortField = 'rank', top10SortAsc = true, _schoolsExpanded = false;
+
+    let stuGender = '', stuSchool = '';
+
+    let schoolSort = 'avg', schoolTestSel = { mode: 'all' }, schoolData = {};
+
+    let avgType = 'all';
+
+    let _globalRankMap = {};
+
+    let _navOrigin = null;
+
     function getAvailableCities() {
       if (!window.dekmaData) return [];
       return Object.keys(window.dekmaData).sort();
@@ -48,23 +35,20 @@
 
     function getAvailableYears(city) {
       if (!window.dekmaData || !city || !window.dekmaData[city]) return [];
-      return Object.keys(window.dekmaData[city]).sort((a, b) => b - a); // newest first
+      return Object.keys(window.dekmaData[city]).sort((a, b) => b - a);
     }
 
     function hasData(city, year) {
       return !!(window.dekmaData && window.dekmaData[city] && window.dekmaData[city][year] && window.dekmaData[city][year].exams && window.dekmaData[city][year].exams.length);
     }
 
-    // ═══════════════════════════════════════════════════
-    //  LOGO DROPDOWNS
-    // ═══════════════════════════════════════════════════
     function toggleLogoDrop(which) {
       const otherId = which === 'year' ? 'city' : 'year';
       const panel = document.getElementById(which + '-drop');
       const otherP = document.getElementById(otherId + '-drop');
       const btn = document.getElementById(which + '-sel-btn');
       const wasOpen = panel.classList.contains('open');
-      // Close both
+
       ['year', 'city'].forEach(w => {
         document.getElementById(w + '-drop').classList.remove('open');
         document.getElementById(w + '-sel-btn').classList.remove('open');
@@ -89,7 +73,7 @@
             <span class="logo-drop-check">✓</span>
           </div>`).join('') || '<div class="logo-drop-item disabled">No data loaded</div>';
       } else {
-        // Year
+
         const years = getAvailableYears(selectedCity);
         const allYears = new Set();
         getAvailableCities().forEach(c => getAvailableYears(c).forEach(y => allYears.add(y)));
@@ -111,7 +95,7 @@
       closeLogoDrop();
       if (city === selectedCity) return;
       selectedCity = city;
-      // If current year exists for new city keep it, else pick first available
+
       if (!hasData(selectedCity, selectedYear)) {
         const yrs = getAvailableYears(selectedCity);
         selectedYear = yrs[0] || '';
@@ -136,7 +120,7 @@
       const isOpen = drop.classList.contains('open');
       closeLogoDrop();
       if (!isOpen) {
-        // Build combined city + year panel
+
         const cities = getAvailableCities();
         const allYears = new Set();
         getAvailableCities().forEach(c => getAvailableYears(c).forEach(y => allYears.add(y)));
@@ -183,7 +167,7 @@
 
     function reloadForSelection() {
       _transitionsReady = false;
-      // Update logo display
+
       const dispCity = selectedCity ? selectedCity.charAt(0).toUpperCase() + selectedCity.slice(1) : '—';
       document.getElementById('logo-year').textContent = selectedYear || '—';
       document.getElementById('logo-city').textContent = dispCity;
@@ -195,33 +179,26 @@
       badge.style.display = 'inline-flex';
       document.title = `DEKMA ${dispCity} ${selectedYear}`;
 
-      // Reset all state
       lbPage = 1; lbGender = ''; lbTestSel = { mode: 'all' }; lbSortField = 'rating'; lbSortAsc = false; lbSchool = '';
       podiumTestSel = { mode: 'all' }; top10TestSel = { mode: 'all' }; dashTestSel = { mode: 'all' }; top10SortField = 'rank'; top10SortAsc = true;
       stuGender = ''; stuSchool = ''; schoolSort = 'elite'; schoolTestSel = { mode: 'all' }; schoolData = {};
       avgType = 'all'; _schoolsExpanded = false;
 
-      // Destroy all charts
       Object.values(CHARTS).forEach(c => { try { c.destroy(); } catch (e) { } });
       CHARTS = {};
 
-      // Load data
       const src = hasData(selectedCity, selectedYear)
         ? window.dekmaData[selectedCity][selectedYear]
         : { exams: [] };
       loadExamData(src);
     }
 
-    // ═══════════════════════════════════════════════════
-    //  SPLASH SCREEN
-    // ═══════════════════════════════════════════════════
     function showSplash(destination) {
       document.getElementById('loading').style.display = 'none';
       document.getElementById('app').style.display = 'none';
       const splashEl = document.getElementById('splash');
       splashEl.style.display = 'block';
-      // Let the browser paint one frame so display:block is rendered
-      // before we start canvas sizing and CSS transitions
+
       requestAnimationFrame(() => requestAnimationFrame(() => {
         if (window.startSplashAnimation) window.startSplashAnimation(destination);
       }));
@@ -241,12 +218,12 @@
 
     function splashPickCity(city) {
       splashCity = city;
-      // Only reset year if it's not available for the newly selected city
+
       if (splashYear && !hasData(splashCity, splashYear)) splashYear = '';
       document.querySelectorAll('#splash-cities .splash-opt').forEach(el => {
         el.classList.toggle('selected', el.textContent === city);
       });
-      // Re-render years filtered for this city
+
       const allYears = new Set();
       getAvailableCities().forEach(c => getAvailableYears(c).forEach(y => allYears.add(y)));
       renderSplashYears([...allYears].sort((a, b) => b - a));
@@ -290,9 +267,6 @@
 
     function skipSplashAnim() { window._splashSkip && window._splashSkip(); }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  SHARED LIQUID BLOB CANVAS
-    // ═══════════════════════════════════════════════════════════════════════
     function mkAmbientCanvas(id) {
       const cv = document.getElementById(id);
       if (!cv) return { start(){}, stop(){} };
@@ -328,19 +302,16 @@
         ctx.clearRect(0, 0, W, H);
         const cx = W/2, cy = H*.42, p = .5+.5*Math.sin(t*.75);
 
-        // vignette
         const vig = ctx.createRadialGradient(cx,cy,H*.05,cx,cy,H*.82);
         vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,.62)');
         ctx.fillStyle = vig; ctx.fillRect(0,0,W,H);
 
-        // amber blob
         const aa = .045 + p*.02;
         blob(cx, cy, W*.2, `rgba(232,152,24,${aa})`, `rgba(210,120,10,${aa*.22})`, 0);
-        // teal blob offset
+
         const ta = .014 + p*.007;
         blob(cx+W*.05, cy-H*.025, W*.13, `rgba(45,212,191,${ta})`, `rgba(20,180,160,${ta*.28})`, 2.2);
 
-        // faint grid materialises slowly
         if (t > 2) {
           const ga = Math.min((t-2)/4,1) * .017;
           const gs = 58, ox = cx%gs, oy = cy%gs;
@@ -358,9 +329,6 @@
       };
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  SPLASH SEQUENCE — pure JS timeouts, no inline style fights
-    // ═══════════════════════════════════════════════════════════════════════
     (function(){
       let amb = null, exitTimer = null, dest = 'picker';
       let _exitCalled = false, _splashWaiting = false;
@@ -368,27 +336,25 @@
       function Q(id){ return document.getElementById(id); }
 
       function runSeq() {
-        // eyebrow lines extend
+
         setTimeout(() => { Q('spl-line-l').style.width='38px'; Q('spl-line-r').style.width='38px'; }, 100);
-        // eyebrow text
+
         setTimeout(() => { Q('spl-etext').style.opacity='1'; }, 280);
-        // letters spring in staggered
+
         ['sl-D','sl-E','sl-K','sl-M','sl-A'].forEach((id,i) =>
           setTimeout(() => Q(id).classList.add('in'), 420 + i*110)
         );
-        // rule draws
+
         setTimeout(() => { Q('spl-rule').style.width='58%'; }, 1050);
-        // subtitle
+
         setTimeout(() => { Q('spl-sub').classList.add('in'); }, 1280);
-        // AUTO-ADVANCE after 2.4s — snappy but still feels intentional
+
         exitTimer = setTimeout(() => doExit(), 2400);
       }
 
       function doExit() {
         if (_exitCalled) return;
 
-        // If data hasn't arrived yet, show the in-splash wait indicator
-        // and park here — _splashReady() will call us again once data lands
         if (!window._dekmaBootstrapDone) {
           _splashWaiting = true;
           clearTimeout(exitTimer);
@@ -406,7 +372,7 @@
         clearTimeout(exitTimer);
         if (amb) { amb.stop(); amb = null; }
         const sp = Q('splash');
-        // Hide skip button immediately so it doesn't linger
+
         const skipBtn = Q('splash-skip');
         if (skipBtn) { skipBtn.style.opacity = '0'; skipBtn.style.pointerEvents = 'none'; }
         sp.classList.add(dest === 'app' ? 's-exit-fade' : 's-exit-up');
@@ -419,7 +385,7 @@
             app.style.display = 'flex';
             app.classList.add('app-enter');
             setTimeout(() => app.classList.remove('app-enter'), 700);
-            // If preloaded, app is already rendered — just show it
+
             if (!window._appPreloaded) reloadForSelection();
           } else {
             showPicker();
@@ -429,10 +395,6 @@
 
       window._splashSetDest = function(d) { dest = d || 'picker'; };
 
-      // Called by loadData() once data has arrived.
-      // If the splash animation already finished and is parked, resume exit now.
-      // If animation is still running, _dekmaBootstrapDone=true so doExit() will
-      // proceed naturally when the timer fires.
       window._splashReady = function() {
         if (_splashWaiting) {
           _splashWaiting = false;
@@ -441,7 +403,7 @@
             waitEl.classList.remove('in');
             setTimeout(() => { waitEl.classList.remove('visible'); }, 320);
           }
-          // Small pause so the bar fades before we exit
+
           setTimeout(doExit, 340);
         }
       };
@@ -449,7 +411,7 @@
       window._splashSkip = function() {
         clearTimeout(exitTimer);
         if (_exitCalled) return;
-        // Snap all elements visible instantly
+
         Q('spl-line-l').style.cssText += ';transition:none;width:38px';
         Q('spl-line-r').style.cssText += ';transition:none;width:38px';
         Q('spl-etext').style.cssText  += ';transition:none;opacity:1';
@@ -460,7 +422,7 @@
         });
         Q('spl-rule').style.cssText += ';transition:none;width:58%';
         Q('spl-sub').style.cssText  += ';transition:none;opacity:1;transform:translateY(0)';
-        // Exit immediately — no extra delay
+
         doExit();
       };
 
@@ -471,7 +433,7 @@
 
       window.startSplashAnimation = function(destination) {
         dest = destination || 'picker';
-        // wait 3 rAF so display:block is fully painted before reading dimensions
+
         let n = 0;
         function tick() {
           if (++n < 3) { requestAnimationFrame(tick); return; }
@@ -483,30 +445,22 @@
       };
     })();
 
-    // ══ EARLY SPLASH START ══════════════════════════════════════════════
-    // Show the splash immediately at DOM-ready — before data arrives —
-    // so the animation covers actual network/parse time rather than
-    // playing as a post-load vanity sequence.
     document.addEventListener('DOMContentLoaded', function () {
       if (window._splashEarlyStarted) return;
       window._splashEarlyStarted = true;
       document.getElementById('loading').style.display = 'none';
       var sp = document.getElementById('splash');
       sp.style.display = 'block';
-      // 2 rAFs so display:block is painted before canvas sizing + CSS transitions
+
       requestAnimationFrame(function () { requestAnimationFrame(function () {
         if (window.startSplashAnimation) window.startSplashAnimation('picker');
       }); });
     }, { once: true });
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  PICKER SCREEN
-    // ═══════════════════════════════════════════════════════════════════════
     function showPicker() {
       const pk = document.getElementById('picker');
       pk.style.display = 'flex';
 
-      // populate options
       const cities = getAvailableCities();
       document.getElementById('splash-cities').innerHTML = cities.map(c =>
         `<div class="splash-opt${c===splashCity?' selected':''}" onclick="splashPickCity('${esc(c)}')">${c}</div>`
@@ -517,27 +471,20 @@
       renderSplashYears([...allYears].sort((a,b)=>b-a));
       updateSplashBtn();
 
-      // start ambient canvas
       const amb = mkAmbientCanvas('picker-canvas');
       amb.start();
 
-      // stagger elements in
       requestAnimationFrame(() => requestAnimationFrame(() => {
         setTimeout(() => document.getElementById('picker-logo').classList.add('in'), 50);
         setTimeout(() => document.getElementById('picker-grid').classList.add('in'), 180);
       }));
     }
 
-    // ═══════════════════════════════════════════════════
-    //  DATA LOADING
-    // ═══════════════════════════════════════════════════
     function loadData() {
       if (window._splashEarlyStarted) {
-        // Splash already playing — just update its destination and signal readiness.
-        // The animation will exit (or wake from wait-state) on its own schedule.
 
         if (!window.dekmaData || !Object.keys(window.dekmaData).length) {
-          // No data at all — bypass splash entirely, show empty app
+
           document.getElementById('splash').style.display = 'none';
           selectedCity = ''; selectedYear = '';
           document.getElementById('app').style.display = 'flex';
@@ -556,7 +503,7 @@
           selectedCity = city; selectedYear = year;
           splashCity = city;   splashYear = year;
           if (window._splashSetDest) window._splashSetDest('app');
-          // Preload app in background while the splash finishes playing
+
           setTimeout(() => { reloadForSelection(); window._appPreloaded = true; }, 80);
         } else {
           splashCity = ''; splashYear = '';
@@ -567,7 +514,6 @@
         return;
       }
 
-      // ── Fallback: data arrived before DOM ready (very fast / offline cache) ──
       document.getElementById('loading').style.display = 'none';
 
       if (!window.dekmaData || !Object.keys(window.dekmaData).length) {
@@ -607,7 +553,6 @@
         return (a.number || 0) - (b.number || 0);
       });
 
-      // Normalize school: treat literal 'no' (any case) as unaffiliated — not a real school name
       const normSchool = v => (!v || v.trim().toLowerCase() === 'no') ? '' : v.trim();
 
       ALL = [];
@@ -634,7 +579,7 @@
     }
 
     function initUIShell() {
-      // Register sticky Y-axis plugin for scrollable charts
+
       if (typeof Chart !== 'undefined' && !Chart.registry.plugins.get('stickyY')) {
         Chart.register({
           id: 'stickyY',
@@ -642,13 +587,13 @@
             const outer = chart.canvas.closest('.chart-scroll-outer');
             if (!outer) return;
             const inner = outer.querySelector('.chart-scroll-inner');
-            // Only sticky when scrolled and chart is wider than container
+
             const isScrollable = inner && inner.scrollWidth > inner.clientWidth + 4;
             const isScrolled = inner && inner.scrollLeft > 0;
             let overlay = outer.querySelector('.sticky-y-canvas');
             if (!isScrollable || !isScrolled) {
               if (overlay) overlay.style.display = 'none';
-              // Attach scroll listener once to trigger redraws when user scrolls
+
               if (isScrollable && !inner._stickyListenerAttached) {
                 inner._stickyListenerAttached = true;
                 inner.addEventListener('scroll', () => chart.draw(), { passive: true });
@@ -664,7 +609,7 @@
               overlay.className = 'sticky-y-canvas';
               outer.appendChild(overlay);
             }
-            // Attach scroll listener once
+
             if (!inner._stickyListenerAttached) {
               inner._stickyListenerAttached = true;
               inner.addEventListener('scroll', () => chart.draw(), { passive: true });
@@ -683,19 +628,19 @@
             document.body.removeChild(tmpEl);
             ctx2.fillStyle = bg;
             ctx2.fillRect(0, 0, overlay.width, overlay.height);
-            // Draw only the Y-axis area from the chart canvas
+
             ctx2.drawImage(chart.canvas, 0, 0, Math.ceil(axisW * dpr), chart.canvas.height,
                            0, 0, Math.ceil(axisW * dpr), Math.ceil(cssH * dpr));
           }
         });
       }
-      // Default to most recent revision, or most recent theory if no revisions exist
+
       const revExams = EXAMS.filter(e => e.type === 'revision');
       const thyExams = EXAMS.filter(e => e.type === 'theory');
       const defaultExam = revExams.length ? revExams[revExams.length - 1]
         : thyExams.length ? thyExams[thyExams.length - 1] : null;
       if (defaultExam) lbTestSel = { mode: 'custom', ids: new Set([defaultExam.id]) };
-      // Non-leaderboard dropdowns default to All Tests with multi enabled
+
       TDD_MULTI['school-test-sel'] = true;
       syncDashFilterBtns();
       populateSelects();
@@ -719,7 +664,6 @@
         `<div>${EXAMS.length} test${EXAMS.length !== 1 ? 's' : ''} loaded</div>` +
         `<div>${ALL.length.toLocaleString()} entries</div>`;
 
-      // Reinitialise hash routing
       window.removeEventListener('hashchange', handleHashChange);
       window.addEventListener('hashchange', handleHashChange);
       handleHashChange();
@@ -727,9 +671,6 @@
       initMobileSearch();
     }
 
-    // ═══════════════════════════════════════════════════
-    //  MOBILE SIDEBAR
-    // ═══════════════════════════════════════════════════
     function toggleSidebar() {
       const sb = document.getElementById('sidebar');
       const hb = document.getElementById('hamburger');
@@ -744,9 +685,6 @@
       document.getElementById('sidebar-overlay').classList.remove('open');
     }
 
-    // ═══════════════════════════════════════════════════
-    //  MOBILE SEARCH OVERLAY
-    // ═══════════════════════════════════════════════════
     function openMobileSearch() {
       document.getElementById('mobile-search-expand').classList.add('open');
       setTimeout(() => document.getElementById('mobile-search-input')?.focus(), 60);
@@ -794,7 +732,7 @@
         }, 150);
       });
       inp.addEventListener('keydown', e => { if (e.key === 'Escape') closeMobileSearch(); });
-      // Close on outside tap
+
       document.addEventListener('click', e => {
         if (!e.target.closest('#mobile-search-expand') && !e.target.closest('#mobile-search-results') && !e.target.closest('#mobile-search-btn')) {
           if (document.getElementById('mobile-search-expand')?.classList.contains('open')) closeMobileSearch();
@@ -802,9 +740,6 @@
       });
     }
 
-    // ═══════════════════════════════════════════════════
-    //  NAVIGATION
-    // ═══════════════════════════════════════════════════
     let _transitionsReady = false;
     let _suppressScrollReset = false;
 
@@ -861,8 +796,7 @@
       }
       _suppressScrollReset = false;
       if (page === 'students') {
-        // Only reset to search view if we're NOT mid-way through opening a profile
-        // (_navOrigin being set means openStudentProfile is about to run)
+
         if (!_navOrigin) {
           _profileStack = [];
           const fb = document.getElementById('stu-filter-bar');
@@ -883,17 +817,11 @@
       showPage(page);
     }
 
-    // ═══════════════════════════════════════════════════
-    //  INIT UI (populates filters etc.)
-    // ═══════════════════════════════════════════════════
     function populateSelects() {
       buildSchoolDropdown();
       buildStuSchoolDropdown();
     }
 
-    // ═══════════════════════════════════════════════════
-    //  EXAM-TYPE HELPERS
-    // ═══════════════════════════════════════════════════
     const TYPE_SORT = { theory:0, revision:1, model_theory:2, model_revision:3 };
     function isModelType(t) { return t==='model_theory'||t==='model_revision'; }
     function typeColor(t) {
@@ -902,7 +830,7 @@
       if (isModelType(t)) return '#818cf8';
       return 'var(--text2)';
     }
-    // Canvas-safe colors — Chart.js can't resolve CSS variables
+
     function typeColorCanvas(t) {
       if (t==='theory')   return '#2dd4bf';
       if (t==='revision') return '#f97316';
@@ -920,9 +848,6 @@
       return {theory:'THE',revision:'REV',model_theory:'THM',model_revision:'RVM'}[t]||t.slice(0,3).toUpperCase();
     }
 
-    // ═══════════════════════════════════════════════════
-    //  GLOBAL RANK MAP
-    // ═══════════════════════════════════════════════════
     let _thyRankMap = {};
     let _revRankMap = {};
     let _modRankMap = {};
@@ -961,12 +886,6 @@
     function revRank(name, school) { return _revRankMap[name + '\x00' + school] || '—'; }
     function modRank(name, school)  { return _modRankMap[name + '\x00' + school] || '—'; }
 
-    // ═══════════════════════════════════════════════════
-    //  TEST SELECTION ENGINE — multi-select, range, type filter
-    // ═══════════════════════════════════════════════════
-
-    // sel = { mode: 'all'|'theory'|'revision'|'model'|'custom', ids?: Set<string> }
-    // 'all' includes model papers — they count in all leaderboards/rankings
     function resolveExamIds(sel) {
       if (!sel || sel.mode === 'all')  return EXAMS.map(e => e.id);
       if (sel.mode === 'theory')       return EXAMS.filter(e => e.type === 'theory').map(e => e.id);
@@ -1041,7 +960,7 @@
       const el = document.getElementById(cid);
       if (!el) return;
       const sel = TDD_CONFIGS[cid].get();
-      // Only create the button if it doesn't exist yet
+
       let btn = document.getElementById(cid + '-btn');
       if (!btn) {
         el.innerHTML = `<div class="tdd-btn" id="${cid}-btn" onclick="toggleDropdown('${cid}',event)">
@@ -1050,7 +969,7 @@
           <span class="tdd-arrow">▾</span>
         </div>`;
       } else {
-        // Just update the label and dot, preserving open state
+
         const dot = document.getElementById(cid + '-dot');
         const label = document.getElementById(cid + '-label');
         if (dot) dot.style.background = selDotColor(sel);
@@ -1061,14 +980,13 @@
       rebuildPanelHTML(cid);
     }
 
-    // Per-dropdown multi-select mode state
     const TDD_MULTI = {};
     const TDD_PRESETS_ONLY = {};
 
     function isMultiMode(cid) { return !!TDD_MULTI[cid]; }
 
     function setMultiMode(cid, val) {
-      // Turning multi OFF while a group/all is active → fall back to latest revision test
+
       if (!val) {
         const sel = TDD_CONFIGS[cid].get();
         if (sel.mode !== 'custom' || resolveExamIds(sel).length !== 1) {
@@ -1088,7 +1006,6 @@
       const panel = document.getElementById(cid + '-panel');
       if (!panel) return;
 
-      // Presets-only mode: render just the preset buttons, no individual test list
       if (TDD_PRESETS_ONLY[cid]) {
         const sel = TDD_CONFIGS[cid].get();
         const thy = EXAMS.filter(e=>e.type==='theory');
@@ -1107,12 +1024,11 @@
         return;
       }
 
-      // Save scroll positions before rebuilding
       const prevScrolls = Array.from(panel.querySelectorAll('.tdd-col-scroll')).map(el => el.scrollTop);
       const sel = TDD_CONFIGS[cid].get();
       const multi = isMultiMode(cid);
       const checked = new Set(resolveExamIds(sel));
-      // Display order in dropdown: newest first (descending number)
+
       const thy = EXAMS.filter(e=>e.type==='theory').slice().sort((a,b)=>(b.number||0)-(a.number||0));
       const rev = EXAMS.filter(e=>e.type==='revision').slice().sort((a,b)=>(b.number||0)-(a.number||0));
       const mod = EXAMS.filter(e=>isModelType(e.type)).slice().sort((a,b)=>(TYPE_SORT[a.type]||2)-(TYPE_SORT[b.type]||2)||(b.number||0)-(a.number||0));
@@ -1184,13 +1100,13 @@
         <div class="tdd-footer">
           <span class="tdd-footer-count">${footerText}</span>
         </div>`;
-      // Restore scroll positions after rebuild
+
       const newScrollEls = panel.querySelectorAll('.tdd-col-scroll');
       prevScrolls.forEach((pos, i) => { if (newScrollEls[i]) newScrollEls[i].scrollTop = pos; });
     }
 
     function applyPreset(cid, mode) {
-      // All presets enable multi mode — only the Multi toggle button disables it
+
       TDD_MULTI[cid] = true;
       TDD_CONFIGS[cid].set({ mode });
       buildOneDropdown(cid);
@@ -1208,7 +1124,7 @@
       if (ev) ev.stopPropagation();
       const sel = TDD_CONFIGS[cid].get();
       const allIds = EXAMS.map(e => e.id);
-      // Derive current checked set
+
       let ids = new Set(resolveExamIds(sel));
       if (ids.has(examId)) ids.delete(examId);
       else ids.add(examId);
@@ -1256,7 +1172,7 @@
         const colCount = mod > 0 ? 2 : ((thy > 0 ? 1 : 0) + (rev > 0 ? 1 : 0)) || 1;
         const isMobile = window.innerWidth <= 768;
         const rowH = 38, headH = 32, presetsH = 44, footerH = 38;
-        // On mobile: left side (theory+revision stacked) vs right side (model) — height is the taller side
+
         let colH;
         if (isMobile) {
           const leftH = (thy > 0 ? Math.min(thy * rowH, 120) + headH : 0) + (rev > 0 ? Math.min(rev * rowH, 120) + headH : 0);
@@ -1266,12 +1182,12 @@
           colH = Math.min(Math.max(rev, thy, mod, 1) * rowH + headH, 300);
         }
         const totalH = presetsH + colH + footerH;
-        // On desktop: give each column ~180px, be generous; on mobile: full width, stacked
+
         const colW = isMobile ? window.innerWidth - 16 : Math.min(Math.max(colCount * 190, 320), window.innerWidth - 32);
         const W = colW;
         const spaceB = window.innerHeight - rect.bottom - 8;
         const top = spaceB >= totalH ? rect.bottom + 4 : Math.max(8, rect.top - totalH - 4);
-        // Prefer aligning to button left, but keep within viewport
+
         const left = Math.max(8, Math.min(rect.left, window.innerWidth - W - 8));
         panel.style.cssText = `top:${top}px;left:${left}px;width:${W}px;height:${totalH}px`;
         panel.classList.add('open');
@@ -1284,28 +1200,9 @@
       document.querySelectorAll('.tdd-btn.open').forEach(b => b.classList.remove('open'));
     }
 
-    // ═══════════════════════════════════════════════════
-    //  FAIR RANKING ENGINE  — Empirical Bayes + Credible Bound
-    // ═══════════════════════════════════════════════════
-    //
-    //  Model:  true_skill θ ~ N(0, τ²)  [population prior]
-    //          exam_z | θ  ~ N(θ, σ²)   [per-exam measurement noise]
-    //
-    //  τ² (between-student skill spread) and σ² (within-student noise) are
-    //  estimated directly from the data so no arbitrary constant is needed.
-    //
-    //  Ranking score = lower 90% credible bound of the posterior:
-    //    lb = μ_post − RANK_CI × σ_post
-    //
-    //  Effect:
-    //    • 16/16 exams → σ_post tiny  → lb ≈ μ_post  (almost no penalty)
-    //    • 13/16 exams → σ_post tiny+ → lb ~0.3 pts lower (fair for 3 absences)
-    //    • 1/16 exam   → σ_post large → lb pulled well below μ_post (can't game it)
-    //    • The effective Bayes constant k = σ²/τ² replaces the hard-coded 4
-    // ─────────────────────────────────────────────────────────────────────────
-    const RANK_CI = 1.28;           // one-sided 90% CI — balances fairness vs rigour
+    const RANK_CI = 1.28;
     let _examStats = {};
-    let _ebParams = { tau_sq: 0.25, sigma_sq: 1.0 }; // sane fallback
+    let _ebParams = { tau_sq: 0.25, sigma_sq: 1.0 };
 
     function buildExamStats() {
       _examStats = {};
@@ -1316,13 +1213,11 @@
         const stdev = Math.sqrt(m.reduce((s, v) => s + (v - mean) ** 2, 0) / m.length) || 1;
         _examStats[e.id] = { mean, stdev };
       });
-      buildEmpiricalBayesParams(); // calibrate after exam stats are ready
+      buildEmpiricalBayesParams();
     }
 
-    // Estimate τ² and σ² directly from the data.
-    // Uses only students who sat ≥ 3 exams so the estimates are stable.
     function buildEmpiricalBayesParams() {
-      // Build deduplicated z-score arrays per student
+
       const map = {};
       ALL.forEach(r => {
         const key = r.name + '||' + r.school;
@@ -1337,9 +1232,8 @@
         .map(em => Object.values(em).map(e => e.z))
         .filter(zs => zs.length >= 3);
 
-      if (groups.length < 3) return; // not enough data, keep fallback
+      if (groups.length < 3) return;
 
-      // σ²: average within-student variance of z-scores (exam-to-exam noise)
       let varSum = 0;
       groups.forEach(zs => {
         const mu = zs.reduce((a, b) => a + b, 0) / zs.length;
@@ -1347,8 +1241,6 @@
       });
       const sigma_sq = Math.max(0.1, varSum / groups.length);
 
-      // τ²: between-student true-skill variance
-      // Observed variance of student z-means minus the measurement noise component
       const means = groups.map(zs => zs.reduce((a, b) => a + b, 0) / zs.length);
       const grandMean = means.reduce((a, b) => a + b, 0) / means.length;
       const obsVar = means.reduce((s, m) => s + (m - grandMean) ** 2, 0) / means.length;
@@ -1366,10 +1258,6 @@
     function zToRating(z) { return Math.round(Math.min(100, Math.max(0, 50 + z * 15)) * 100) / 100; }
     function _ns(s) { return String(s).replace(/\\/g, '\\\\').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/\n/g, '\\n'); }
 
-    // ─── Posterior skill estimate ────────────────────────────────────────────
-    // Returns { mu_post, sig_post, skillZ (lcb), rating, meanRating }
-    // Uses the empirically-calibrated _ebParams so it is consistent with
-    // aggregateByStudent and buildGlobalRankMap.
     function computePosterior(zList) {
       const N = zList.length;
       if (N === 0) return { mu_post: 0, sig_post: 1, skillZ: -2, rating: 0, meanRating: 0 };
@@ -1381,12 +1269,11 @@
       const skillZ = mu_post - RANK_CI * sig_post;
       return {
         mu_post, sig_post, skillZ,
-        rating: zToRating(skillZ),       // conservative lower-bound rating (used for ranking)
-        meanRating: zToRating(mu_post),      // best-estimate rating (for display)
+        rating: zToRating(skillZ),
+        meanRating: zToRating(mu_post),
       };
     }
 
-    // Deduplicate an array of student objects by name+school, keeping highest mark
     function deduplicateStudents(arr) {
       const m = {};
       arr.forEach(s => {
@@ -1397,8 +1284,7 @@
     }
 
     function deduplicateRows(rows) {
-      // Per student, if the same exam appears more than once, keep only the entry
-      // with the highest marks (treats duplicates as data errors, not extra attempts).
+
       const examMap = {};
       rows.forEach(r => {
         if (!examMap[r.exam_id] || r.marks > examMap[r.exam_id].marks) {
@@ -1423,7 +1309,6 @@
         const z_mean = zList.reduce((a, b) => a + b, 0) / zList.length;
         const N = rows.length;
 
-        // ── Empirical Bayes posterior (shared computePosterior) ─────────────
         const post = computePosterior(zList);
 
         return {
@@ -1442,9 +1327,6 @@
       return aggregateByStudent(data).sort((a, b) => b.skillZ - a.skillZ).slice(0, n);
     }
 
-    // ═══════════════════════════════════════════════════
-    //  RANK TIER HELPER
-    // ═══════════════════════════════════════════════════
     function getRankTier(rank, total) {
       if (rank === 1) return { tier: 1, icon: '<i class="ph ph-medal" style="color:#ffd700"></i>', label: 'Rank #1', tierClass: 'rank-tier-1' };
       if (rank <= 3) return { tier: 1, icon: '<i class="ph ph-trophy" style="color:var(--amber)"></i>', label: 'Top 3', tierClass: 'rank-tier-1' };
@@ -1457,9 +1339,6 @@
       return { tier: 6, icon: '<i class="ph ph-chart-bar" style="color:var(--text2)"></i>', label: 'Ranked', tierClass: 'rank-tier-6' };
     }
 
-    // ═══════════════════════════════════════════════════
-    //  TOP SCHOOLS — EXPAND/COLLAPSE
-    // ═══════════════════════════════════════════════════
     function toggleSchoolsExpand() {
       _schoolsExpanded = !_schoolsExpanded;
       const btn = document.getElementById('schools-expand-btn');
@@ -1471,9 +1350,6 @@
       });
     }
 
-    // ═══════════════════════════════════════════════════
-    //  DASHBOARD
-    // ═══════════════════════════════════════════════════
     function renderOverviewStats() {
       if (!EXAMS.length) { document.getElementById('overview-stats').innerHTML = ''; return; }
       const total = ALL.length;
@@ -1584,13 +1460,12 @@
     }
 
     function renderTopSchoolsBars() {
-      // Filter rows by dashboard test selection
+
       const mode = dashTestSel.mode;
       const filtered = mode === 'all' ? ALL
         : mode === 'model' ? ALL.filter(r => isModelType(r.exam_type))
         : ALL.filter(r => r.exam_type === mode);
 
-      // Build elite score per school (avg of top-5 unique students by best score)
       const schoolMap = {};
       filtered.forEach(r => {
         if (!r.school) return;
@@ -1609,7 +1484,6 @@
       const cols = ['#f59e0b', '#60a5fa', '#2dd4bf', '#f472b6', '#818cf8', '#34d399', '#fb923c', '#a78bfa', '#fb7185', '#38bdf8', '#2dd4bf', '#e879f9'];
       const ALWAYS_SHOW = 5;
 
-      // Update filter label
       const labelEl = document.getElementById('dash-schools-filter-label');
       if (labelEl) {
         labelEl.textContent = mode === 'all' ? 'All Tests' : mode === 'theory' ? 'Theory' : mode === 'revision' ? 'Revision' : 'Model';
@@ -1629,7 +1503,7 @@
       const ctx = document.getElementById('tests-chart')?.getContext('2d');
       if (!ctx || !EXAMS.length) return;
       if (CHARTS.tests) CHARTS.tests.destroy();
-      // Timeline chart: chronological order — theory first (T1,T2...), then revision (R1,R2...), model last
+
       const CHART_TYPE_ORDER = { theory: 0, revision: 1, model_theory: 2, model_revision: 3 };
       const orderedExams = EXAMS.slice().sort((a, b) => {
         const ao = CHART_TYPE_ORDER[a.type] ?? 9, bo = CHART_TYPE_ORDER[b.type] ?? 9;
@@ -1650,7 +1524,6 @@
       setChartScrollWidth('tests-chart-wrap', EXAMS.length);
     }
 
-    // ─── TOP 10 ──────────────────────────────────────
     function setTop10Sort(field) {
       top10SortField = field;
       syncTop10Btns(); renderTop10();
@@ -1658,7 +1531,7 @@
     function syncTop10Btns() {
       document.getElementById('t10-rank-btn')?.classList.toggle('active', top10SortField === 'rank');
       document.getElementById('t10-avg-btn')?.classList.toggle('active', top10SortField === 'avg');
-      // Keep t10-sort-btn class toggle for any remaining uses
+
       document.getElementById('t10-rank-btn')?.classList.toggle('t10-seg-opt', true);
       document.getElementById('t10-avg-btn')?.classList.toggle('t10-seg-opt', true);
     }
@@ -1691,7 +1564,7 @@
       const ratingActive = isAll && top10SortField === 'rank';
       const avgActive    = isAll && top10SortField === 'avg';
       const arr = a => `<span class="th-arrow"><i class="ph ${a ? 'ph-caret-down' : 'ph-caret-up-down'}"></i></span>`;
-      // data-sort drives CSS to hide the inactive column on mobile
+
       const sortAttr = isAll ? `data-sort="${top10SortField === 'avg' ? 'avg' : 'rating'}"` : '';
       let h = `<table ${sortAttr}><thead><tr>
         <th style="cursor:pointer;padding-left:16px" onclick="setTop10Sort('rank')" class="${ratingActive ? 'sorted' : ''}">#${isAll ? arr(ratingActive) : ''}</th>
@@ -1718,9 +1591,6 @@
       return h + '</tbody></table>';
     }
 
-    // ═══════════════════════════════════════════════════
-    //  TESTS PAGE
-    // ═══════════════════════════════════════════════════
     function syncTestsFilterBtns(){
       const b=document.getElementById('ft-model');
       if(b)b.style.display=EXAMS.some(e=>isModelType(e.type))?'':'none';
@@ -1732,13 +1602,13 @@
       const typeBorders = { theory:'rgba(45,212,191,.3)', revision:'rgba(232, 160, 32,.3)', model:'rgba(129,140,248,.35)' };
       document.querySelectorAll('#page-tests .filter-btn').forEach(b => {
         b.classList.remove('active');
-        // restore per-type base color when de-activating
+
         const bid = b.id?.replace('ft-','');
         if (typeColors[bid]) { b.style.color = typeColors[bid]; b.style.borderColor = typeBorders[bid]; b.style.background = ''; }
         else { b.style.color = ''; b.style.borderColor = ''; b.style.background = ''; }
       });
       btn.classList.add('active');
-      // active state: use type-specific color with bg tint, override default amber
+
       if (typeColors[type]) {
         btn.style.color = typeColors[type];
         btn.style.borderColor = typeColors[type];
@@ -1751,7 +1621,7 @@
       const grid = document.getElementById('tests-grid');
       if (!EXAMS.length) { grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📂</div>Run parse_results.py first</div>'; return; }
       const baseList=testsFilter==='all'?EXAMS:testsFilter==='model'?EXAMS.filter(e=>isModelType(e.type)):EXAMS.filter(e=>e.type===testsFilter);
-      // Display order: Model (newest) → Revision → Theory; within type newest first
+
       const GRID_TYPE_ORDER = { model_theory: 0, model_revision: 0, revision: 1, theory: 2 };
       const list = baseList.slice().sort((a, b) => {
         const ao = GRID_TYPE_ORDER[a.type] ?? 9, bo = GRID_TYPE_ORDER[b.type] ?? 9;
@@ -1815,7 +1685,7 @@
           <div class="chip" style="color:var(--female)">Girls: <strong style="margin-left:4px">${girls}</strong></div>
         </div>
         ${(()=>{
-          // Mini score distribution histogram
+
           const STEP = 5;
           const modalMarks = exam.students.map(s => s.marks);
           const minScore = modalMarks.length ? Math.floor(Math.min(...modalMarks) / STEP) * STEP : 0;
@@ -1848,7 +1718,7 @@
           const rankMap = {};
           let tRank = 1;
           sortedS.forEach((s,i)=>{ if(i>0&&s.marks!==sortedS[i-1].marks) tRank=i+1; rankMap[s.name+'\x00'+s.school]=tRank; });
-          // Include all students tied at the 10th rank position
+
           const cutoffRank = rankMap[sortedS[Math.min(9, sortedS.length-1)].name+'\x00'+sortedS[Math.min(9, sortedS.length-1)].school] || 10;
           const top10WithTies = sortedS.filter(s => (rankMap[s.name+'\x00'+s.school] || 999) <= cutoffRank);
           return '<div class="table-wrap">' + buildTable(top10WithTies, { rowHighlight: 0, globalRanks: rankMap, useGlobalRank: true }) + '</div>';
@@ -1860,11 +1730,10 @@
       lbPage = 1;
       lbSortField = top10SortField === 'avg' ? 'marks' : 'rating';
       lbSortAsc = false;
-      // Set lbTestSel directly BEFORE navigation so that renderLeaderboard()
-      // triggered by hashchange/liquidTransition always reads the correct filter
+
       lbTestSel = { mode: dashTestSel.mode };
       location.hash = 'leaderboard';
-      // Separately sync the dropdown label UI (no re-render, state already correct)
+
       setTimeout(() => buildOneDropdown('lb-sel'), 80);
     }
 
@@ -1874,7 +1743,7 @@
       lbSortField = 'marks';
       lbSortAsc = false;
       location.hash = 'leaderboard';
-      // Use TDD_CONFIGS.set so the dropdown label syncs with the selection
+
       setTimeout(() => {
         TDD_CONFIGS['lb-sel'].set({ mode: 'custom', ids: new Set([examId]) });
         const label = document.getElementById('lb-sel-label');
@@ -1960,9 +1829,6 @@
       closeStuSchoolDrop();
     }
 
-    // ═══════════════════════════════════════════════════
-    //  CUSTOM SCHOOL DROPDOWN (Leaderboard)
-    // ═══════════════════════════════════════════════════
     function buildSchoolDropdown() {
       const wrap = document.getElementById('lb-school-wrap');
       if (!wrap) return;
@@ -1991,13 +1857,12 @@
           <span class="school-dd-check">✓</span>
         </div>`).join('') || '<div style="padding:10px 12px;font-family:DM Mono,monospace;font-size:10px;color:var(--text3)">No match</div>';
 
-      // If the panel already has its structure, just update the list — don't touch the input
       let listEl = panel.querySelector('.school-dd-list');
       if (listEl) {
         listEl.innerHTML = listHtml;
         return;
       }
-      // First build: create full panel structure
+
       panel.innerHTML = `
         <div class="school-dd-search">
           <div class="school-dd-search-wrap">
@@ -2017,7 +1882,7 @@
       closeAllDropdowns();
       closeSchoolDrop();
       if (!wasOpen) {
-        panel.innerHTML = ''; // clear so rebuildSchoolPanel creates fresh structure
+        panel.innerHTML = '';
         rebuildSchoolPanel('');
         const rect = btn.getBoundingClientRect();
         const W = Math.max(240, rect.width);
@@ -2042,7 +1907,7 @@
       lbSchool = school;
       const label = document.getElementById('lb-school-label');
       if (label) label.textContent = school || 'All Schools';
-      // Update selected state in panel without closing
+
       const items = document.querySelectorAll('#lb-school-panel .school-dd-item');
       items.forEach(item => {
         const isSelected = item.querySelector('.school-dd-item-name')?.textContent === (school || 'All Schools');
@@ -2053,9 +1918,6 @@
       closeSchoolDrop();
     }
 
-    // ═══════════════════════════════════════════════════
-    //  LEADERBOARD
-    // ═══════════════════════════════════════════════════
     const PER_PAGE = 40;
 
     function setLbGender(g, btn) {
@@ -2070,8 +1932,7 @@
         lbSortAsc = !lbSortAsc;
       } else {
         lbSortField = field;
-        // name/school: default A-Z (lbSortAsc=false → un-negated localeCompare → A-Z)
-        // numeric fields: default descending (lbSortAsc=false → un-negated numeric diff → highest first)
+
         lbSortAsc = false;
       }
       lbPage = 1; renderLeaderboard();
@@ -2125,8 +1986,6 @@
         return lbSortAsc ? -v : v;
       });
 
-      // For aggregated views, compute rank from the CURRENT selection's data
-      // so ranks match the visible sorted order, not the all-time global map.
       let displayRankMap = singleExamGlobalRanks;
       if (isAll) {
         const sortedForRank = [...aggregateByStudent(getRowsForSel(sel))].sort((a, b) => b.rating - a.rating);
@@ -2148,7 +2007,7 @@
 
       const pag = document.getElementById('lb-pager');
       if (pages <= 1) { pag.innerHTML = ''; return; }
-      // Page range: current ± 2 on mobile (tight), ± 3 on desktop
+
       const spread = window.innerWidth < 480 ? 1 : 2;
       const pageNums = [];
       for (let p = Math.max(1, lbPage - spread); p <= Math.min(pages, lbPage + spread); p++) pageNums.push(p);
@@ -2163,13 +2022,10 @@
       pag.innerHTML = h + '</div>';
     }
 
-    // ═══════════════════════════════════════════════════
-    //  TABLE BUILDER
-    // ═══════════════════════════════════════════════════
     function buildTable(data, opts = {}) {
       if (!data.length) return '<div class="empty"><div class="empty-icon">📭</div>No results</div>';
       const { rowHighlight = 0, showExam = false, isAgg = false, isAvg = false, globalRanks = {}, useGlobalRank = false } = opts;
-      // Fixed-width arrow: always same space, just opacity changes
+
       const arr = active => `<span class="th-arrow"><i class="ph ${active ? (lbSortAsc ? 'ph-caret-up' : 'ph-caret-down') : 'ph-caret-up-down'}"></i></span>`;
       const sh = (f, lbl) => {
         const active = lbSortField === f;
@@ -2211,9 +2067,6 @@
       return h + '</tbody></table>';
     }
 
-    // ═══════════════════════════════════════════════════
-    //  STUDENTS
-    // ═══════════════════════════════════════════════════
     function populateStudentFilters() {
       buildStuSchoolDropdown();
     }
@@ -2231,7 +2084,7 @@
       ALL.forEach(r => {
         const key = r.name + '\x00' + r.school;
         if (!map[key]) map[key] = { name: r.name, school: r.school, gender: r.gender, examMap: {} };
-        // Deduplicate: keep highest mark if the same exam appears more than once
+
         const ek = r.exam_id;
         if (!map[key].examMap[ek] || r.marks > map[key].examMap[ek].marks) {
           map[key].examMap[ek] = { exam_id: r.exam_id, exam_label: r.exam_label, exam_type: r.exam_type, marks: r.marks, rank: r.rank };
@@ -2290,27 +2143,27 @@
             </div>
           </div></div>`;
       }).join('');
-      if (students.length > 60) grid.innerHTML += `<div class="empty" style="grid-column:1/-1;padding:16px">Showing 60 of ${students.length} — refine your search</div>`;
+      if (students.length > 60) grid.innerHTML += `<div class="empty" style="grid-column:1/-1;padding:16px">Showing 60 of ${students.length}  - refine your search</div>`;
     }
 
     function goBackFromProfile() {
-      // If there's a profile stack, pop back to the previous profile
+
       if (_profileStack.length > 0) {
         const prev = _profileStack.pop();
         openStudentProfile(prev.idx);
         return;
       }
       if (_navOrigin && _navOrigin.page !== 'students') {
-        // Came from another page — navigate back and restore scroll
+
         const origin = _navOrigin;
         _navOrigin = null;
         _suppressScrollReset = true;
         location.hash = origin.page;
         setTimeout(() => {
           window.scrollTo({ top: origin.scrollY, behavior: 'instant' });
-        }, 220); // after liquidTransition's 180ms + buffer
+        }, 220);
       } else {
-        // Came from student search grid — return to it
+
         _navOrigin = null;
         document.getElementById('stu-filter-bar').style.display = '';
         document.getElementById('stu-grid').style.display = 'grid';
@@ -2318,8 +2171,7 @@
       }
     }
 
-    // Profile navigation stack — lets us go back through peer profiles to the origin page
-    let _profileStack = []; // each entry: { idx, scrollY }
+    let _profileStack = [];
 
     function navToStudent(name, school) {
       document.getElementById('search-results').classList.remove('visible');
@@ -2331,12 +2183,12 @@
       const pageLabelMap = { dashboard: 'Dashboard', leaderboard: 'Leaderboard', tests: 'Tests', schools: 'Schools', analytics: 'Analytics', students: 'Student Search' };
 
       if (currentPage === 'students' && document.getElementById('stu-profile').style.display !== 'none') {
-        // Already on a profile — push current profile onto the stack before navigating
+
         _profileStack.push({ idx: _currentProfileIdx, scrollY: window.scrollY || document.documentElement.scrollTop });
         openStudentProfile(idx);
       } else {
-        // Coming from a different page or from search grid — set origin and navigate
-        _profileStack = []; // clear any stale stack
+
+        _profileStack = [];
         _navOrigin = {
           page: currentPage,
           scrollY: window.scrollY || document.documentElement.scrollTop,
@@ -2351,9 +2203,6 @@
       }
     }
 
-    // ═══════════════════════════════════════════════════
-    //  STUDENT PROFILE
-    // ═══════════════════════════════════════════════════
     let _currentProfileIdx = -1;
 
     function openStudentProfile(idxOrName, _legacySchool) {
@@ -2394,8 +2243,8 @@
 
       const zList = apps.map(a => examZ(a.exam_id, a.marks));
       const post = computePosterior(zList);
-      const rating = post.rating;       // conservative lower-bound (same as global rank)
-      const meanRating = post.meanRating; // best-estimate skill level
+      const rating = post.rating;
+      const meanRating = post.meanRating;
 
       const gRank = globalRank(stuData.name, stuData.school);
       const tRank=thyApps.length?thyRank(stuData.name,stuData.school):null;
@@ -2435,12 +2284,12 @@
       const bestExam = EXAMS.find(e => e.id === bestExamEntry?.exam_id);
       let classPercentile = null;
       if (bestExam) {
-        // Deduplicate exam students (same issue as global ranking — raw list may have dupes)
+
         const examStudents = deduplicateStudents([...bestExam.students]);
         const total = examStudents.length;
         const lower = examStudents.filter(s => s.marks < best).length;
         const atSame = examStudents.filter(s => s.marks === best).length;
-        // Percentile rank: midpoint formula handles ties fairly
+
         classPercentile = Math.round((lower + atSame * 0.5) / total * 100);
       }
 
@@ -2449,15 +2298,13 @@
 
       const revTheoryGap = revAvg && thyAvg ? revAvg - thyAvg : null;
 
-
-
       const name = stuData.name, school = stuData.school;
       const ini = name.split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
       const gc = stuData.gender === GEN_MALE ? 'var(--male)' : stuData.gender === GEN_FEMALE ? 'var(--female)' : 'var(--text3)';
 
       let rankBadgeHTML = '';
       if (rankTierInfo && typeof gRank === 'number') {
-        // Secondary type-specific rank chips
+
         const tRankHTML = (tRank && typeof tRank === 'number' && totalThy > 1) ? `
           <div class="type-rank-chip" style="border-color:rgba(45,212,191,.3);background:rgba(45,212,191,.06)">
             <span style="color:var(--teal);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;opacity:.7">Theory</span>
@@ -2500,11 +2347,11 @@
       document.getElementById('stu-grid').style.display = 'none';
       const pv = document.getElementById('stu-profile');
       pv.style.display = 'block';
-      // Always scroll to top when showing a profile
+
       window.scrollTo({ top: 0, behavior: 'instant' });
       const contentEl = document.getElementById('main-content');
       if (contentEl) contentEl.scrollTop = 0;
-      // Update back button label
+
       setTimeout(() => {
         const btn = document.getElementById('profile-back-btn');
         if (btn) {
@@ -2648,7 +2495,7 @@
         const w = Math.max(...schoolMates.slice(0, 8).map(x => x.marks), avg);
         const col = i === 0 ? 'var(--amber)' : i === 1 ? 'var(--blue)' : 'var(--text3)';
         return `<div class="score-bar">
-                  <div class="score-bar-label" style="width:130px;cursor:pointer;transition:color .15s" 
+                  <div class="score-bar-label" style="width:130px;cursor:pointer;transition:color .15s"
                     onclick="navToStudent('${_ns(s.name)}','${_ns(s.school)}')"
                     onmouseenter="this.style.color='var(--amber)'" onmouseleave="this.style.color=''">${s.name.split(' ')[0]}</div>
                   <div class="score-bar-track"><div class="score-bar-fill" style="width:${s.marks / w * 100}%;background:${col}"></div></div>
@@ -2668,12 +2515,6 @@
       setTimeout(()=>_renderStuChart(apps,best), 60);
     }
 
-    // ═══════════════════════════════════════════════════
-    //  SCHOOLS
-    // ═══════════════════════════════════════════════════
-    // School ranking uses the same EB calibration as student ranking.
-    // k = sigma_sq/tau_sq gives the effective Bayes constant (replaces hard-coded 5).
-    // This is computed lazily from _ebParams which is set during buildExamStats().
     function schoolBayesK() { return _ebParams.sigma_sq / _ebParams.tau_sq; }
 
     function buildSchoolStats(data) {
@@ -2754,7 +2595,7 @@
           <div class="chip" style="color:var(--male)">Boys: ${d.boys}</div>
           <div class="chip" style="color:var(--female)">Girls: ${d.girls}</div>
         </div>
-        <div style="margin-bottom:8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">TOP STUDENTS — personal average</div>
+        <div style="margin-bottom:8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)">TOP STUDENTS  - personal average</div>
         ${d.topStudents.slice(0, 8).map((s, i) => `
           <div class="score-bar">
             <div class="score-bar-label" style="width:140px;cursor:pointer;transition:color .15s"
@@ -2771,7 +2612,6 @@
             <div class="score-bar-val">${ex.avg}</div>
           </div>`).join('')}` : ''}`;
 
-      // On mobile: show in slide-up drawer. On desktop: render in sidebar panel.
       if (window.innerWidth <= 768) {
         openSchoolDrawer(schoolName, detailHTML);
       } else {
@@ -2780,9 +2620,6 @@
       }
     }
 
-    // ═══════════════════════════════════════════════════
-    //  ANALYTICS
-    // ═══════════════════════════════════════════════════
     function filteredExams(){
       if(avgType==='all') return EXAMS;
       if(avgType==='model') return EXAMS.filter(e=>isModelType(e.type));
@@ -2877,14 +2714,13 @@
       }).join('');
     }
 
-
     function setChartScrollWidth(wrapId, dataLen) {
       const wrap = document.getElementById(wrapId);
       if (!wrap) return;
-      // Only squeeze charts with many points; 24px per point is readable
+
       const THRESHOLD = 30;
       const MIN_PX = 24;
-      const inner = wrap.parentElement; // chart-scroll-inner
+      const inner = wrap.parentElement;
       const containerW = inner ? inner.clientWidth || inner.parentElement?.clientWidth || 600 : 600;
       if (dataLen > THRESHOLD) {
         const minW = dataLen * MIN_PX;
@@ -2970,9 +2806,6 @@
       setChartScrollWidth('spread-chart-wrap', fe.length);
     }
 
-    // ═══════════════════════════════════════════════════
-    //  GLOBAL SEARCH
-    // ═══════════════════════════════════════════════════
     let searchTimer;
     document.getElementById('global-search').addEventListener('input', function () {
       clearTimeout(searchTimer);
@@ -3005,15 +2838,9 @@
       if (ev.key === 'Escape') { document.getElementById('global-search').blur(); document.getElementById('search-results').classList.remove('visible'); closeSidebar(); }
     });
 
-    // ═══════════════════════════════════════════════════
-    //  MODAL
-    // ═══════════════════════════════════════════════════
     function openModal() { document.getElementById('modal-overlay').classList.add('open'); }
     function closeModal(ev) { if (!ev || ev.target === document.getElementById('modal-overlay')) { document.getElementById('modal-overlay').classList.remove('open'); } }
 
-    // ═══════════════════════════════════════════════════
-    //  CHART CONFIG HELPER
-    // ═══════════════════════════════════════════════════
     function cOpts({ dual = false, ylabel = '' } = {}) {
       const base = {
         responsive: true, maintainAspectRatio: false,
@@ -3028,17 +2855,11 @@
       return base;
     }
 
-    // ═══════════════════════════════════════════════════
-    //  UTILS
-    // ═══════════════════════════════════════════════════
     function esc(s) {
       return (s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
-    // ═══════════════════════════════════════════════════
-    //  STUDENT COMPARISON
-    // ═══════════════════════════════════════════════════
-    let _compareSet = new Set(); // indices into STU_REGISTRY
+    let _compareSet = new Set();
 
     function _syncCmpBtn(idx, active) {
       const btn = document.getElementById('cmp-btn-' + idx);
@@ -3137,7 +2958,6 @@
         </div>`;
     }
 
-    // Export dropdown
     function toggleExportDrop(ev) {
       if (ev) ev.stopPropagation();
       const p = document.getElementById('export-dd-panel');
@@ -3184,7 +3004,7 @@
       const bestOf = (i) => {
         const v = students.map(s => parseFloat(vals(s)[i]));
         if (v.some(isNaN)) return null;
-        return i === 3 || i === 6 ? Math.min(...v) : Math.max(...v); // worst and rank: lower is better
+        return i === 3 || i === 6 ? Math.min(...v) : Math.max(...v);
       };
 
       const colors = ['#e8a020', '#2dd4bf', '#60a5fa', '#f472b6'];
@@ -3202,7 +3022,6 @@
       });
       html += '</div>';
 
-      // Stats comparison rows
       html += '<div style="border:1px solid var(--border);border-radius:10px;overflow:hidden">';
       COLS.forEach((col, i) => {
         const best = bestOf(i);
@@ -3218,21 +3037,19 @@
       });
       html += '</div>';
 
-      // Shared exams chart
       const sharedExams = EXAMS.filter(e => students.every(s => s.apps.some(a => a.exam_id === e.id)));
       if (sharedExams.length) {
-        // Limit chart to most recent 12 for readability; show all in per-test bars
+
         const chartExams = sharedExams.length > 12 ? sharedExams.slice(-12) : sharedExams;
         const hasMore = sharedExams.length > chartExams.length;
         html += `<div style="margin-top:24px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-            <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px">HEAD TO HEAD — ${sharedExams.length} Shared Test${sharedExams.length>1?'s':''}</div>
+            <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px">HEAD TO HEAD  - ${sharedExams.length} Shared Test${sharedExams.length>1?'s':''}</div>
             ${hasMore?`<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)">Chart shows most recent ${chartExams.length}</div>`:''}
           </div>
           <div style="height:220px;position:relative"><canvas id="compare-chart"></canvas></div>
         </div>`;
 
-        // Per-test scores — compact pill rows, max 16 shown with disclosure
         const showAll = sharedExams.length <= 8;
         const visibleExams = showAll ? sharedExams : sharedExams.slice(-8);
         html += `<div style="margin-top:20px">
@@ -3297,9 +3114,6 @@
       }
     }
 
-    // ═══════════════════════════════════════════════════
-    //  EXPORT — CSV + PDF
-    // ═══════════════════════════════════════════════════
     function _getLbData() {
       const sel = lbTestSel;
       const isAll = isAgg(sel);
@@ -3314,7 +3128,7 @@
         return Object.values(dm);
       })();
       data.sort((a, b) => isAll ? (b.rating - a.rating) : (b.marks - a.marks));
-      // Assign tied ranks
+
       let rank = 1;
       data.forEach((r, i) => {
         if (i > 0) {
@@ -3353,7 +3167,7 @@
         const jsPDF = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
         if (!jsPDF) {
           if (++attempts < 15) { setTimeout(tryGenerate, 200); return; }
-          alert('PDF library not yet loaded — please try again in a moment.'); return;
+          alert('PDF library not yet loaded  - please try again in a moment.'); return;
         }
         const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
         const W = doc.internal.pageSize.getWidth();
@@ -3364,7 +3178,7 @@
         const MID   = [80, 80, 110];
         const LIGHT = [245, 245, 250];
         const WHITE = [255, 255, 255];
-        // Header bar
+
         doc.setFillColor(...DARK); doc.rect(0, 0, W, 28, 'F');
         doc.setFillColor(...AMBER); doc.rect(0, 0, 4, 28, 'F');
         doc.setFont('helvetica', 'bold'); doc.setFontSize(18); doc.setTextColor(...WHITE);
@@ -3376,11 +3190,11 @@
         doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(200, 200, 220);
         doc.text(label, W - 10, 16, { align: 'right' });
         doc.text(dateStr, W - 10, 22, { align: 'right' });
-        // Summary pill
+
         doc.setFillColor(...LIGHT); doc.roundedRect(10, 32, 55, 9, 2, 2, 'F');
         doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...DARK);
         doc.text(`${data.length} students`, 37.5, 38, { align: 'center' });
-        // Table
+
         const scoreColIdx = 4;
         const head = isAll
           ? [['#', 'Name', 'School', 'G', 'Rating', 'Avg', 'Best', 'Tests']]
@@ -3426,27 +3240,14 @@
       tryGenerate();
     }
 
-    // ═══════════════════════════════════════════════════
-    //  BOOT — called by the async data bootstrap in <head>
-    //  once version.txt, results_index.js, and all chunks
-    //  have finished loading (non-blocking).
-    // ═══════════════════════════════════════════════════
-    // window.addEventListener('DOMContentLoaded', loadData);
-    // ↑ Removed: the async bootstrap (head) now calls loadData()
-    //   after all data scripts are ready, so this listener is
-    //   no longer needed and would fire too early.
-
-    // ═══════════════════════════════════════════════════
-    //  INFO POPOVER SYSTEM
-    // ═══════════════════════════════════════════════════
     const INFO_CONTENT = {
       'test-history': {
         title: 'Impact Score (σ)',
         html: `
-          <p style="margin-bottom:10px"><strong>Impact</strong> measures performance relative to the difficulty of a specific test — a lower score on a harder test may reflect stronger performance than a higher score on an easier one.</p>
+          <p style="margin-bottom:10px"><strong>Impact</strong> measures performance relative to the difficulty of a specific testa lower score on a harder test may reflect stronger performance than a higher score on an easier one.</p>
           <p style="margin-bottom:8px">Formula: <strong>(score − class mean) ÷ class standard deviation</strong></p>
           <div class="info-sep"></div>
-          <div class="info-row"><span class="info-key">+2σ 🔥</span><span class="info-val">Exceptional — top ~2% of that test</span></div>
+          <div class="info-row"><span class="info-key">+2σ 🔥</span><span class="info-val">Exceptional  - top ~2% of that test</span></div>
           <div class="info-row"><span class="info-key">+1σ ✦</span><span class="info-val">Above average</span></div>
           <div class="info-row"><span class="info-key">0σ ·</span><span class="info-val">Around class mean</span></div>
           <div class="info-row"><span class="info-key">−1σ ▼</span><span class="info-val">Below average for that test</span></div>
@@ -3459,10 +3260,10 @@
           <div class="info-sep"></div>
           <p style="margin-bottom:8px"><strong>How it's calculated:</strong></p>
           <div class="info-row"><span class="info-key">Mean Rating</span><span class="info-val">The average of all difficulty-adjusted scores (z-scores rescaled to a 0–100 range) across every test taken.</span></div>
-          <div class="info-row"><span class="info-key">Rating</span><span class="info-val">A <em>lower-bound</em> estimate — the mean minus a fraction of the standard deviation. This rewards consistency and prevents one great test from inflating the rating.</span></div>
+          <div class="info-row"><span class="info-key">Rating</span><span class="info-val">A <em>lower-bound</em> estimate the mean minus a fraction of the standard deviation. This rewards consistency and prevents one great test from inflating the rating.</span></div>
           <div class="info-sep"></div>
           <p style="margin-bottom:8px">The two numbers shown are:<br><strong>Rating / Mean Rating</strong></p>
-          <p style="color:var(--text3);font-size:11px">A student with Rating 82 / 88 has a skill mean of 88 but a conservative floor of 82 — they occasionally underperform. A student with 85 / 86 is very consistent.</p>
+          <p style="color:var(--text3);font-size:11px">A student with Rating 82 / 88 has a skill mean of 88 but a conservative floor of 82 they occasionally underperform. A student with 85 / 86 is very consistent.</p>
           <p style="color:var(--text3);font-size:11px;margin-top:8px">Rating is used for the Overall Rank and the Leaderboard "All Tests" view.</p>
         `
       },
@@ -3471,21 +3272,21 @@
         html: `
           <p style="margin-bottom:10px">The <strong>Overall Rank</strong> is calculated by sorting all unique students by their Rating (difficulty-adjusted score). The tier label shows where you stand in the entire cohort.</p>
           <div class="info-sep"></div>
-          <div class="info-row"><span class="info-key" style="color:#ffd700"><i class="ph ph-star" style="color:#ffd700"></i> Elite</span><span class="info-val">Top 1% — exceptional across all tests.</span></div>
-          <div class="info-row"><span class="info-key" style="color:var(--amber)"><i class="ph ph-trophy" style="color:var(--amber)"></i> Gold</span><span class="info-val">Top 5% — consistently high performance.</span></div>
-          <div class="info-row"><span class="info-key" style="color:var(--teal)"><i class="ph ph-medal" style="color:#C0C0C0"></i> Silver</span><span class="info-val">Top 15% — well above average.</span></div>
-          <div class="info-row"><span class="info-key" style="color:var(--blue)"><i class="ph ph-medal" style="color:#CD7F32"></i> Bronze</span><span class="info-val">Top 30% — above average performer.</span></div>
-          <div class="info-row"><span class="info-key" style="color:#e8a020">◈ Rising</span><span class="info-val">Top 55% — above the midpoint.</span></div>
+          <div class="info-row"><span class="info-key" style="color:#ffd700"><i class="ph ph-star" style="color:#ffd700"></i> Elite</span><span class="info-val">Top 1% - exceptional across all tests.</span></div>
+          <div class="info-row"><span class="info-key" style="color:var(--amber)"><i class="ph ph-trophy" style="color:var(--amber)"></i> Gold</span><span class="info-val">Top 5% - consistently high performance.</span></div>
+          <div class="info-row"><span class="info-key" style="color:var(--teal)"><i class="ph ph-medal" style="color:#C0C0C0"></i> Silver</span><span class="info-val">Top 15% - well above average.</span></div>
+          <div class="info-row"><span class="info-key" style="color:var(--blue)"><i class="ph ph-medal" style="color:#CD7F32"></i> Bronze</span><span class="info-val">Top 30% - above average performer.</span></div>
+          <div class="info-row"><span class="info-key" style="color:#e8a020">◈ Rising</span><span class="info-val">Top 55% - above the midpoint.</span></div>
           <div class="info-row"><span class="info-key">· Standard</span><span class="info-val">Remaining participants.</span></div>
           <div class="info-sep"></div>
-          <p style="color:var(--text3);font-size:11px">The <strong>Theory</strong> and <strong>Revision</strong> rank chips show separate rankings using only the respective test type — useful for identifying type specialists.</p>
+          <p style="color:var(--text3);font-size:11px">The <strong>Theory</strong> and <strong>Revision</strong> rank chips show separate rankings using only the respective test type useful for identifying type specialists.</p>
           <p style="color:var(--text3);font-size:11px;margin-top:6px">The percentile (e.g. "93rd pct") shows what fraction of students this person outperforms.</p>
         `
       },
       'school-ranking': {
         title: 'Bayesian-Adjusted Average',
         html: `
-          <p style="margin-bottom:10px">A school with very few students may show an inflated raw average that does not reflect true performance. The Bayesian adjustment pulls each school's average toward the global mean, weighted by sample size — the fewer the students, the greater the correction.</p>
+          <p style="margin-bottom:10px">A school with very few students may show an inflated raw average that does not reflect true performance. The Bayesian adjustment pulls each school's average toward the global mean, weighted by sample size. The fewer the students, the greater the correction.</p>
           <p style="color:var(--text3);font-size:11px">Formula: <strong>(sum of scores + k × global_mean) ÷ (n + k)</strong> where k is calibrated from the data spread.</p>
         `
       }
@@ -3528,9 +3329,6 @@
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeInfoPopover(); }, true);
     window.addEventListener('scroll', closeInfoPopover, { passive: true, capture: true });
 
-    // ═══════════════════════════════════════════════════
-    //  MOBILE SCHOOL DETAIL DRAWER
-    // ═══════════════════════════════════════════════════
     function openSchoolDrawer(title, html) {
       document.getElementById('school-drawer-title').textContent = title;
       document.getElementById('school-drawer-body').innerHTML = html;
@@ -3578,9 +3376,6 @@
       }
     }
 
-    // ═══════════════════════════════════════════════════
-    //  STUDENT PROFILE — TIMELINE & HISTORY FILTERS
-    // ═══════════════════════════════════════════════════
     let _stuTlFilter='all', _stuThFilter='all';
 
     function _syncStuBtns(prefix, active) {
@@ -3658,9 +3453,6 @@
       });
     }
 
-    // ═══════════════════════════════════════════════════
-    //  FULLSCREEN CHART
-    // ═══════════════════════════════════════════════════
     let _fsChart = null;
 
     function openChartFs(wrapId, title) {
@@ -3675,7 +3467,7 @@
       if (!overlay || !body) return;
       titleEl.textContent = title || '';
       body.innerHTML = '<canvas id="chart-fs-canvas" style="width:100%;height:100%"></canvas>';
-      body.style.height = '';  // let CSS flex: 1 handle it
+      body.style.height = '';
       if (srcChart) {
         const cfg = JSON.parse(JSON.stringify({ type: srcChart.config.type, data: srcChart.config.data, options: { ...srcChart.config.options, animation: false } }));
         if (_fsChart) { try { _fsChart.destroy(); } catch(e){} }
@@ -3696,10 +3488,6 @@
       if (_fsChart) { try { _fsChart.destroy(); } catch(e){} _fsChart = null; }
     }
 
-
-    // ═══════════════════════════════════════════════════
-    //  DRAG-TO-SCROLL for chart-scroll-inner on desktop
-    // ═══════════════════════════════════════════════════
     document.addEventListener('mousedown', e => {
       const inner = e.target.closest('.chart-scroll-inner');
       if (!inner) return;
@@ -3719,9 +3507,6 @@
       document.querySelectorAll('.chart-scroll-inner').forEach(el => el._dragging = false);
     });
 
-    // ═══════════════════════════════════════════════════
-    //  KEYBOARD SHORTCUTS
-    // ═══════════════════════════════════════════════════
     const PAGE_KEYS = { '1':'dashboard','2':'tests','3':'leaderboard','4':'students','5':'schools','6':'analytics' };
 
     function toggleKbdPanel(e) {
@@ -3749,17 +3534,16 @@
       const tag = document.activeElement?.tagName;
       const inInput = tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable;
 
-      // Escape: close panels, go back from student profile
       if (e.key === 'Escape') {
         closeKbdPanel();
         closeInfoPopover();
         closeSchoolDrawer();
-        // Close any open modal
+
         const mo = document.getElementById('modal-overlay');
         if (mo?.classList.contains('open')) { closeModal(); return; }
         const co = document.getElementById('compare-overlay');
         if (co?.classList.contains('open')) { closeCompare(); return; }
-        // If in student profile, go back
+
         const sp = document.getElementById('stu-profile');
         if (sp && sp.style.display !== 'none') { goBackFromProfile(); }
         return;
@@ -3767,7 +3551,6 @@
 
       if (inInput) return;
 
-      // / to focus search
       if (e.key === '/') {
         e.preventDefault();
         const si = document.getElementById('global-search');
@@ -3775,7 +3558,6 @@
         return;
       }
 
-      // ? to toggle keyboard panel
       if (e.key === '?') {
         e.preventDefault();
         const btn = document.getElementById('kbd-hint-btn');
@@ -3783,26 +3565,18 @@
         return;
       }
 
-      // 1–6: page navigation (plain number only)
       if (PAGE_KEYS[e.key] && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
         location.hash = PAGE_KEYS[e.key];
       }
     });
 
-
-    //  Desktop : Ctrl × 3, then type the key phrase
-    //  Mobile  : Long-press the city·year context badge for 2 s
-    // ═══════════════════════════════════════════════════
     (function () {
-      // Key is stored as a reversed, base64-encoded string to avoid
-      // it being trivially visible as plaintext in page source.
-      // NOTE: for production, admin auth should be server-side.
+
       function _dk() {
         try { return atob('ZmFpb3Nh').split('').reverse().join(''); } catch(e) { return ''; }
       }
 
-      // ── Desktop keyboard sequence ──────────────────────
       const KONAMI_KEY = _dk();
       const CTRL_NEEDED = 3;
       let ctrlCount = 0, ctrlTimer = null;
@@ -3834,7 +3608,6 @@
         }
       });
 
-      // ── Mobile two-step gesture ────────────────────────
       const BADGE_HOLD_MS = 800;
       const SEQ_KEY       = _dk();
       const SEQ_EXPIRE_MS = 30000;

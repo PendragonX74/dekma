@@ -27,7 +27,7 @@
       }
 
       async function bootstrap() {
-        // Step 1: fetch version asynchronously — zero render-blocking
+
         var version = '0';
         try {
           var res = await fetch('data/version.txt?_=' + Date.now());
@@ -36,14 +36,12 @@
           console.warn('Could not load version.txt, using fallback.', e);
         }
 
-        // Step 2: load the index script (defines window.dekmaChunks)
         try {
           await loadScript('data/results_index.js?v=' + version);
         } catch (e) {
           console.warn('Could not load results_index.js', e);
         }
 
-        // Step 3: load all data chunks in parallel
         var chunks = window.dekmaChunks || [];
         await Promise.all(chunks.map(function (c) {
           return loadScript('data/' + c.file + '?v=' + version).catch(function (e) {
@@ -51,11 +49,9 @@
           });
         }));
 
-        // Step 4: merge chunk globals into window.dekmaData
         mergeChunks();
         window._dataVersion = version;
 
-        // Step 5: mark data as loaded, then invoke loadData once DOM is ready
         window._dekmaBootstrapDone = true;
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', function () { loadData(); });

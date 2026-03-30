@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+
 """
 parse_results.py
 
@@ -32,8 +32,6 @@ EXAM_MANIFEST_FILE = OUTPUT_DIR / "exam_manifest.json"
 CENTERS = ["Galle", "Matara", "Hambanthota"]
 NS      = "http://schemas.datacontract.org/2004/07/DTO"
 
-# Sort order for exam types in the output chunks.
-# Lower number → appears first in the UI.
 TYPE_ORDER = {
     "theory":          0,
     "revision":        1,
@@ -41,15 +39,11 @@ TYPE_ORDER = {
     "model_revision":  3,
 }
 
-
 def slug(s: str) -> str:
     return re.sub(r'[^a-z0-9]+', '_', s.lower()).strip('_')
 
 def tag(name: str) -> str:
     return f"{{{NS}}}{name}"
-
-
-# ─── filename / type helpers ──────────────────────────────────────────────────
 
 def parse_filename(filename: str):
     """
@@ -61,17 +55,16 @@ def parse_filename(filename: str):
 
     Returns None for unrecognised names.
     """
-    stem  = Path(filename).stem                         # e.g. "T-2025-003(M)"
+    stem  = Path(filename).stem
     match = re.fullmatch(r'([A-Z])-(\d{4})-(\d+)(\(M\))?', stem)
     if not match:
         return None
     return (
-        match.group(1),           # exam_type: "T" or "R"
-        int(match.group(2)),      # year
-        int(match.group(3)),      # number
-        match.group(4) is not None,  # is_model
+        match.group(1),
+        int(match.group(2)),
+        int(match.group(3)),
+        match.group(4) is not None,
     )
-
 
 def exam_type_info(exam_type: str, is_model: bool) -> tuple[str, str]:
     """
@@ -92,7 +85,6 @@ def exam_type_info(exam_type: str, is_model: bool) -> tuple[str, str]:
         "R": ("revision", "Revision"),
     }.get(exam_type, (exam_type.lower(), exam_type))
 
-
 def make_exam_id(exam_type: str, year: int, number: int, is_model: bool) -> str:
     """
     Canonical exam ID used as a stable key in manual_edits.json.
@@ -105,16 +97,12 @@ def make_exam_id(exam_type: str, year: int, number: int, is_model: bool) -> str:
     type_code = f"{exam_type}M" if is_model else exam_type
     return f"{type_code}-{year}-{number:03d}"
 
-
-# ─── XML parsing ─────────────────────────────────────────────────────────────
-
 def parse_student_name(raw: str) -> tuple[str, str]:
     raw   = raw.strip()
     match = re.search(r'\(([A-Za-z])\)\s*$', raw)
     if match:
         return raw[:match.start()].strip(), match.group(1).upper()
     return raw, ""
-
 
 def parse_xml_file(filepath: Path) -> list[dict]:
     try:
@@ -140,9 +128,6 @@ def parse_xml_file(filepath: Path) -> list[dict]:
             print(f"  [WARN] Skipping record in {filepath.name}: {e}")
     return students
 
-
-# ─── rank recomputation ───────────────────────────────────────────────────────
-
 def recompute_ranks(exam: dict) -> None:
     """
     Recompute student ranks from current marks (dense skip on ties).
@@ -156,9 +141,6 @@ def recompute_ranks(exam: dict) -> None:
         else:
             s["rank"] = i + 1
 
-
-# ─── manual edits ─────────────────────────────────────────────────────────────
-
 def load_manual_edits() -> dict:
     if not MANUAL_EDITS_FILE.exists():
         return {"scoreEdits": [], "studentRenames": [], "deletions": []}
@@ -169,7 +151,6 @@ def load_manual_edits() -> dict:
         print(f"[WARN] Could not load manual_edits.json: {e}")
         return {"scoreEdits": [], "studentRenames": [], "deletions": []}
 
-
 def apply_edits(data_by_city_year: dict, edits: dict) -> None:
     """
     Apply all manual edits to the in-memory data in dependency order:
@@ -178,13 +159,13 @@ def apply_edits(data_by_city_year: dict, edits: dict) -> None:
     data_by_city_year: {(city, year): [exam, …]}
     edits keys: "studentRenames", "merges", "deletions", "addedEntries", "scoreEdits"
     """
-    # 1. Renames — applied first so subsequent edits can find renamed students
+
     for rename in edits.get("studentRenames", []):
         old_name   = rename["oldName"]
         old_school = rename["oldSchool"]
         new_name   = rename["newName"]
         new_school = rename["newSchool"]
-        new_gender = rename.get("newGender")   # present in edits logged after this fix
+        new_gender = rename.get("newGender")
         for exams in data_by_city_year.values():
             for exam in exams:
                 for s in exam["students"]:
@@ -194,7 +175,6 @@ def apply_edits(data_by_city_year: dict, edits: dict) -> None:
                         if new_gender:
                             s["gender"] = new_gender
 
-    # 2. Merges — replay each merge: rename B → A identity, resolve collisions
     for merge in edits.get("merges", []):
         a_name      = merge["profileA"]["name"]
         a_school    = merge["profileA"]["school"]
@@ -205,7 +185,7 @@ def apply_edits(data_by_city_year: dict, edits: dict) -> None:
 
         for exams in data_by_city_year.values():
             for exam in exams:
-                # Check if profile A already exists in this exam
+
                 a_entry = next(
                     (s for s in exam["students"]
                      if s["name"] == a_name and s["school"] == a_school), None
@@ -214,11 +194,11 @@ def apply_edits(data_by_city_year: dict, edits: dict) -> None:
                 for s in exam["students"]:
                     if s["name"] == b_name and s["school"] == b_school:
                         if a_entry:
-                            # Collision: keep higher mark on A, drop B
+
                             a_entry["marks"] = max(a_entry["marks"], s["marks"])
                             removed.append(s)
                         else:
-                            # No collision: rename B → final identity
+
                             s["name"]   = final_name
                             s["school"] = final_school
                     else:
@@ -227,7 +207,6 @@ def apply_edits(data_by_city_year: dict, edits: dict) -> None:
                     exam["students"] = [s for s in exam["students"]
                                         if s not in removed]
 
-        # Also rename any remaining A records to the chosen final name/school
         if final_name != a_name or final_school != a_school:
             for exams in data_by_city_year.values():
                 for exam in exams:
@@ -236,8 +215,6 @@ def apply_edits(data_by_city_year: dict, edits: dict) -> None:
                             s["name"]   = final_name
                             s["school"] = final_school
 
-    # 3. Deletions — scoreEntry removes one student from one exam;
-    #                profileWipe removes a student from every exam
     for deletion in edits.get("deletions", []):
         dtype        = deletion.get("type")
         student_info = deletion["student"]
@@ -276,7 +253,6 @@ def apply_edits(data_by_city_year: dict, edits: dict) -> None:
                 print(f"  [WIPE] Removed {student_info['name']} "
                       f"({wiped} entr{'ies' if wiped != 1 else 'y'})")
 
-    # 4. Added entries — inject manually added students into the right exam
     for entry in edits.get("addedEntries", []):
         exam_id   = entry["examId"]
         edit_city = entry.get("city")
@@ -296,12 +272,11 @@ def apply_edits(data_by_city_year: dict, edits: dict) -> None:
                             "school": stu["school"],
                             "marks":  stu["marks"],
                             "gender": stu.get("gender", ""),
-                            "rank":   0,   # recomputed after all edits
+                            "rank":   0,
                         })
                         print(f"  [ADD] {stu['name']} → {exam_id}")
                     break
 
-    # 5. Score edits — last, after all structural changes are settled
     for score_edit in edits.get("scoreEdits", []):
         exam_id      = score_edit["examId"]
         edit_city    = score_edit.get("city")
@@ -329,9 +304,6 @@ def apply_edits(data_by_city_year: dict, edits: dict) -> None:
                   f"student {student_info} could not be applied "
                   f"(exam or student missing).")
 
-
-# ─── output writers ───────────────────────────────────────────────────────────
-
 def load_existing_chunk_exams(city: str, year: int) -> list[dict]:
     """
     Decode and return the exam list from an already-written chunk file.
@@ -357,14 +329,13 @@ def load_existing_chunk_exams(city: str, year: int) -> list[dict]:
         print(f"  [WARN] Could not decode existing chunk {city}/{year}: {e}")
         return []
 
-
 def write_chunk(city: str, year: int, exams: list[dict]) -> bool:
     """Write a data chunk. Returns True if the file was actually written (content changed)."""
     chunk_file = OUTPUT_DIR / f"results_{slug(city)}_{year}.js"
     var_name   = f"window.dekmaChunk_{slug(city)}_{year}"
     exams.sort(key=lambda e: (TYPE_ORDER.get(e["type"], 9), e["number"]))
     json_str  = json.dumps({"exams": exams}, ensure_ascii=False, separators=(',', ':'))
-    # Base64-encode the JSON so it is not trivially readable as plain text in DevTools
+
     b64       = base64.b64encode(json_str.encode("utf-8")).decode("ascii")
     decoder   = (
         f"(()=>{{const b=atob('{b64}');"
@@ -382,18 +353,17 @@ def write_chunk(city: str, year: int, exams: list[dict]) -> bool:
     print(f"  Wrote {chunk_file} ({len(exams)} exams)")
     return True
 
-
 def build_index() -> list[dict]:
     chunks = []
     for f in OUTPUT_DIR.glob("results_*.js"):
         if f.name == "results_index.js":
             continue
-        parts = f.stem.split('_')        # ["results", …city slug…, "year"]
+        parts = f.stem.split('_')
         if len(parts) < 3:
             continue
         year      = parts[-1]
         city_slug = '_'.join(parts[1:-1])
-        # Recover the original city name from CENTERS by matching slug
+
         original  = next((c for c in CENTERS if slug(c) == city_slug), city_slug)
         chunks.append({
             "city": original,
@@ -402,9 +372,6 @@ def build_index() -> list[dict]:
         })
     chunks.sort(key=lambda c: (slug(c["city"]), -c["year"]))
     return chunks
-
-
-# ─── exam manifest (for new-exam diffing) ─────────────────────────────────────
 
 def load_exam_manifest() -> dict:
     if not EXAM_MANIFEST_FILE.exists():
@@ -416,15 +383,13 @@ def load_exam_manifest() -> dict:
         print(f"[WARN] Could not load exam_manifest.json: {e}")
         return {}
 
-
 def save_exam_manifest(city_year_exams: dict, old_manifest: dict) -> None:
-    # Start from the previous manifest so exam IDs are never lost when only
-    # a subset of XML files is present on disk (e.g. after a folder wipe).
+
     manifest = {k: list(v) for k, v in old_manifest.items()}
     for (city, year), exams in city_year_exams.items():
         key      = f"{slug(city)}_{year}"
         new_ids  = [e["id"] for e in exams]
-        # Union: keep everything already in the manifest, add any new IDs.
+
         existing = set(manifest.get(key, []))
         merged   = sorted(existing | set(new_ids),
                           key=lambda eid: (eid.split("-")[0], int(eid.split("-")[-1])))
@@ -436,7 +401,6 @@ def save_exam_manifest(city_year_exams: dict, old_manifest: dict) -> None:
         )
     except Exception as e:
         print(f"[WARN] Could not save exam_manifest.json: {e}")
-
 
 def write_new_exams(city_year_exams: dict, old_manifest: dict) -> dict:
     """
@@ -463,7 +427,6 @@ def write_new_exams(city_year_exams: dict, old_manifest: dict) -> dict:
         print("No new exams detected (new_exams.js cleared).")
     return new_exams
 
-
 def bump_version() -> None:
     """Increment data/version.txt so browsers cache-bust data files on next load."""
     try:
@@ -474,9 +437,6 @@ def bump_version() -> None:
         print(f"Bumped version.txt: {current} → {next_ver}")
     except Exception as e:
         print(f"[WARN] Could not bump version.txt: {e}")
-
-
-# ─── main ─────────────────────────────────────────────────────────────────────
 
 def main():
     print(f"Reading: {ROOT_FOLDER.resolve()}")
@@ -489,7 +449,6 @@ def main():
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Load manual edits and the previous exam manifest
     edits        = load_manual_edits()
     old_manifest = load_exam_manifest()
 
@@ -504,7 +463,6 @@ def main():
               f"{add_count} added entr{'ies' if add_count != 1 else 'y'}, "
               f"{merge_count} merge(s)\n")
 
-    # ── First pass: gather all XML files per (city, year) ────────────────────
     city_year_exams: dict = {}
 
     for city in CENTERS:
@@ -533,9 +491,6 @@ def main():
                 if not students:
                     continue
 
-                # Use file_year (from filename) for the exam ID — it reflects when
-                # the exam was actually held, even if the file lives in a different
-                # academic-year folder (e.g. Sept exams filed under the next year).
                 exam_id = make_exam_id(exam_type, file_year, number, is_model)
                 exams_for_year.append({
                     "id":       exam_id,
@@ -546,11 +501,6 @@ def main():
                 })
                 print(f"    {exam_id}: {len(students)} students")
 
-            # ── Merge with existing chunk (fallback for absent XML files) ──
-            # If some exams are missing from disk (e.g. DEKMA RESULTS/ was
-            # wiped and the downloader only re-fetched the most-recent 2),
-            # load them from the previously written chunk so they are never
-            # silently dropped from the output.
             parsed_ids = {e["id"] for e in exams_for_year}
             for ex in load_existing_chunk_exams(city, year):
                 if ex["id"] not in parsed_ids:
@@ -565,10 +515,8 @@ def main():
         print("No data found.")
         return
 
-    # ── Apply manual edits ────────────────────────────────────────────────────
     apply_edits(city_year_exams, edits)
 
-    # ── Recompute ranks for every exam so score edits are reflected ───────────
     total_recomputed = 0
     for exams in city_year_exams.values():
         for exam in exams:
@@ -576,32 +524,28 @@ def main():
             total_recomputed += 1
     print(f"\nRecomputed ranks for {total_recomputed} exam(s).")
 
-    # ── Write data chunks ─────────────────────────────────────────────────────
     any_chunk_changed = False
     for (city, year), exams in city_year_exams.items():
         print(f"\nWriting {city} {year}...")
         if write_chunk(city, year, exams):
             any_chunk_changed = True
 
-    # ── Write results_index.js ────────────────────────────────────────────────
     chunks    = build_index()
     index_js  = OUTPUT_DIR / "results_index.js"
     json_str  = json.dumps(chunks, ensure_ascii=False, separators=(',', ':'))
     index_js.write_text(f"window.dekmaChunks={json_str};\n", encoding="utf-8")
     print(f"\nWrote {index_js} ({len(chunks)} chunks)")
 
-    # ── Diff against previous run → new_exams.js ──────────────────────────────
     write_new_exams(city_year_exams, old_manifest)
     save_exam_manifest(city_year_exams, old_manifest)
 
-    # ── Summary ───────────────────────────────────────────────────────────────
     total_exams    = sum(len(yd) for yd in city_year_exams.values())
     total_students = sum(
         len(e["students"])
         for exams in city_year_exams.values()
         for e in exams
     )
-    # Count by type
+
     type_counts: dict[str, int] = {}
     for exams in city_year_exams.values():
         for e in exams:
@@ -617,7 +561,6 @@ def main():
     else:
         print("\nAll chunks unchanged — version not bumped.")
     print("Done.")
-
 
 if __name__ == "__main__":
     main()

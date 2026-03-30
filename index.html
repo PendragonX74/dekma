@@ -6,9 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DEKMA Results</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <meta name="description" content="DEKMA Applied Maths results portal — explore leaderboards, scores, and school rankings by city and year.">
+  <meta name="description" content="DEKMA Applied Maths results portal - explore leaderboards, scores, and school rankings by city and year.">
 
-  <!-- DNS prefetch & preconnect for external resources -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com">
@@ -16,20 +15,14 @@
     href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap"
     rel="stylesheet">
 
-  <!-- Phosphor Icons: elegant SVG icon font, cross-platform consistent -->
   <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
 
-  <!-- Chart.js: defer so it doesn't block HTML parsing -->
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
-  <!-- ========== ASYNC VERSION-BASED DATA LOADER ========== -->
-  <!-- Replaces synchronous XHR + document.write() with a non-blocking
-       async chain: version.txt → results_index.js → data chunks.
-       loadData() is called once all scripts are ready and DOM is parsed. -->
   <script src="loader.js"></script>
-  <!-- ===================================================== -->
+  
   <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -83,9 +76,8 @@
 
   <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 
-  <!-- ── BOTTOM TAB NAV (mobile) ── -->
   <nav class="bottom-tabs" id="bottom-tabs" role="tablist">
-    <!-- amber bubble slides to active tab via JS -->
+    
     <div class="tab-bubble" id="tab-bubble"></div>
 
     <div class="tab-item active" id="tab-dashboard" onclick="tabNav('dashboard')" role="tab" aria-label="Dashboard">
@@ -117,14 +109,14 @@
   <div class="shell" id="app" style="display:none">
     <aside class="sidebar" id="sidebar">
       <div class="logo">
-        <!-- Year selector -->
+        
         <div class="logo-selector-row">
           <div class="logo-selector" id="year-sel-btn" onclick="toggleLogoDrop('year')">
             <span class="logo-selector-text logo-year-text" id="logo-year">—</span>
             <span class="logo-sel-arrow">▾</span>
           </div>
         </div>
-        <!-- City selector -->
+        
         <div class="logo-selector-row">
           <div class="logo-selector" id="city-sel-btn" onclick="toggleLogoDrop('city')">
             <span class="logo-selector-text logo-city-text" id="logo-city">—</span>
@@ -172,7 +164,7 @@
           </div>
           <div class="kbd-hint" id="kbd-hint-btn" onclick="toggleKbdPanel(event)" title="Keyboard shortcuts"><kbd>?</kbd></div>
         </div>
-        <!-- Mobile inline search expand -->
+        
         <div class="mobile-search-expand" id="mobile-search-expand">
           <input class="mobile-search-field" id="mobile-search-input" placeholder="Search students…" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
           <button class="mobile-search-cancel" onclick="closeMobileSearch()">Cancel</button>
@@ -182,7 +174,6 @@
 
       <div class="content" id="main-content">
 
-        <!-- DASHBOARD -->
         <div class="page active" id="page-dashboard">
           <div id="no-data-msg" style="display:none" class="no-data-banner">
             <strong><i class="ph ph-warning" style="margin-right:4px"></i>No data loaded</strong>
@@ -258,7 +249,6 @@
           </div>
         </div>
 
-        <!-- ALL TESTS -->
         <div class="page" id="page-tests">
           <div class="filter-bar">
             <div class="filter-btn active" id="ft-all" onclick="filterTests('all',this)">All</div>
@@ -269,7 +259,6 @@
           <div class="tests-grid" id="tests-grid"></div>
         </div>
 
-        <!-- LEADERBOARD -->
         <div class="page" id="page-leaderboard">
           <div class="filter-bar" style="flex-wrap:wrap;gap:8px">
             <div id="lb-sel" class="tdd-wrap"></div>
@@ -303,7 +292,6 @@
           </div>
         </div>
 
-        <!-- STUDENTS -->
         <div class="page" id="page-students">
           <div class="filter-bar" id="stu-filter-bar">
             <input class="search-input stu-search-input" id="stu-search" placeholder="Type a student name…"
@@ -318,7 +306,6 @@
           <div id="stu-profile" style="display:none"></div>
         </div>
 
-        <!-- SCHOOLS -->
         <div class="page" id="page-schools">
           <div class="filter-bar" style="flex-wrap:wrap">
             <div id="school-test-sel" class="tdd-wrap"></div>
@@ -354,7 +341,6 @@
           </div>
         </div>
 
-        <!-- ANALYTICS -->
         <div class="page" id="page-analytics">
           <div class="filter-bar" style="margin-bottom:20px">
             <div class="filter-btn active" id="at-all" onclick="setAvgType('all',this)">All Tests</div>
@@ -398,7 +384,7 @@
           <div class="two-col">
             <div class="card">
               <div class="card-header">
-                <div class="card-title">Top 10 Schools — Average Score</div>
+                <div class="card-title">Top 10 Schools - Average Score</div>
               </div>
               <div class="card-body">
                 <div class="chart-wrap"><canvas id="school-avg-chart"></canvas></div>
@@ -417,7 +403,7 @@
           <div class="two-col">
             <div class="card">
               <div class="card-header">
-                <div class="card-title">Boys vs Girls — Avg Score Per Test</div>
+                <div class="card-title">Boys vs Girls - Avg Score Per Test</div>
                 <button class="chart-fullscreen-btn-hdr" onclick="openChartFs('gender-trend-chart-wrap','Boys vs Girls')" title="Full view"><i class="ph ph-arrows-out"></i></button>
               </div>
               <div class="card-body">
@@ -440,7 +426,6 @@
     </main>
   </div>
 
-  <!-- Compare Modal -->
   <div class="modal-overlay" id="compare-overlay" onclick="closeCompare(event)">
     <div class="modal" style="width:min(960px,96vw)">
       <div class="modal-header">
@@ -451,7 +436,6 @@
     </div>
   </div>
 
-  <!-- Modal -->
   <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
     <div class="modal">
       <div class="modal-header">
@@ -462,7 +446,6 @@
     </div>
   </div>
 
-  <!-- Mobile School Detail Drawer -->
   <div class="school-drawer-overlay" id="school-drawer-overlay" onclick="closeSchoolDrawer()"></div>
   <div class="school-drawer" id="school-drawer">
     <div class="school-drawer-handle"></div>
@@ -472,10 +455,8 @@
     <div class="school-drawer-body" id="school-drawer-body"></div>
   </div>
 
-  <!-- Info Popover (shared, positioned by JS) -->
   <div class="info-popover" id="info-popover"></div>
 
-  <!-- Keyboard Shortcuts Panel -->
   <div class="kbd-panel" id="kbd-panel">
     <div class="kbd-panel-title">Keyboard Shortcuts</div>
     <div class="kbd-row"><span class="kbd-desc">Focus search</span><div class="kbd-keys"><span class="kbd-key">/</span></div></div>
@@ -489,14 +470,12 @@
     <div class="kbd-row"><span class="kbd-desc">This panel</span><div class="kbd-keys"><span class="kbd-key">?</span></div></div>
   </div>
 
-
   <div class="logo-drop" id="year-drop"></div>
   <div class="logo-drop" id="city-drop"></div>
   <div class="logo-drop" id="topbar-drop" style="min-width:200px"></div>
 
-
   <script src="app.js"></script>
-  <!-- Fullscreen chart overlay -->
+  
   <div class="chart-fs-overlay" id="chart-fs-overlay" onclick="closeChartFs(event)">
     <div class="chart-fs-inner">
       <div class="chart-fs-header">

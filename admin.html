@@ -10,7 +10,6 @@
 </head>
 <body>
 
-<!-- ── GATE ── -->
 <div id="gate">
   <div class="gate-emblem">ACCESS CONTROL</div>
   <div class="gate-box">
@@ -21,7 +20,6 @@
   </div>
 </div>
 
-<!-- ── APP ── -->
 <div id="app">
   <header class="topbar">
     <div class="topbar-left">
@@ -38,7 +36,6 @@
 
   <div class="content">
 
-    <!-- HOME -->
     <div id="panel-home">
       <div class="home-header">
         <div class="home-eyebrow">DEKMA · Admin Console</div>
@@ -66,7 +63,6 @@
       </div>
     </div>
 
-    <!-- STUDENT PANEL -->
     <div class="panel" id="panel-student">
       <div class="panel-header">
         <button class="panel-back" onclick="openPanel('home')">← Back</button>
@@ -125,7 +121,6 @@
               <button class="btn btn-primary" onclick="saveStudentEdit()">Save Changes</button>
             </div>
 
-            <!-- DANGER ZONE -->
             <div class="wipe-zone">
               <div class="wipe-zone-label">Danger Zone</div>
               <button class="btn btn-wipe" onclick="promptWipeProfile()">
@@ -142,7 +137,6 @@
       </div>
     </div>
 
-    <!-- TEST PANEL -->
     <div class="panel" id="panel-test">
       <div class="panel-header">
         <button class="panel-back" onclick="openPanel('home')">← Back</button>
@@ -181,20 +175,17 @@
       </div>
     </div>
 
-    <!-- MERGE PANEL -->
     <div class="panel" id="panel-merge">
       <div class="panel-header">
         <button class="panel-back" onclick="openPanel('home')">← Back</button>
         <div class="panel-title" style="color:var(--teal)">Merge Profiles</div>
       </div>
 
-      <!-- Mode tabs -->
       <div style="display:flex;gap:8px;margin-bottom:20px">
         <div class="merge-tab active" id="mtab-ai"   onclick="switchMergeTab('ai')">✦ AI Suggestions</div>
         <div class="merge-tab"        id="mtab-manual" onclick="switchMergeTab('manual')">⊕ Manual Merge</div>
       </div>
 
-      <!-- AI tab -->
       <div id="merge-ai-tab">
         <div style="font-size:10px;color:var(--text3);line-height:1.8;margin-bottom:16px">
           Scans all student names using fuzzy string matching to flag suspicious duplicates — including names with embedded school suffixes.
@@ -203,7 +194,6 @@
         <div id="ai-merge-results" style="margin-top:20px"></div>
       </div>
 
-      <!-- Manual tab -->
       <div id="merge-manual-tab" style="display:none">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
           <div>
@@ -230,9 +220,8 @@
 
     </div>
 
-  </div><!-- /content -->
+  </div>
 
-  <!-- ADD ENTRY MODAL -->
   <div id="add-entry-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:2000;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px)">
     <div class="gh-modal-box" style="max-width:480px;border-radius:var(--r2) var(--r2) 0 0">
       <span class="gh-modal-drag"></span>
@@ -268,7 +257,6 @@
     </div>
   </div>
 
-  <!-- MERGE CONFIRM MODAL -->
   <div id="merge-confirm-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:2500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);padding:16px">
     <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r2);padding:24px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto">
       <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--teal);margin-bottom:4px">Merge Profiles</div>
@@ -291,9 +279,8 @@
     </div>
   </div>
 
-</div><!-- /app -->
+</div>
 
-<!-- GITHUB MODAL -->
 <div id="gh-modal">
   <div class="gh-modal-box">
     <span class="gh-modal-drag"></span>
@@ -338,7 +325,6 @@
   </div>
 </div>
 
-<!-- DANGER CONFIRM MODAL -->
 <div id="danger-modal">
   <div class="danger-box">
     <div class="danger-skull" id="danger-skull">☠</div>

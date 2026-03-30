@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+
 """
 xml_downloader_auto.py
 
@@ -33,8 +33,6 @@ ACTIVE_YEARS   = [2026, 2027]
 ROOT_FOLDER    = Path("DEKMA RESULTS")
 MANIFEST_FILE  = Path("data/exam_manifest.json")
 
-# How many of the most-recent exams per type to always re-download,
-# even if already present — catches server-side data corrections.
 REFRESH_WINDOW = 3
 
 ROOT_FOLDER.mkdir(parents=True, exist_ok=True)
@@ -49,9 +47,6 @@ TIMEOUT        = 15
 SLEEP_BETWEEN  = 0.4
 MAX_SCAN_AHEAD = 500
 
-
-# ─── helpers ─────────────────────────────────────────────────────────────────
-
 def is_valid_xml(content: bytes) -> bool:
     try:
         root = ET.fromstring(content)
@@ -59,11 +54,9 @@ def is_valid_xml(content: bytes) -> bool:
     except Exception:
         return False
 
-
 def save_file(path: Path, content: bytes) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(content)
-
 
 def fetch_exam(center: str, exam_code: str) -> bytes | None:
     params = {"center": center, "exam": exam_code, "cutOutMark": "0"}
@@ -79,7 +72,6 @@ def fetch_exam(center: str, exam_code: str) -> bytes | None:
         return None
     return content
 
-
 def load_manifest() -> dict:
     """
     Load data/exam_manifest.json.
@@ -94,11 +86,9 @@ def load_manifest() -> dict:
         print(f"[WARN] Could not read manifest: {e}")
         return {}
 
-
 def city_slug(city: str) -> str:
     import re
     return re.sub(r'[^a-z0-9]+', '_', city.lower()).strip('_')
-
 
 def known_numbers_from_manifest(manifest: dict, city: str,
                                 exam_type: str, year: int) -> list[int]:
@@ -118,7 +108,7 @@ def known_numbers_from_manifest(manifest: dict, city: str,
     ids  = manifest.get(key, [])
     nums = []
     for eid in ids:
-        # eid starts with exam_type letter (T or R)
+
         if not eid.startswith(exam_type + "-"):
             continue
         try:
@@ -126,9 +116,6 @@ def known_numbers_from_manifest(manifest: dict, city: str,
         except ValueError:
             continue
     return sorted(nums)
-
-
-# ─── main ────────────────────────────────────────────────────────────────────
 
 def main():
     print("Starting xml_downloader_auto.py")
@@ -148,11 +135,8 @@ def main():
                 nums    = known_numbers_from_manifest(manifest, center, exam_type, year)
                 max_num = max(nums) if nums else 0
 
-                # ── Refresh window: re-download last N existing exams ─────
-                # Even if already saved locally, re-fetch in case the server
-                # corrected the data after the original download.
                 refresh_start = max(1, max_num - REFRESH_WINDOW + 1)
-                refresh_end   = max_num  # inclusive
+                refresh_end   = max_num
 
                 if max_num > 0:
                     print(f"  Refreshing  {exam_type}: "
@@ -166,7 +150,7 @@ def main():
                             print(f"    [{exam_code}] no valid XML — skipping refresh")
                             time.sleep(SLEEP_BETWEEN)
                             continue
-                        # Check if content actually changed before marking dirty
+
                         if file_path.exists() and file_path.read_bytes() == content:
                             print(f"    [{exam_code}] unchanged")
                         else:
@@ -175,7 +159,6 @@ def main():
                             new_or_updated = True
                         time.sleep(SLEEP_BETWEEN)
 
-                # ── Forward scan: look for brand-new exams ────────────────
                 start_n = max_num + 1
                 print(f"  Scanning    {exam_type} from "
                       f"{exam_type}-{year}-{start_n:03d}...")
@@ -203,7 +186,6 @@ def main():
         print("\n✓ No new or changed exams found.")
 
     print("Done.")
-
 
 if __name__ == "__main__":
     main()

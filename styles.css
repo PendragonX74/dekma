@@ -46,8 +46,7 @@
       pointer-events: none;
       z-index: 9999;
       opacity: .6;
-      /* Promote to its own GPU layer so scrolling/animations
-         on the main content don't trigger a repaint here */
+      
       will-change: opacity;
       transform: translateZ(0)
     }
@@ -86,7 +85,6 @@
       transition: transform .3s
     }
 
-    /* ── LOGO / SELECTOR AREA ── */
     .logo {
       padding: 20px 16px 16px;
       border-bottom: 1px solid var(--border);
@@ -802,7 +800,6 @@
       padding: 20px
     }
 
-    /* Test Dropdown Selector */
     .tdd-wrap {
       position: relative;
       display: inline-block
@@ -1023,7 +1020,6 @@
       background: rgba(232, 160, 32, .1)
     }
 
-    /* In single mode, options look like plain rows — no checkbox space */
     .tdd-option.single-mode {
       padding-left: 14px
     }
@@ -1050,7 +1046,6 @@
       margin-left: 2px
     }
 
-    /* Multi-select TDD enhancements */
     .tdd-panel-multi {
       flex-direction: column
     }
@@ -1089,7 +1084,6 @@
       background: rgba(232, 160, 32, .1)
     }
 
-    /* When preset has inline type color, active state enhances it */
     .tdd-preset[style*="color:var(--teal)"].active,
     .tdd-preset[style*="color: var(--teal)"].active {
       background: rgba(45, 212, 191, .12) !important;
@@ -1205,12 +1199,10 @@
       color: var(--text3)
     }
 
-    /* Desktop: left-group is transparent so theory+revision are equal-width siblings */
     .tdd-left-group {
       display: contents
     }
 
-    /* When model tests exist: group theory+revision into a real left half */
     .tdd-cols-wrap.has-model .tdd-left-group {
       display: flex;
       flex-direction: column;
@@ -1233,7 +1225,6 @@
       flex: 1
     }
 
-    /* Podium */
     .podium {
       display: flex;
       align-items: flex-end;
@@ -1395,7 +1386,6 @@
       height: 40px
     }
 
-    /* Table */
     .table-wrap {
       overflow-x: auto
     }
@@ -1437,7 +1427,6 @@
       color: var(--amber)
     }
 
-    /* Fixed-width sort arrow — prevents header shift on sort change */
     .th-arrow {
       display: inline-block;
       width: 1em;
@@ -1514,7 +1503,6 @@
       color: var(--text2)
     }
 
-    /* Score bars */
     .score-bar {
       display: flex;
       align-items: center;
@@ -1560,7 +1548,6 @@
       flex-shrink: 0
     }
 
-    /* Tests grid */
     .tests-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -1676,7 +1663,6 @@
       font-size: 14px
     }
 
-    /* Custom searchable school dropdown */
     .school-dd-panel {
       position: fixed;
       background: var(--bg2);
@@ -1802,7 +1788,6 @@
       opacity: 1
     }
 
-    /* Filter bar */
     .filter-bar {
       display: flex;
       align-items: center;
@@ -1852,7 +1837,6 @@
       color: var(--amber)
     }
 
-    /* Student profile */
     .student-header {
       display: flex;
       align-items: flex-start;
@@ -1920,8 +1904,6 @@
       border-color: var(--teal);
       color: var(--teal)
     }
-
-
 
     .insight-grid {
       display: grid;
@@ -2026,7 +2008,6 @@
       border-bottom: 1px solid var(--border)
     }
 
-    /* Type-specific rank chips (Theory / Revision) shown beside the main rank badge */
     .type-rank-chip {
       display: inline-flex;
       flex-direction: column;
@@ -2044,7 +2025,6 @@
       transform: scale(1.03)
     }
 
-    /* Global Rank Badge */
     .global-rank-badge {
       display: inline-flex;
       align-items: center;
@@ -2088,7 +2068,6 @@
       letter-spacing: .5px
     }
 
-    /* Rank tiers */
     .rank-tier-1 {
       background: linear-gradient(135deg, rgba(255, 215, 0, .15), rgba(255, 165, 0, .08));
       border: 1px solid rgba(255, 215, 0, .4);
@@ -2125,7 +2104,6 @@
       color: var(--text3)
     }
 
-    /* Charts */
     .chart-wrap {
       position: relative;
       height: 260px
@@ -2144,7 +2122,6 @@
       overflow: hidden
     }
 
-    /* Header fullscreen button — only shown on mobile */
     .chart-fullscreen-btn-hdr {
       background: none;
       border: 1px solid var(--border);
@@ -2165,8 +2142,7 @@
     .chart-fs-overlay {
       position: fixed;
       inset: 0;
-      /* on mobile, clamp to the stable visible area so the backdrop
-         itself doesn't stretch behind address bar / nav bar */
+      
       max-height: 100svh;
       background: rgba(0,0,0,.92);
       backdrop-filter: blur(8px);
@@ -2227,17 +2203,13 @@
       flex: 1;
       min-height: 0
     }
-    /* Mobile: rotate the whole inner panel to landscape and fit to the
-       VISIBLE area (excluding browser address bar + system nav bar).
-       svh/svw = "small viewport" units — always the smallest stable size,
-       so they never reach behind the browser chrome bars.
-       We also apply safe-area-inset padding for notch/gesture-bar devices. */
+    
     @media (max-width: 768px) and (orientation: portrait) {
       .chart-fs-inner {
         position: fixed;
         top: 50%;
         left: 50%;
-        /* svh/svw guarantee the panel never bleeds under address-bar or nav-bar */
+        
         transform: translate(-50%,-50%) rotate(90deg);
         width: 100svh;
         height: 100svw;
@@ -2245,9 +2217,7 @@
         border-radius: 0;
         border: none
       }
-      /* After 90° rotation the rotated edges map to the physical top/bottom.
-         Use safe-area insets so canvas doesn't render behind the home indicator
-         or status bar on notched/gesture devices. */
+      
       .chart-fs-inner .chart-fs-body {
         padding-top:    max(10px, env(safe-area-inset-left));
         padding-bottom: max(10px, env(safe-area-inset-right));
@@ -2272,7 +2242,6 @@
       display: none
     }
 
-    /* Histogram */
     .histogram {
       display: flex;
       align-items: flex-end;
@@ -2328,7 +2297,6 @@
       color: var(--amber)
     }
 
-    /* Misc */
     .empty {
       padding: 48px;
       text-align: center;
@@ -2358,7 +2326,6 @@
       white-space: nowrap
     }
 
-    /* Export icon button — compact, matches chip height */
     .export-icon-btn {
       display: inline-flex;
       align-items: center;
@@ -2376,13 +2343,11 @@
     }
     .export-icon-btn:hover { border-color: var(--border2); color: var(--text) }
 
-    /* Loading */
-    /* ══ LOADING ════════════════════════════════════════════════════════════ */
     #loading {
       position: fixed; inset: 0; background: #09090e;
       display: flex; align-items: center; justify-content: center; z-index: 2000;
     }
-    /* Minimal amber bar that grows to match the splash rule aesthetic */
+    
     .loading-dot {
       width: 40px; height: 2px; border-radius: 1px;
       background: linear-gradient(90deg, transparent, rgba(232,160,32,.35), transparent);
@@ -2393,7 +2358,6 @@
       50%      { opacity:1;  transform: scaleX(1.4); }
     }
 
-    /* ── In-splash data-wait indicator ── */
     #spl-wait {
       position: absolute;
       bottom: 44px;
@@ -2435,8 +2399,6 @@
       0%,100% { opacity:.4; } 50% { opacity:.8; }
     }
 
-    /* ══ SPLASH ══════════════════════════════════════════════════════════════ */
-    /* hidden by default — JS sets display:block then triggers .s-run */
     #splash {
       position: fixed; inset: 0; background: #09090e;
       z-index: 900; overflow: hidden;
@@ -2454,7 +2416,6 @@
       text-align: center; width: 100%;
     }
 
-    /* eyebrow */
     .splash-eyebrow {
       font-family: 'DM Mono', monospace; font-size: 9px;
       letter-spacing: 4px; text-transform: uppercase;
@@ -2469,7 +2430,6 @@
     }
     .spl-etext { opacity: 0; transition: opacity .8s ease; }
 
-    /* letters — spring overshoot gives the liquid feel */
     .splash-word {
       display: flex; align-items: baseline; justify-content: center;
       gap: .04em; line-height: 1; overflow: visible;
@@ -2517,7 +2477,6 @@
     .splash-skip.in { opacity: 1; pointer-events: all; }
     .splash-skip:hover { color: rgba(144,144,176,.7); }
 
-    /* exits */
     #splash.s-exit-up   { animation: sExitUp   .75s cubic-bezier(.4,0,.6,1) forwards; }
     #splash.s-exit-fade { animation: sExitFade .7s  cubic-bezier(.4,0,.6,1) forwards; }
 
@@ -2531,7 +2490,6 @@
       100% { opacity: 0; filter: brightness(.7)   blur(6px); }
     }
 
-    /* ══ PICKER ══════════════════════════════════════════════════════════════ */
     #picker {
       position: fixed; inset: 0; background: #09090e;
       z-index: 800; overflow: hidden;
@@ -2606,14 +2564,12 @@
     }
     #picker.p-exit { animation: sExitUp .65s cubic-bezier(.4,0,.6,1) forwards; }
 
-    /* app enter */
     #app.app-enter { animation: appEnter .7s cubic-bezier(.22,1,.36,1) forwards; }
     @keyframes appEnter {
       from { opacity: 0; transform: translateY(12px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ══ CONTEXT BADGE in topbar ══════════════════════════════════════════ */
     .context-badge {
       display: inline-flex;
       align-items: center;
@@ -2685,7 +2641,6 @@
       animation: countUp .5s ease-out forwards
     }
 
-    /* Mobile hamburger — hidden, replaced by bottom tabs */
     .hamburger { display: none !important }
 
     .sidebar-overlay {
@@ -2701,8 +2656,6 @@
       display: block
     }
 
-    /* ── BOTTOM TAB NAV (mobile only) ── */
-    /* ── BOTTOM NAV (mobile) ── */
     .bottom-tabs {
       display: none;
       position: fixed;
@@ -2795,7 +2748,6 @@
       display: flex !important
     }
 
-    /* ── MOBILE SCHOOL DETAIL DRAWER ── */
     .school-drawer-overlay {
       display: none;
       position: fixed;
@@ -2851,7 +2803,6 @@
       overscroll-behavior: contain
     }
 
-    /* ── INFO POPOVER ── */
     .info-btn {
       display: inline-flex; align-items: center; justify-content: center;
       width: 16px; height: 16px; border-radius: 50%;
@@ -2883,7 +2834,6 @@
     .info-val { font-size: 12px; color: var(--text3) }
     .info-sep { height: 1px; background: var(--border); margin: 10px 0 }
 
-    /* ── KEYBOARD SHORTCUTS ── */
     .kbd-hint {
       display: inline-flex; align-items: center; justify-content: center;
       font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500;
@@ -3148,7 +3098,6 @@
       animation-delay: .38s
     }
 
-    /* On mobile the context-badge acts as the primary selector in topbar */
     .topbar-title-group {
       display: flex;
       align-items: center;
@@ -3195,7 +3144,6 @@
         gap: 8px
       }
 
-      /* Mobile search — icon button that expands inline */
       .search-wrap {
         display: none
       }
@@ -3216,7 +3164,6 @@
         transition: opacity .15s
       }
 
-      /* Expanding search bar that slides over the topbar */
       .mobile-search-expand {
         display: none;
         position: absolute;
@@ -3273,7 +3220,6 @@
         flex-shrink: 0
       }
 
-      /* Results dropdown anchored below topbar */
       .mobile-search-results {
         display: none;
         position: fixed;
@@ -3391,7 +3337,6 @@
         padding: 6px 10px
       }
 
-      /* Mobile: left half = theory+revision stacked, right half = model */
       .tdd-cols-wrap.has-model .tdd-left-group {
         display: flex !important;
         flex-direction: column;
@@ -3429,7 +3374,6 @@
         white-space: nowrap
       }
 
-      /* All numeric data cells the same size on mobile */
       .td-marks,
       .td-avg,
       .td-rating {
@@ -3460,7 +3404,6 @@
         -webkit-overflow-scrolling: touch
       }
 
-      /* Top 10: hide inactive column on mobile based on data-sort attribute */
       #top10-table table[data-sort="rating"] .col-t10-avg { display: none }
       #top10-table table[data-sort="avg"]    .col-t10-rating { display: none }
 
@@ -3555,13 +3498,11 @@
         max-width: 100%
       }
 
-      /* splash/picker mobile tweaks */
       .picker-grid { grid-template-columns: 1fr; }
       .picker-col-div { width: 100%; height: 1px; }
       .sl { font-size: clamp(60px,15vw,100px); }
       .picker-inner { padding: 0 16px; }
 
-      /* Student search full width */
       .stu-search-input {
         width: 100% !important
       }
@@ -3602,19 +3543,16 @@
       .splash-opt { font-size: 9px; padding: 5px 9px; }
     }
 
-    /* ── LEADERBOARD MOBILE TABLE: hide low-priority columns ── */
     @media(max-width:768px) {
-      /* Hide "Best" and "Tests" columns in aggregated leaderboard on mobile */
+      
       .col-best, .col-tests {
         display: none
       }
 
-      /* Hide Gender column on mobile — show gender via badge elsewhere */
       .col-gender {
         display: none
       }
 
-      /* Compact Top 10 sort / more buttons on narrow screens */
       .t10-sort-btn {
         font-size: 9px;
         padding: 4px 8px;
@@ -3634,12 +3572,10 @@
         gap: 3px
       }
 
-      /* Compact leaderboard filter bar */
       #page-leaderboard .filter-bar {
         gap: 6px
       }
 
-      /* Second leaderboard filter-bar: stack items full-width with breathing room */
       #lb-school-wrap,
       #lb-gender-seg,
       #lb-name {
@@ -3665,7 +3601,6 @@
         row-gap: 10px
       }
 
-      /* Compact lb card header — title + count + export in one row */
       #page-leaderboard .card-header {
         flex-wrap: nowrap;
         gap: 6px
@@ -3680,7 +3615,6 @@
         padding: 2px 7px
       }
 
-      /* Leaderboard name search: smaller on mobile */
       #lb-name {
         font-size: 11px;
         padding: 6px 10px 6px 28px;
@@ -3688,7 +3622,6 @@
       }
     }
 
-/* ── Modal, Pagination ── */
     .modal-overlay {
       position: fixed;
       inset: 0;
