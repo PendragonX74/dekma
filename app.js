@@ -1017,9 +1017,9 @@
         panel.innerHTML = `
           <div class="tdd-presets" style="flex-wrap:wrap;padding:10px 12px;gap:6px;border-bottom:none">
             <button class="tdd-preset ${allActive}" onclick="event.stopPropagation();applyPreset('${cid}','all')">All</button>
-            ${thyCount?`<button class="tdd-preset ${presetActive('theory')}" onclick="event.stopPropagation();applyPreset('${cid}','theory')" style="color:var(--teal);border-color:${presetActive('theory')==='active'?'var(--teal)':'rgba(45,212,191,.3)'}">Theory</button>`:''}
-            ${revCount?`<button class="tdd-preset ${presetActive('revision')}" onclick="event.stopPropagation();applyPreset('${cid}','revision')" style="color:#f97316;border-color:${presetActive('revision')==='active'?'#f97316':'rgba(249,115,22,.3)'}">Revision</button>`:''}
-            ${modCount?`<button class="tdd-preset ${presetActive('model')}" onclick="event.stopPropagation();applyPreset('${cid}','model')" style="color:#818cf8;border-color:${presetActive('model')==='active'?'#818cf8':'rgba(129,140,248,.35)'}">Model</button>`:''}
+            ${thyCount?`<button class="tdd-preset ${presetActive('theory')}" onclick="event.stopPropagation();applyPreset('${cid}','theory')" style="color:var(--teal)${presetActive('theory')==='active'?';border-color:var(--teal)':''}">Theory</button>`:''}
+            ${revCount?`<button class="tdd-preset ${presetActive('revision')}" onclick="event.stopPropagation();applyPreset('${cid}','revision')" style="color:#f97316${presetActive('revision')==='active'?';border-color:#f97316':''}">Revision</button>`:''}
+            ${modCount?`<button class="tdd-preset ${presetActive('model')}" onclick="event.stopPropagation();applyPreset('${cid}','model')" style="color:#818cf8${presetActive('model')==='active'?';border-color:#818cf8':''}">Model</button>`:''}
           </div>`;
         return;
       }
@@ -1073,9 +1073,9 @@
       panel.innerHTML = `
         <div class="tdd-presets">
           <button class="tdd-preset ${allActive}" onclick="event.stopPropagation();applyPreset('${cid}','all')">All</button>
-          ${thyCount?`<button class="tdd-preset ${presetActive('theory')}" onclick="event.stopPropagation();applyPreset('${cid}','theory')" style="color:var(--teal);border-color:${presetActive('theory')?'var(--teal)':'rgba(45,212,191,.3)'}">Theory</button>`:''}
-          ${revCount?`<button class="tdd-preset ${presetActive('revision')}" onclick="event.stopPropagation();applyPreset('${cid}','revision')" style="color:#f97316;border-color:${presetActive('revision')?'#f97316':'rgba(249,115,22,.3)'}">Revision</button>`:''}
-          ${modCount ? `<button class="tdd-preset ${presetActive('model')}" onclick="event.stopPropagation();applyPreset('${cid}','model')" style="color:#818cf8;border-color:${presetActive('model')?'#818cf8':'rgba(129,140,248,.35)'}">Model</button>` : ''}
+          ${thyCount?`<button class="tdd-preset ${presetActive('theory')}" onclick="event.stopPropagation();applyPreset('${cid}','theory')" style="color:var(--teal)${presetActive('theory')?';border-color:var(--teal)':''}">Theory</button>`:''}
+          ${revCount?`<button class="tdd-preset ${presetActive('revision')}" onclick="event.stopPropagation();applyPreset('${cid}','revision')" style="color:#f97316${presetActive('revision')?';border-color:#f97316':''}">Revision</button>`:''}
+          ${modCount ? `<button class="tdd-preset ${presetActive('model')}" onclick="event.stopPropagation();applyPreset('${cid}','model')" style="color:#818cf8${presetActive('model')?';border-color:#818cf8':''}">Model</button>` : ''}
           <button class="tdd-preset-multi ${multi ? 'active' : ''}" onclick="event.stopPropagation();setMultiMode('${cid}',${!multi})">Multi</button>
         </div>
         <div class="tdd-cols-wrap${modCount ? ' has-model' : ''}">
@@ -2435,16 +2435,26 @@
            })()}
          </div>
         <div class="card" style="margin-bottom:20px">
-          <div class="card-header">
-            <div class="card-title"><i class="ph ph-trend-up" style="color:var(--teal)"></i> Performance Timeline</div>
-            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-              ${['all','theory','revision','model'].map(t=>{
-                const hasTests=t==='all'||t==='theory'?thyApps.length>0||t==='all':t==='revision'?revApps.length>0:modApps.length>0;
-                const disabled=t!=='all'&&(t==='theory'?thyApps.length===0:t==='revision'?revApps.length===0:modApps.length===0);
-                const lbl=t==='all'?'All':t==='theory'?'Theory':t==='revision'?'Revision':'Model';
-                return `<button id="stu-tl-${t}" onclick="${disabled?'':'setStuTimelineFilter(\''+stuData.name+'\',\''+stuData.school+'\',\''+t+'\')'}" style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;padding:2px 9px;border-radius:3px;cursor:${disabled?'not-allowed':'pointer'};border:1px solid ${t==='all'?'var(--border2)':typeColor(t)+'55'};background:${t==='all'?'var(--bg3)':'transparent'};color:${t==='all'?'var(--text)':typeColor(t)};opacity:${disabled?'0.3':'1'}">${lbl}</button>`;
-              }).join('')}
-            <button class="chart-fullscreen-btn-hdr" onclick="openChartFs('stu-chart-wrap','Score Timeline')" title="Full view"><i class="ph ph-arrows-out"></i></button>
+          <div class="card-header" style="flex-wrap:nowrap;align-items:center;gap:8px">
+            <div class="card-title" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><i class="ph ph-trend-up" style="color:var(--teal)"></i> Performance Timeline</div>
+            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+              <div class="stu-tl-btns">
+                ${['all','theory','revision','model'].map(t=>{
+                  const disabled=t!=='all'&&(t==='theory'?thyApps.length===0:t==='revision'?revApps.length===0:modApps.length===0);
+                  const lbl=t==='all'?'All':t==='theory'?'Theory':t==='revision'?'Revision':'Model';
+                  const short=t==='all'?'All':t==='theory'?'Thy':t==='revision'?'Rev':'Mod';
+                  return `<button id="stu-tl-${t}" onclick="${disabled?'':'setStuTimelineFilter(\''+stuData.name+'\',\''+stuData.school+'\',\''+t+'\')'}" style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;padding:2px 9px;border-radius:3px;cursor:${disabled?'not-allowed':'pointer'};border:1px solid ${t==='all'?'var(--border2)':'transparent'};background:${t==='all'?'var(--bg3)':'transparent'};color:${t==='all'?'var(--text)':typeColor(t)};opacity:${disabled?'0.3':'1'}"><span class="btn-lbl-full">${lbl}</span><span class="btn-lbl-short">${short}</span></button>`;
+                }).join('')}
+              </div>
+              <button class="chart-fullscreen-btn-hdr" onclick="openChartFs('stu-chart-wrap',_stuChartMode==='rank'?'Rank Trend':'Score Timeline')" title="Full view"><i class="ph ph-arrows-out"></i></button>
+            </div>
+          </div>
+          <div style="padding:6px 16px 8px;border-bottom:1px solid var(--border);display:flex;gap:0">
+            <div style="flex:1;display:flex;border:1px solid var(--border);border-radius:4px;overflow:hidden">
+              <button id="stu-cm-score" onclick="setStuChartMode('${esc(stuData.name)}','${esc(stuData.school)}','score')"
+                style="flex:1;background:var(--bg3);border:none;border-right:1px solid var(--border);padding:4px 0;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--text);cursor:pointer;transition:all .15s;outline:none">Score</button>
+              <button id="stu-cm-rank" onclick="setStuChartMode('${esc(stuData.name)}','${esc(stuData.school)}','rank')"
+                style="flex:1;background:transparent;border:none;padding:4px 0;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--text3);cursor:pointer;transition:all .15s;outline:none">Rank</button>
             </div>
           </div>
           <div class="card-body"><div class="chart-scroll-outer"><div class="chart-scroll-inner"><div style="height:240px;position:relative" id="stu-chart-wrap"><canvas id="stu-chart"></canvas></div></div></div></div>
@@ -2452,14 +2462,17 @@
 
         <div class="two-col" style="margin-bottom:24px">
           <div class="card">
-            <div class="card-header">
-              <div class="card-title"><i class="ph ph-clipboard-text" style="color:var(--text2)"></i> Test History</div>
-              <div style="display:flex;align-items:center;gap:6px">
-                ${['all','theory','revision','model'].map(t=>{
-                  const disabled=t!=='all'&&(t==='theory'?thyApps.length===0:t==='revision'?revApps.length===0:modApps.length===0);
-                  const lbl=t==='all'?'All':t==='theory'?'Theory':t==='revision'?'Revision':'Model';
-                  return `<button id="stu-th-${t}" onclick="${disabled?'':'setStuHistoryFilter(\''+stuData.name+'\',\''+stuData.school+'\',\''+t+'\')'}" style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;padding:2px 9px;border-radius:3px;cursor:${disabled?'not-allowed':'pointer'};border:1px solid ${t==='all'?'var(--border2)':typeColor(t)+'55'};background:${t==='all'?'var(--bg3)':'transparent'};color:${t==='all'?'var(--text)':typeColor(t)};opacity:${disabled?'0.3':'1'}">${lbl}</button>`;
-                }).join('')}
+            <div class="card-header" style="flex-wrap:nowrap;align-items:center;gap:8px">
+              <div class="card-title" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><i class="ph ph-clipboard-text" style="color:var(--text2)"></i> Test History</div>
+              <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+                <div class="stu-th-btns">
+                  ${['all','theory','revision','model'].map(t=>{
+                    const disabled=t!=='all'&&(t==='theory'?thyApps.length===0:t==='revision'?revApps.length===0:modApps.length===0);
+                    const lbl=t==='all'?'All':t==='theory'?'Theory':t==='revision'?'Revision':'Model';
+                    const short=t==='all'?'All':t==='theory'?'Thy':t==='revision'?'Rev':'Mod';
+                    return `<button id="stu-th-${t}" onclick="${disabled?'':'setStuHistoryFilter(\''+stuData.name+'\',\''+stuData.school+'\',\''+t+'\')'}" style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;padding:2px 9px;border-radius:3px;cursor:${disabled?'not-allowed':'pointer'};border:1px solid ${t==='all'?'var(--border2)':'transparent'};background:${t==='all'?'var(--bg3)':'transparent'};color:${t==='all'?'var(--text)':typeColor(t)};opacity:${disabled?'0.3':'1'}"><span class="btn-lbl-full">${lbl}</span><span class="btn-lbl-short">${short}</span></button>`;
+                  }).join('')}
+                </div>
                 <button class="info-btn" onclick="showInfoPopover(this,'test-history')" title="How this works" style="margin-left:2px"><i class="ph ph-info" style="font-size:13px;line-height:1"></i></button>
               </div>
             </div>
@@ -2511,7 +2524,7 @@
           </div>
         </div>`;
 
-      _stuTlFilter='all'; _stuThFilter='all';
+      _stuTlFilter='all'; _stuThFilter='all'; _stuChartMode='score';
       setTimeout(()=>_renderStuChart(apps,best), 60);
     }
 
@@ -3376,7 +3389,7 @@
       }
     }
 
-    let _stuTlFilter='all', _stuThFilter='all';
+    let _stuTlFilter='all', _stuThFilter='all', _stuChartMode='score';
 
     function _syncStuBtns(prefix, active) {
       ['all','theory','revision','model'].forEach(t=>{
@@ -3384,10 +3397,11 @@
         if(!b)return;
         const isActive=t===active;
         b.style.background=isActive?(t==='all'?'var(--bg3)':typeColor(t)+'22'):'transparent';
-        b.style.borderColor=isActive?(t==='all'?'var(--border2)':typeColor(t)):(t==='all'?'var(--border2)':typeColor(t)+'55');
+        b.style.borderColor=isActive?(t==='all'?'var(--border2)':typeColor(t)):(t==='all'?'var(--border2)':'transparent');
         b.style.color=isActive?(t==='all'?'var(--text)':typeColor(t)):(t==='all'?'var(--text2)':typeColor(t));
         b.style.opacity=isActive?'1':'0.55';
       });
+
     }
     function setStuTimelineFilter(name, school, filter) {
       _stuTlFilter=filter;
@@ -3396,7 +3410,75 @@
         .sort((a,b)=>a.exam_type===b.exam_type?a.exam_id.localeCompare(b.exam_id):(TYPE_SORT[a.exam_type]??9)-(TYPE_SORT[b.exam_type]??9));
       const fa=filter==='all'?all:filter==='model'?all.filter(a=>isModelType(a.exam_type)):all.filter(a=>a.exam_type===filter);
       if(!fa.length)return;
-      _renderStuChart(fa,Math.max(...fa.map(a=>a.marks)));
+      if(_stuChartMode==='rank') _renderStuRankChart(fa);
+      else _renderStuChart(fa,Math.max(...fa.map(a=>a.marks)));
+    }
+    function setStuChartMode(name, school, mode) {
+      _stuChartMode = mode;
+      const sBtn = document.getElementById('stu-cm-score');
+      const rBtn = document.getElementById('stu-cm-rank');
+      if (sBtn) {
+        sBtn.style.background   = mode==='score' ? 'var(--bg3)' : 'transparent';
+        sBtn.style.color        = mode==='score' ? 'var(--text)' : 'var(--text3)';
+      }
+      if (rBtn) {
+        rBtn.style.background   = mode==='rank' ? 'rgba(232,160,32,.12)' : 'transparent';
+        rBtn.style.color        = mode==='rank' ? 'var(--amber)' : 'var(--text3)';
+        rBtn.style.borderLeft   = mode==='rank' ? '1px solid rgba(232,160,32,.35)' : '1px solid transparent';
+      }
+      const all=ALL.filter(r=>r.name===name&&r.school===school)
+        .sort((a,b)=>a.exam_type===b.exam_type?a.exam_id.localeCompare(b.exam_id):(TYPE_SORT[a.exam_type]??9)-(TYPE_SORT[b.exam_type]??9));
+      const fa=_stuTlFilter==='all'?all:_stuTlFilter==='model'?all.filter(a=>isModelType(a.exam_type)):all.filter(a=>a.exam_type===_stuTlFilter);
+      if(!fa.length)return;
+      if(mode==='rank') _renderStuRankChart(fa);
+      else _renderStuChart(fa,Math.max(...fa.map(a=>a.marks)));
+    }
+    function _renderStuRankChart(sortedApps) {
+      const ctx=document.getElementById('stu-chart')?.getContext('2d');
+      setChartScrollWidth('stu-chart-wrap', sortedApps.length);
+      if(!ctx)return;
+      if(CHARTS.stuChart)CHARTS.stuChart.destroy();
+      const ranks=sortedApps.map(a=>a.rank);
+      const bestRank=Math.min(...ranks);
+      const worstRank=Math.max(...ranks);
+      const ptColors=sortedApps.map(a=>typeColorCanvas(a.exam_type));
+      const dynRadius=ctx=>{const w=ctx.chart.width||300;const base=w<320?2:w<500?3:5;return sortedApps[ctx.dataIndex]?.rank===bestRank?base+3:base;};
+      const dynHover=ctx=>{const w=ctx.chart.width||300;return w<500?6:9;};
+      const pad=Math.max(5,Math.ceil((worstRank-bestRank)*0.25)+2);
+      CHARTS.stuChart=new Chart(ctx,{
+        type:'line',
+        data:{
+          labels:sortedApps.map(a=>a.exam_label),
+          datasets:[{
+            label:'Rank',data:ranks,
+            borderColor:'rgba(232,160,32,.55)',
+            backgroundColor:ctx2=>{const c=ctx2.chart.ctx,area=ctx2.chart.chartArea;if(!area)return 'rgba(232,160,32,.06)';const g=c.createLinearGradient(0,area.top,0,area.bottom);g.addColorStop(0,'rgba(232,160,32,.01)');g.addColorStop(1,'rgba(232,160,32,.14)');return g;},
+            borderWidth:2,fill:'end',tension:.35,
+            pointBackgroundColor:ptColors,pointBorderColor:ptColors,pointBorderWidth:2,pointRadius:dynRadius,pointHoverRadius:dynHover,
+          }]
+        },
+        options:{
+          responsive:true,maintainAspectRatio:false,elements:{point:{hitRadius:18}},
+          plugins:{
+            legend:{display:false},
+            tooltip:{
+              backgroundColor:'rgba(17,17,24,.95)',borderColor:'rgba(255,255,255,.1)',borderWidth:1,
+              titleFont:{family:'DM Mono',size:11},bodyFont:{family:'DM Mono',size:11},
+              callbacks:{label:c=>{const a=sortedApps[c.dataIndex];return a?`▸ ${typeLabel(a.exam_type)} · Rank #${c.parsed.y}`:'';}}
+            }
+          },
+          scales:{
+            x:{ticks:{color:'#5a5a78',font:{family:'DM Mono',size:9},maxRotation:30},grid:{color:'rgba(255,255,255,.03)'}},
+            y:{
+              reverse:true,
+              suggestedMin:Math.max(1,bestRank-pad),
+              suggestedMax:worstRank+pad,
+              ticks:{color:'#5a5a78',font:{family:'DM Mono',size:9},callback:v=>Number.isInteger(v)&&v>=1?`#${v}`:''},
+              grid:{color:'rgba(255,255,255,.04)'}
+            }
+          }
+        }
+      });
     }
     function setStuHistoryFilter(name, school, filter) {
       _stuThFilter=filter;
@@ -3507,7 +3589,7 @@
       document.querySelectorAll('.chart-scroll-inner').forEach(el => el._dragging = false);
     });
 
-    const PAGE_KEYS = { '1':'dashboard','2':'tests','3':'leaderboard','4':'students','5':'schools','6':'analytics' };
+    const PAGE_KEYS = { '1':'dashboard','2':'leaderboard','3':'tests','4':'students','5':'schools','6':'analytics' };
 
     function toggleKbdPanel(e) {
       if (e) e.stopPropagation();

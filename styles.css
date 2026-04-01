@@ -2809,9 +2809,10 @@
       background: transparent; border: 1px solid transparent;
       color: var(--text3); font-size: 13px; font-family: 'DM Mono', monospace;
       cursor: pointer; transition: all .15s; flex-shrink: 0;
-      vertical-align: middle; line-height: 1; user-select: none
+      vertical-align: middle; line-height: 1; user-select: none;
+      outline: none
     }
-    .info-btn:hover { background: rgba(232, 160, 32,.15); border-color: var(--amber); color: var(--amber) }
+    .info-btn:hover { background: rgba(232, 160, 32,.15); color: var(--amber) }
 
     .info-popover {
       position: fixed; background: var(--bg2);
@@ -3761,4 +3762,39 @@
     @media (max-width: 480px) {
       .pagination { justify-content: center }
       .page-info { width: 100%; text-align: center; padding-top: 4px }
+    }
+
+    /* Student profile card: type filter buttons — desktop + mobile */
+    .stu-tl-btns,
+    .stu-th-btns {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      flex-wrap: nowrap;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 2px;
+      overflow: hidden
+    }
+
+    .stu-tl-btns button,
+    .stu-th-btns button {
+      flex-shrink: 0;
+      white-space: nowrap
+    }
+
+    /* Full label visible by default, short label hidden */
+    .btn-lbl-short { display: none }
+    .btn-lbl-full  { display: inline }
+
+    /* On mobile: swap to short labels, no scrolling needed */
+    @media (max-width: 768px) {
+      .btn-lbl-full  { display: none }
+      .btn-lbl-short { display: inline }
+      .stu-tl-btns,
+      .stu-th-btns {
+        overflow-x: visible;
+        max-width: none
+      }
     }
