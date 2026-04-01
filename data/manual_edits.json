@@ -328,6 +328,21 @@
       "mergedCount": 0,
       "duplicateCount": 0,
       "timestamp": 1775038084942
+    },
+    {
+      "profileA": {
+        "name": "W.D.Pawani Shehara",
+        "school": "Sri Sumangala vidyalaya Hikkaduwa"
+      },
+      "profileB": {
+        "name": "W.D.Pawani Shehara(Sumangala Balika-Panadura)",
+        "school": "no"
+      },
+      "finalName": "W.D.Pawani Shehara",
+      "finalSchool": "Sri Sumangala vidyalaya Hikkaduwa",
+      "mergedCount": 0,
+      "duplicateCount": 0,
+      "timestamp": 1775038207443
     }
   ]
 }
