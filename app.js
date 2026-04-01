@@ -2435,7 +2435,7 @@
            })()}
          </div>
         <div class="card" style="margin-bottom:20px">
-          <div class="card-header" style="flex-wrap:nowrap;align-items:center;gap:8px">
+          <div class="card-header" style="flex-wrap:nowrap;align-items:center;gap:8px;border-bottom:none;padding-bottom:12px">
             <div class="card-title" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><i class="ph ph-trend-up" style="color:var(--teal)"></i> Performance Timeline</div>
             <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
               <div class="stu-tl-btns">
@@ -2449,7 +2449,7 @@
               <button class="chart-fullscreen-btn-hdr" onclick="openChartFs('stu-chart-wrap',_stuChartMode==='rank'?'Rank Trend':'Score Timeline')" title="Full view"><i class="ph ph-arrows-out"></i></button>
             </div>
           </div>
-          <div style="padding:6px 16px 8px;border-bottom:1px solid var(--border);display:flex;gap:0">
+          <div style="padding:0 20px 16px;display:flex;gap:0;border-bottom:1px solid var(--border)">
             <div style="flex:1;display:flex;border:1px solid var(--border);border-radius:4px;overflow:hidden">
               <button id="stu-cm-score" onclick="setStuChartMode('${esc(stuData.name)}','${esc(stuData.school)}','score')"
                 style="flex:1;background:var(--bg3);border:none;border-right:1px solid var(--border);padding:4px 0;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--text);cursor:pointer;transition:all .15s;outline:none">Score</button>
@@ -3442,8 +3442,8 @@
       const bestRank=Math.min(...ranks);
       const worstRank=Math.max(...ranks);
       const ptColors=sortedApps.map(a=>typeColorCanvas(a.exam_type));
-      const dynRadius=ctx=>{const w=ctx.chart.width||300;const base=w<320?2:w<500?3:5;return sortedApps[ctx.dataIndex]?.rank===bestRank?base+3:base;};
-      const dynHover=ctx=>{const w=ctx.chart.width||300;return w<500?6:9;};
+      const dynRadius=ctx2=>{const w=ctx2.chart.width||300;const base=w<320?2:w<500?3:5;return sortedApps[ctx2.dataIndex]?.rank===bestRank?base+3:base;};
+      const dynHover=ctx2=>{const w=ctx2.chart.width||300;return w<500?6:9;};
       const pad=Math.max(5,Math.ceil((worstRank-bestRank)*0.25)+2);
       CHARTS.stuChart=new Chart(ctx,{
         type:'line',
