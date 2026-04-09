@@ -229,6 +229,16 @@
       },
       "newMarks": 93,
       "timestamp": 1774504822973
+    },
+    {
+      "examId": "R-2026-012",
+      "city": "Galle",
+      "student": {
+        "name": "Ruchin Himasha",
+        "school": "Richmond College"
+      },
+      "newMarks": 93,
+      "timestamp": 1775132807578
     }
   ],
   "studentRenames": [
@@ -311,6 +321,38 @@
       },
       "isNewStudent": false,
       "timestamp": 1773848634288
+    }
+  ],
+  "merges": [
+    {
+      "profileA": {
+        "name": "E.K. Manusha Prabhasara",
+        "school": "Richmond College"
+      },
+      "profileB": {
+        "name": "manusha prabhasara",
+        "school": "Richmond College"
+      },
+      "finalName": "E.K. Manusha Prabhasara",
+      "finalSchool": "Richmond College",
+      "mergedCount": 0,
+      "duplicateCount": 0,
+      "timestamp": 1775038084942
+    },
+    {
+      "profileA": {
+        "name": "W.D.Pawani Shehara",
+        "school": "Sri Sumangala vidyalaya Hikkaduwa"
+      },
+      "profileB": {
+        "name": "W.D.Pawani Shehara(Sumangala Balika-Panadura)",
+        "school": "no"
+      },
+      "finalName": "W.D.Pawani Shehara",
+      "finalSchool": "Sri Sumangala vidyalaya Hikkaduwa",
+      "mergedCount": 0,
+      "duplicateCount": 0,
+      "timestamp": 1775038207443
     }
   ]
 }
