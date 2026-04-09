@@ -7,6 +7,15 @@
   <title>DEKMA Results</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <meta name="description" content="DEKMA Applied Maths results portal - explore leaderboards, scores, and school rankings by city and year.">
+<!-- PWA Manifest -->
+<link rel="manifest" href="/dekma/manifest.json">
+<meta name="theme-color" content="#0f0f0f">
+
+<!-- iOS / Safari PWA support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DEKMA">
+<link rel="apple-touch-icon" href="/dekma/icon-192.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -485,7 +494,20 @@
       <div class="chart-fs-body" id="chart-fs-body"></div>
     </div>
   </div>
-
+<!-- PWA Service Worker Registration -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/dekma/sw.js', {
+        scope: '/dekma/'
+      }).then(reg => {
+        console.log('DEKMA SW registered, scope:', reg.scope);
+      }).catch(err => {
+        console.warn('DEKMA SW failed:', err);
+      });
+    });
+  }
+</script>
 </body>
 
 </html>
