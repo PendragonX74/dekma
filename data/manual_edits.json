@@ -353,6 +353,21 @@
       "mergedCount": 0,
       "duplicateCount": 0,
       "timestamp": 1775038207443
+    },
+    {
+      "profileA": {
+        "name": "Akash Madumal",
+        "school": "Richmond College"
+      },
+      "profileB": {
+        "name": "Akash Madhumal",
+        "school": "Richmond College"
+      },
+      "finalName": "Akash Madumal",
+      "finalSchool": "Richmond College",
+      "mergedCount": 0,
+      "duplicateCount": 0,
+      "timestamp": 1777538580470
     }
   ]
 }
