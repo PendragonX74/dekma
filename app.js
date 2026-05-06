@@ -1295,6 +1295,10 @@
     }
 
     function aggregateByStudent(data) {
+      // Count total unique exams in this dataset slice (respects any active type filter)
+      const dataExamIds = new Set(data.map(r => r.exam_id));
+      const totalExams = dataExamIds.size;
+
       const map = {};
       data.forEach(r => {
         const key = r.name + '||' + r.school;
@@ -1304,12 +1308,19 @@
       return Object.values(map).map(s => {
         const rows = deduplicateRows(s.rows);
         const mList = rows.map(r => r.marks);
-        const zList = rows.map(r => examZ(r.exam_id, r.marks));
+        const zWritten = rows.map(r => examZ(r.exam_id, r.marks));
         const rawAvg = mList.reduce((a, b) => a + b, 0) / mList.length;
-        const z_mean = zList.reduce((a, b) => a + b, 0) / zList.length;
-        const N = rows.length;
+        const nWritten = rows.length;
+        const ratio = totalExams > 0 ? nWritten / totalExams : 1;
 
-        const post = computePosterior(zList);
+        // Gentle participation nudge applied after the Bayesian posterior.
+        // Uses a power curve so the first few misses barely register;
+        // only consistent absenteeism causes a real dent.
+        // Max deduction: ~0.25 skillZ (≈ 3–4 rating pts) at 0% attendance.
+        const post = computePosterior(zWritten);
+        const absencePenalty = 0.25 * Math.pow(1 - ratio, 1.5);
+        post.skillZ -= absencePenalty;
+        post.rating  = zToRating(post.skillZ);
 
         return {
           name: s.name, school: s.school, gender: s.gender,
@@ -1317,7 +1328,7 @@
           rating: post.rating, skillZ: post.skillZ,
           best: Math.max(...mList),
           rank: Math.min(...rows.map(r => r.rank)),
-          tests: N,
+          tests: nWritten,
           examList: rows.map(r => ({ label: r.exam_label, marks: r.marks, rank: r.rank, z: examZ(r.exam_id, r.marks) }))
         };
       });
@@ -3273,10 +3284,11 @@
           <div class="info-sep"></div>
           <p style="margin-bottom:8px"><strong>How it's calculated:</strong></p>
           <div class="info-row"><span class="info-key">Mean Rating</span><span class="info-val">The average of all difficulty-adjusted scores (z-scores rescaled to a 0–100 range) across every test taken.</span></div>
-          <div class="info-row"><span class="info-key">Rating</span><span class="info-val">A <em>lower-bound</em> estimate the mean minus a fraction of the standard deviation. This rewards consistency and prevents one great test from inflating the rating.</span></div>
+          <div class="info-row"><span class="info-key">Rating</span><span class="info-val">A <em>lower-bound</em> estimate — posterior mean minus a fraction of the standard deviation. Rewards consistency and prevents one great test from inflating the rating.</span></div>
+          <div class="info-row"><span class="info-key">Participation</span><span class="info-val">Missed exams are treated as below-average phantom scores. The penalty scales with how many tests were skipped — a few misses cause minor drag; skipping most tests causes a meaningful drop.</span></div>
           <div class="info-sep"></div>
           <p style="margin-bottom:8px">The two numbers shown are:<br><strong>Rating / Mean Rating</strong></p>
-          <p style="color:var(--text3);font-size:11px">A student with Rating 82 / 88 has a skill mean of 88 but a conservative floor of 82 they occasionally underperform. A student with 85 / 86 is very consistent.</p>
+          <p style="color:var(--text3);font-size:11px">A student with Rating 82 / 88 has a skill mean of 88 but a conservative floor of 82 — they occasionally underperform. A student with 85 / 86 is very consistent.</p>
           <p style="color:var(--text3);font-size:11px;margin-top:8px">Rating is used for the Overall Rank and the Leaderboard "All Tests" view.</p>
         `
       },
