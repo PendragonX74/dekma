@@ -1,4 +1,5 @@
 name: Auto Update DEKMA Results
+
 on:
   schedule:
     - cron: "30 0 * * *"   # 08:30 SGT
@@ -17,8 +18,10 @@ on:
     - cron: "30 13 * * *"  # 21:30 SGT
     # No runs from 22:00–08:00 SGT (quiet hours)
   workflow_dispatch:
+
 permissions:
   contents: write
+
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -26,24 +29,21 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
       - name: Install dependencies
         run: pip install requests
+
       - name: Run downloader
-        id: download
-        run: |
-          python xml_downloader_auto.py
-          if [ -f "DEKMA RESULTS/.new_downloads" ]; then
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          fi
+        run: python xml_downloader_auto.py
+
       - name: Run parser
-        if: steps.download.outputs.changed == 'true'
         run: python parse_results.py
+
       - name: Commit and push if changes exist
         run: |
           git config user.name "github-actions"
@@ -52,6 +52,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Auto update: new XML and rebuilt results"
+            git commit -m "Auto update: $(date -u '+%Y-%m-%d %H:%M') UTC"
             git push
           fi
