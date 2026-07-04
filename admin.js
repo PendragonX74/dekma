@@ -954,6 +954,8 @@
     return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
   }
 
+  let _aemSaving = false;
+
   function openAddEntryModal() {
     if (!_currentExam) return;
     document.getElementById('aem-exam-label').textContent = _currentExam.label;
@@ -964,6 +966,10 @@
     setGender('U', 'aem-');
     document.getElementById('aem-suggest-list').style.display = 'none';
     document.getElementById('aem-suggest-list').innerHTML = '';
+    _aemSaving = false;
+    const saveBtn = document.getElementById('aem-save-btn');
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Add Entry';
     document.getElementById('add-entry-modal').style.display = 'flex';
     setTimeout(() => document.getElementById('aem-name').focus(), 80);
   }
@@ -1008,6 +1014,7 @@
   }
 
   async function saveAddEntry() {
+    if (_aemSaving) return; // already saving — ignore double-tap/double-fire
     if (!_currentExam || !ADMIN_DATA) return showToast('No exam loaded.', 'error');
     const name   = document.getElementById('aem-name').value.trim();
     const school = document.getElementById('aem-school').value.trim();
@@ -1019,38 +1026,48 @@
     const exists = _currentExam.students.find(s => s.name === name && s.school === school);
     if (exists) return showToast(`${name} already has an entry in this exam.`, 'error');
 
-    const gender = _aemGender || 'U';
+    _aemSaving = true;
+    const saveBtn = document.getElementById('aem-save-btn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Adding…';
 
-    const known = getUniqueStudents().find(s => s.name === name && s.school === school);
-    const finalGender = known ? (known.gender || 'U') : gender;
+    try {
+      const gender = _aemGender || 'U';
 
-    const newEntry = { name, school, marks, gender: finalGender, rank: 0 };
-    _currentExam.students.push(newEntry);
-    recomputeRanks(_currentExam);
+      const known = getUniqueStudents().find(s => s.name === name && s.school === school);
+      const finalGender = known ? (known.gender || 'U') : gender;
 
-    const city = document.getElementById('test-sel-city').value;
-    const year = document.getElementById('test-sel-year').value;
-    const ok   = await writeChunk(city, year);
-    if (!ok) {
-
-      _currentExam.students = _currentExam.students.filter(s => !(s.name === name && s.school === school && s.marks === marks));
+      const newEntry = { name, school, marks, gender: finalGender, rank: 0 };
+      _currentExam.students.push(newEntry);
       recomputeRanks(_currentExam);
-      return;
-    }
 
-    await appendManualEdit(edits => {
-      if (!edits.addedEntries) edits.addedEntries = [];
-      edits.addedEntries.push({
-        examId: _currentExam.id, city, year,
-        student: { name, school, marks, gender: finalGender },
-        isNewStudent: !known,
-        timestamp: Date.now()
+      const city = document.getElementById('test-sel-city').value;
+      const year = document.getElementById('test-sel-year').value;
+      const ok   = await writeChunk(city, year);
+      if (!ok) {
+        _currentExam.students = _currentExam.students.filter(s => !(s.name === name && s.school === school && s.marks === marks));
+        recomputeRanks(_currentExam);
+        return;
+      }
+
+      await appendManualEdit(edits => {
+        if (!edits.addedEntries) edits.addedEntries = [];
+        edits.addedEntries.push({
+          examId: _currentExam.id, city, year,
+          student: { name, school, marks, gender: finalGender },
+          isNewStudent: !known,
+          timestamp: Date.now()
+        });
       });
-    });
-    bumpVersion();
-    closeAddEntryModal();
-    renderTestSheet(_currentExam);
-    showToast(`${name} added to ${_currentExam.label}.`, 'success');
+      bumpVersion();
+      closeAddEntryModal();
+      renderTestSheet(_currentExam);
+      showToast(`${name} added to ${_currentExam.label}.`, 'success');
+    } finally {
+      _aemSaving = false;
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Add Entry';
+    }
   }
 
   function switchMergeTab(tab) {
