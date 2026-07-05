@@ -331,6 +331,19 @@
       },
       "isNewStudent": false,
       "timestamp": 1773848634288
+    },
+    {
+      "examId": "T-2027-006",
+      "city": "Galle",
+      "year": "2027",
+      "student": {
+        "name": "Chanul D.Ranaweera",
+        "school": "Mahinda College",
+        "marks": 80,
+        "gender": "B"
+      },
+      "isNewStudent": false,
+      "timestamp": 1783233815521
     }
   ],
   "merges": [
